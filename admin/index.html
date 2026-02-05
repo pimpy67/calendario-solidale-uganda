@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Calendario Solidale</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #45a049;
+            --danger: #c0392b;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --gray: #7f8c8d;
+            --light: #ecf0f1;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--light);
+            min-height: 100vh;
+        }
+
+        /* Login Form */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .login-box {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h1 {
+            text-align: center;
+            color: var(--dark);
+            margin-bottom: 1.5rem;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-box button:hover {
+            background: var(--primary-dark);
+        }
+
+        .error-message {
+            color: var(--danger);
+            text-align: center;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .login-container.hidden {
+            display: none;
+        }
+
+        /* Header */
+        .admin-header {
+            background: var(--white);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            color: var(--dark);
+            font-size: 1.5rem;
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-card h3 {
+            color: var(--gray);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .stat-card.primary .value {
+            color: var(--primary);
+        }
+
+        .stat-card.warning .value {
+            color: var(--warning);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            padding: 0 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: var(--gray);
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: var(--light);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            transition: width 0.5s ease;
+        }
+
+        /* Tables */
+        .table-section {
+            padding: 0 2rem 2rem;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .table-header h2 {
+            color: var(--dark);
+        }
+
+        .export-btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .export-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .donations-table {
+            width: 100%;
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .donations-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .donations-table th,
+        .donations-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--light);
+        }
+
+        .donations-table th {
+            background: var(--light);
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .donations-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .stats-grid {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .table-section {
+                padding: 0 1rem 1rem;
+            }
+
+            .donations-table {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h1>Admin Login</h1>
+            <p class="error-message" id="errorMessage">Password non valida</p>
+            <form id="loginForm">
+                <input type="password" id="passwordInput" placeholder="Inserisci password" required>
+                <button type="submit">Accedi</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <header class="admin-header">
+            <h1>Calendario Solidale - Admin Panel</h1>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </header>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <h3>Totale Raccolto</h3>
+                <div class="value" id="totalRaised">0 EUR</div>
+            </div>
+            <div class="stat-card">
+                <h3>Giorni Adottati</h3>
+                <div class="value" id="adoptedDays">0 / 365</div>
+            </div>
+            <div class="stat-card warning">
+                <h3>In Attesa</h3>
+                <div class="value" id="pendingDonations">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Giorni Rimanenti</h3>
+                <div class="value" id="remainingDays">365</div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-label">
+                <span>Progresso Raccolta Fondi</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Recent Donations -->
+        <div class="table-section">
+            <div class="table-header">
+                <h2>Ultime Donazioni</h2>
+                <a href="#" class="export-btn" id="exportBtn">Esporta CSV</a>
+            </div>
+            <div class="donations-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Donatore</th>
+                            <th>Importo</th>
+                            <th>Stato</th>
+                        </tr>
+                    </thead>
+                    <tbody id="donationsTable">
+                        <!-- Popolato da JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Stato
+        let authToken = localStorage.getItem('adminToken');
+
+        // Elementi DOM
+        const loginContainer = document.getElementById('loginContainer');
+        const dashboard = document.getElementById('dashboard');
+        const loginForm = document.getElementById('loginForm');
+        const passwordInput = document.getElementById('passwordInput');
+        const errorMessage = document.getElementById('errorMessage');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const exportBtn = document.getElementById('exportBtn');
+
+        // Nomi mesi
+        const MONTHS = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+
+        // Check login on load
+        if (authToken) {
+            showDashboard();
+        }
+
+        // Login form
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = passwordInput.value;
+
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    authToken = btoa(password);
+                    localStorage.setItem('adminToken', authToken);
+                    showDashboard();
+                } else {
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMessage.style.display = 'block';
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            authToken = null;
+            localStorage.removeItem('adminToken');
+            loginContainer.classList.remove('hidden');
+            dashboard.classList.remove('active');
+            passwordInput.value = '';
+        });
+
+        // Export
+        exportBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open(`/api/admin/export?year=2026`, '_blank');
+        });
+
+        // Show dashboard
+        function showDashboard() {
+            loginContainer.classList.add('hidden');
+            dashboard.classList.add('active');
+            loadStats();
+            loadDonations();
+        }
+
+        // Load stats
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/admin/stats?year=2026', {
+                    headers: { 'Authorization': `Basic ${authToken}` }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    // Token non valido
+                    logoutBtn.click();
+                    return;
+                }
+
+                const stats = await response.json();
+
+                document.getElementById('totalRaised').textContent = `${stats.total_raised.toLocaleString('it-IT')} EUR`;
+                document.getElementById('adoptedDays').textContent = `${stats.adopted_days} / ${stats.total_days}`;
+                document.getElementById('pendingDonations').textContent = stats.pending_donations;
+                document.getElementById('remainingDays').textContent = stats.remaining_days;
+                document.getElementById('progressPercent').textContent = `${stats.percent_complete}%`;
+                document.getElementById('progressFill').style.width = `${stats.percent_complete}%`;
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load donations
+        async function loadDonations() {
+            try {
+                const response = await fetch('/api/admin/recent?limit=20', {
+                    headers: { 'Authorization': `Basic ${authToken}` }
+                });
+
+                const donations = await response.json();
+                const table = document.getElementById('donationsTable');
+
+                if (donations.length === 0) {
+                    table.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #7f8c8d;">Nessuna donazione ancora</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = donations.map(d => `
+                    <tr>
+                        <td>${d.day} ${MONTHS[d.month - 1]} ${d.year}</td>
+                        <td>${d.is_anonymous ? 'Anonimo' : d.donor_name}</td>
+                        <td>${d.amount} EUR</td>
+                        <td>
+                            <span class="status-badge status-${d.payment_status}">
+                                ${d.payment_status === 'completed' ? 'Completato' : 'In attesa'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading donations:', error);
+            }
+        }
+
+        // Auto refresh ogni 30 secondi
+        setInterval(() => {
+            if (authToken) {
+                loadStats();
+                loadDonations();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

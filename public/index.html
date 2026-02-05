@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Solidale - Casa Famiglia Uganda</title>
+
+    <!-- Meta tags per social sharing -->
+    <meta property="og:title" content="Calendario Solidale - Casa Famiglia Uganda">
+    <meta property="og:description" content="Adotta un giorno del 2026 con una donazione di 50 euro per sostenere la Casa Famiglia in Uganda">
+    <meta property="og:image" content="/images/og-image.jpg">
+    <meta property="og:type" content="website">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">&#10084;</span>
+                <span class="logo-text">Casafamiglia</span>
+            </div>
+            <nav class="nav">
+                <a href="#about" class="nav-link">Chi Siamo</a>
+                <a href="#calendar" class="nav-link nav-link-primary">Scopri di Piu</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section con Calendario -->
+    <main class="main">
+        <section id="calendar" class="calendar-section">
+            <!-- Background image (cambia per mese) -->
+            <div class="calendar-background" id="calendarBackground"></div>
+
+            <!-- Calendario -->
+            <div class="calendar-container">
+                <!-- Navigazione mesi -->
+                <div class="month-navigation">
+                    <button class="nav-btn prev-btn" id="prevMonth" aria-label="Mese precedente">
+                        &#8249;
+                    </button>
+                    <h2 class="month-title" id="monthTitle">Gennaio 2026</h2>
+                    <button class="nav-btn next-btn" id="nextMonth" aria-label="Mese successivo">
+                        &#8250;
+                    </button>
+                </div>
+
+                <!-- Griglia Calendario -->
+                <div class="calendar-grid">
+                    <!-- Header giorni settimana -->
+                    <div class="weekday-header">
+                        <span>LUN</span>
+                        <span>MAR</span>
+                        <span>MER</span>
+                        <span>GIO</span>
+                        <span>VEN</span>
+                        <span>SAB</span>
+                        <span>DOM</span>
+                    </div>
+
+                    <!-- Griglia giorni -->
+                    <div class="days-grid" id="daysGrid">
+                        <!-- I giorni verranno generati da JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Legenda -->
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="legend-color available"></span>
+                        <span>Disponibile</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color adopted"></span>
+                        <span>Adottato</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color pending"></span>
+                        <span>In attesa</span>
+                    </div>
+                </div>
+
+                <!-- Info donazione -->
+                <div class="donation-info">
+                    <p>Ogni giorno costa <strong>50 euro</strong></p>
+                    <p class="stats">
+                        <span id="adoptedCount">0</span> giorni adottati |
+                        <span id="totalRaised">0</span> euro raccolti
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Pagamento -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal">
+            <button class="modal-close" id="closeModal" aria-label="Chiudi">
+                &times;
+            </button>
+
+            <div class="modal-header">
+                <span class="modal-icon">&#128197;</span>
+                <h3>Adotta questo giorno</h3>
+            </div>
+
+            <div class="modal-body">
+                <div class="selected-date">
+                    <span class="date-label">Data selezionata:</span>
+                    <span class="date-value" id="selectedDate">15 Gennaio 2026</span>
+                </div>
+
+                <div class="donation-amount">
+                    <span class="amount-label">Importo donazione:</span>
+                    <span class="amount-value">50,00 euro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="donorName">Il tuo nome (apparira sul calendario)</label>
+                    <input type="text" id="donorName" placeholder="es. Mario Rossi" maxlength="50">
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="isAnonymous">
+                    <label for="isAnonymous">Preferisco restare anonimo</label>
+                </div>
+
+                <div class="payment-methods">
+                    <h4>Metodo di pagamento</h4>
+                    <button class="payment-btn satispay-btn" id="payWithSatispay">
+                        <img src="/images/satispay-logo.svg" alt="Satispay" class="payment-logo">
+                        <span>Paga con Satispay</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <p class="secure-text">
+                    <span class="lock-icon">&#128274;</span>
+                    Pagamento sicuro
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Casa Famiglia Uganda - Tutti i diritti riservati</p>
+            <div class="social-share">
+                <span>Condividi:</span>
+                <a href="#" id="shareWhatsapp" class="social-btn whatsapp" aria-label="Condividi su WhatsApp">WA</a>
+                <a href="#" id="shareFacebook" class="social-btn facebook" aria-label="Condividi su Facebook">FB</a>
+                <a href="#" id="shareInstagram" class="social-btn instagram" aria-label="Condividi su Instagram">IG</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/calendar.js"></script>
+    <script src="/js/payment.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
