@@ -6,6 +6,7 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../database/db');
+const { sendGiftCard } = require('../utils/mailer');
 
 // Configurazione Satispay
 const SATISPAY_ENABLED = process.env.SATISPAY_API_KEY ? true : false;
@@ -74,7 +75,7 @@ router.get('/donations/:year/:month', (req, res) => {
  */
 router.post('/donations', async (req, res) => {
     try {
-        const { day, month, year, donor_name, is_anonymous } = req.body;
+        const { day, month, year, donor_name, is_anonymous, is_gift, gift_email, gift_recipient_name, gift_message } = req.body;
 
         // Validazione
         if (!day || !month || !year) {
@@ -111,7 +112,11 @@ router.post('/donations', async (req, res) => {
             year,
             donor_name: is_anonymous ? null : donor_name,
             is_anonymous,
-            payment_id: paymentId
+            payment_id: paymentId,
+            is_gift: is_gift || false,
+            gift_recipient_name: gift_recipient_name || null,
+            email: gift_email || null,
+            message: gift_message || null
         });
 
         // Se Satispay e configurato, crea pagamento
@@ -145,7 +150,7 @@ router.post('/donations', async (req, res) => {
  * POST /api/donations/:id/confirm
  * Conferma manualmente una donazione (per test)
  */
-router.post('/donations/:id/confirm', (req, res) => {
+router.post('/donations/:id/confirm', async (req, res) => {
     try {
         const id = parseInt(req.params.id);
 
@@ -165,6 +170,17 @@ router.post('/donations/:id/confirm', (req, res) => {
         }
 
         db.confirmPayment(id);
+
+        // Se e un regalo, invia la gift card via email
+        if (donation.is_gift && donation.email) {
+            try {
+                await sendGiftCard(donation);
+                console.log(`Gift card inviata a ${donation.email} per donazione ${id}`);
+            } catch (emailError) {
+                console.error('Errore invio gift card:', emailError);
+                // Non bloccare la conferma se l'email fallisce
+            }
+        }
 
         res.json({
             success: true,
@@ -201,6 +217,16 @@ router.post('/webhook/satispay', async (req, res) => {
             if (donation) {
                 db.confirmPayment(donation.id);
                 console.log(`Donazione ${donation.id} confermata via Satispay`);
+
+                // Se e un regalo, invia gift card
+                if (donation.is_gift && donation.email) {
+                    try {
+                        await sendGiftCard(donation);
+                        console.log(`Gift card inviata a ${donation.email}`);
+                    } catch (emailError) {
+                        console.error('Errore invio gift card:', emailError);
+                    }
+                }
             }
         }
 

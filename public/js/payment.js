@@ -13,6 +13,11 @@ const Payment = (function() {
     let selectedDateEl;
     let donorNameInput;
     let isAnonymousCheckbox;
+    let isGiftCheckbox;
+    let giftSection;
+    let giftRecipientNameInput;
+    let giftEmailInput;
+    let giftMessageInput;
     let payWithSatispayBtn;
 
     /**
@@ -25,6 +30,11 @@ const Payment = (function() {
         selectedDateEl = document.getElementById('selectedDate');
         donorNameInput = document.getElementById('donorName');
         isAnonymousCheckbox = document.getElementById('isAnonymous');
+        isGiftCheckbox = document.getElementById('isGift');
+        giftSection = document.getElementById('giftSection');
+        giftRecipientNameInput = document.getElementById('giftRecipientName');
+        giftEmailInput = document.getElementById('giftEmail');
+        giftMessageInput = document.getElementById('giftMessage');
         payWithSatispayBtn = document.getElementById('payWithSatispay');
 
         // Event listeners
@@ -38,6 +48,16 @@ const Payment = (function() {
             donorNameInput.disabled = isAnonymousCheckbox.checked;
             if (isAnonymousCheckbox.checked) {
                 donorNameInput.value = '';
+            }
+        });
+
+        // Checkbox regalo mostra/nasconde sezione gift
+        isGiftCheckbox.addEventListener('change', () => {
+            giftSection.classList.toggle('active', isGiftCheckbox.checked);
+            if (!isGiftCheckbox.checked) {
+                giftRecipientNameInput.value = '';
+                giftEmailInput.value = '';
+                giftMessageInput.value = '';
             }
         });
 
@@ -66,6 +86,11 @@ const Payment = (function() {
         donorNameInput.value = '';
         donorNameInput.disabled = false;
         isAnonymousCheckbox.checked = false;
+        isGiftCheckbox.checked = false;
+        giftSection.classList.remove('active');
+        giftRecipientNameInput.value = '';
+        giftEmailInput.value = '';
+        giftMessageInput.value = '';
         isProcessing = false;
         payWithSatispayBtn.classList.remove('loading');
 
@@ -93,6 +118,7 @@ const Payment = (function() {
         // Valida input
         const isAnonymous = isAnonymousCheckbox.checked;
         const donorName = donorNameInput.value.trim();
+        const isGift = isGiftCheckbox.checked;
 
         if (!isAnonymous && !donorName) {
             alert('Inserisci il tuo nome oppure seleziona "Preferisco restare anonimo"');
@@ -100,24 +126,51 @@ const Payment = (function() {
             return;
         }
 
+        // Valida campi regalo
+        if (isGift) {
+            const giftEmail = giftEmailInput.value.trim();
+            const giftRecipientName = giftRecipientNameInput.value.trim();
+            if (!giftEmail) {
+                alert('Inserisci l\'email del destinatario del regalo');
+                giftEmailInput.focus();
+                return;
+            }
+            if (!giftRecipientName) {
+                alert('Inserisci il nome del destinatario del regalo');
+                giftRecipientNameInput.focus();
+                return;
+            }
+        }
+
         // Inizia processing
         isProcessing = true;
         payWithSatispayBtn.classList.add('loading');
 
         try {
+            // Prepara dati
+            const donationData = {
+                day: selectedDate.day,
+                month: selectedDate.month,
+                year: selectedDate.year,
+                donor_name: isAnonymous ? null : donorName,
+                is_anonymous: isAnonymous
+            };
+
+            // Aggiungi dati regalo se attivo
+            if (isGift) {
+                donationData.is_gift = true;
+                donationData.gift_email = giftEmailInput.value.trim();
+                donationData.gift_recipient_name = giftRecipientNameInput.value.trim();
+                donationData.gift_message = giftMessageInput.value.trim();
+            }
+
             // Crea donazione sul server
             const response = await fetch('/api/donations', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    day: selectedDate.day,
-                    month: selectedDate.month,
-                    year: selectedDate.year,
-                    donor_name: isAnonymous ? null : donorName,
-                    is_anonymous: isAnonymous
-                })
+                body: JSON.stringify(donationData)
             });
 
             if (!response.ok) {
@@ -190,7 +243,13 @@ const Payment = (function() {
      */
     function showSuccessMessage() {
         const monthName = Calendar.MONTHS[selectedDate.month - 1];
-        alert(`Grazie per la tua donazione!\n\nHai adottato il ${selectedDate.day} ${monthName} ${selectedDate.year}.\n\nLa Casa Famiglia in Uganda ti ringrazia di cuore!`);
+        let message = `Grazie per la tua donazione!\n\nHai adottato il ${selectedDate.day} ${monthName} ${selectedDate.year}.\n\nLa Casa Famiglia in Uganda ti ringrazia di cuore!`;
+
+        if (isGiftCheckbox.checked) {
+            message += `\n\nUna gift card verra inviata a ${giftEmailInput.value.trim()}!`;
+        }
+
+        alert(message);
     }
 
     /**

@@ -38,6 +38,14 @@ function init() {
         )
     `);
 
+    // Aggiungi colonne gift card (se non esistono)
+    try {
+        db.exec(`ALTER TABLE donations ADD COLUMN is_gift BOOLEAN DEFAULT 0`);
+    } catch (e) { /* colonna gia esistente */ }
+    try {
+        db.exec(`ALTER TABLE donations ADD COLUMN gift_recipient_name VARCHAR(100)`);
+    } catch (e) { /* colonna gia esistente */ }
+
     // Crea indici per performance
     db.exec(`
         CREATE INDEX IF NOT EXISTS idx_donations_date ON donations(year, month, day);
@@ -96,8 +104,8 @@ function isDayAdopted(day, month, year) {
  */
 function createDonation(data) {
     const stmt = db.prepare(`
-        INSERT INTO donations (day, month, year, donor_name, is_anonymous, amount, payment_id, payment_status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
+        INSERT INTO donations (day, month, year, donor_name, is_anonymous, amount, payment_id, payment_status, is_gift, gift_recipient_name, email, message)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -107,7 +115,11 @@ function createDonation(data) {
         data.donor_name,
         data.is_anonymous ? 1 : 0,
         data.amount || 50.00,
-        data.payment_id
+        data.payment_id,
+        data.is_gift ? 1 : 0,
+        data.gift_recipient_name || null,
+        data.email || null,
+        data.message || null
     );
 
     return {
