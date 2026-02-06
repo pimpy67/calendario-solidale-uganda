@@ -21,21 +21,90 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <span class="logo-icon">&#10084;</span>
-                <span class="logo-text">Casafamiglia</span>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <!-- Logo -->
+            <div class="sidebar-logo">
+                <img src="/images/logo.png" alt="Effatà" class="logo-img">
+                <span class="logo-text">Effatà Children's Home</span>
             </div>
-            <nav class="nav">
-                <a href="#about" class="nav-link">Chi Siamo</a>
-                <a href="#calendar" class="nav-link nav-link-primary">Scopri di Piu</a>
-            </nav>
-        </div>
-    </header>
 
-    <!-- Hero Section con Calendario -->
+            <!-- Descrizione progetto -->
+            <div class="sidebar-description">
+                <h2>Calendario Solidale 2026</h2>
+                <p>Regala un giorno del calendario con una donazione di <strong>50 euro</strong> per sostenere la Casa Famiglia Effatà in Uganda.</p>
+                <p class="sidebar-subtitle">Ogni giorno adottato aiuta a garantire cibo, istruzione e cure ai bambini della casa famiglia.</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="sidebar-stats">
+                <div class="sidebar-stat">
+                    <span class="stat-number" id="adoptedCount">0</span>
+                    <span class="stat-label">giorni adottati</span>
+                </div>
+                <div class="sidebar-stat">
+                    <span class="stat-number" id="totalRaised">0</span>
+                    <span class="stat-label">euro raccolti</span>
+                </div>
+            </div>
+
+            <!-- Navigazione -->
+            <nav class="sidebar-nav">
+                <a href="#" class="sidebar-link" id="openAbout">
+                    <span class="link-icon">&#9825;</span>
+                    Chi Siamo
+                </a>
+                <a href="#" class="sidebar-link sidebar-link-primary" id="openAboutPrimary">
+                    <span class="link-icon">&#128197;</span>
+                    Scopri di Piu
+                </a>
+            </nav>
+
+            <!-- Legenda -->
+            <div class="sidebar-legend">
+                <h4>Legenda</h4>
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="legend-color available"></span>
+                        <span>Disponibile</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color adopted"></span>
+                        <span>Adottato</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color pending"></span>
+                        <span>In attesa</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social -->
+            <div class="sidebar-social">
+                <span>Condividi:</span>
+                <div class="social-buttons">
+                    <a href="#" id="shareWhatsapp" class="social-btn whatsapp" aria-label="Condividi su WhatsApp">WA</a>
+                    <a href="#" id="shareFacebook" class="social-btn facebook" aria-label="Condividi su Facebook">FB</a>
+                    <a href="#" id="shareInstagram" class="social-btn instagram" aria-label="Condividi su Instagram">IG</a>
+                </div>
+            </div>
+
+            <!-- Footer sidebar -->
+            <div class="sidebar-footer">
+                <p>&copy; 2026 Casa Famiglia Uganda</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Toggle sidebar mobile -->
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Main: Hero con Calendario -->
     <main class="main">
         <section id="calendar" class="calendar-section">
             <!-- Background image (cambia per mese) -->
@@ -73,29 +142,9 @@
                     </div>
                 </div>
 
-                <!-- Legenda -->
-                <div class="legend">
-                    <div class="legend-item">
-                        <span class="legend-color available"></span>
-                        <span>Disponibile</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color adopted"></span>
-                        <span>Adottato</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color pending"></span>
-                        <span>In attesa</span>
-                    </div>
-                </div>
-
                 <!-- Info donazione -->
                 <div class="donation-info">
-                    <p>Ogni giorno costa <strong>50 euro</strong></p>
-                    <p class="stats">
-                        <span id="adoptedCount">0</span> giorni adottati |
-                        <span id="totalRaised">0</span> euro raccolti
-                    </p>
+                    <p>Ogni giorno adottato costa <strong>50 euro</strong></p>
                 </div>
             </div>
         </section>
@@ -152,18 +201,45 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <p>&copy; 2026 Casa Famiglia Uganda - Tutti i diritti riservati</p>
-            <div class="social-share">
-                <span>Condividi:</span>
-                <a href="#" id="shareWhatsapp" class="social-btn whatsapp" aria-label="Condividi su WhatsApp">WA</a>
-                <a href="#" id="shareFacebook" class="social-btn facebook" aria-label="Condividi su Facebook">FB</a>
-                <a href="#" id="shareInstagram" class="social-btn instagram" aria-label="Condividi su Instagram">IG</a>
+    <!-- Modal Chi Siamo (immagine volantino) -->
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal about-modal">
+            <button class="modal-close" id="closeAbout" aria-label="Chiudi">
+                &times;
+            </button>
+            <img src="/images/chi-siamo.jpg" alt="Chi Siamo - Effatà Children's Home" class="about-image">
+            <div class="modal-footer">
+                <button class="about-close-btn" id="closeAboutBtn">Chiudi</button>
             </div>
         </div>
-    </footer>
+    </div>
+
+    <!-- Modal Scopri di Più (testo) -->
+    <div class="modal-overlay" id="discoverModal">
+        <div class="modal">
+            <button class="modal-close" id="closeDiscover" aria-label="Chiudi">
+                &times;
+            </button>
+
+            <div class="modal-header">
+                <img src="/images/logo.png" alt="Effatà" class="about-logo">
+                <h3>Effatà Children's Home</h3>
+            </div>
+
+            <div class="modal-body">
+                <p class="about-text">
+                    Effatà Children's Home è un progetto di <strong>Effatà Charity Org.</strong>, ONG fondata da <strong>Silvia Marcolin</strong> in Uganda.
+                </p>
+                <p class="about-text">
+                    Una casa per donare affetto, cure, attenzioni a molti bambini dai 0 ai 17 anni, che sono stati abbandonati dalla loro famiglia, orfani, che hanno subito violenze o maltrattamenti, bambini con bisogni speciali.
+                </p>
+            </div>
+
+            <div class="modal-footer">
+                <button class="about-close-btn" id="closeDiscoverBtn">Chiudi</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="/js/calendar.js"></script>

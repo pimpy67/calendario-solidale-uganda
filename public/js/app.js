@@ -13,8 +13,92 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup condivisione social
     setupSocialSharing();
 
+    // Setup sidebar toggle (mobile)
+    setupSidebarToggle();
+
+    // Setup modal About
+    setupAboutModal();
+
     console.log('Calendario Solidale inizializzato');
 });
+
+/**
+ * Setup sidebar toggle per mobile
+ */
+function setupSidebarToggle() {
+    const toggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        // Chiudi sidebar cliccando fuori (su mobile)
+        document.querySelector('.main').addEventListener('click', () => {
+            sidebar.classList.remove('open');
+        });
+    }
+}
+
+/**
+ * Setup modal Chi Siamo (immagine) e Scopri di Più (testo)
+ */
+function setupAboutModal() {
+    // Modal Chi Siamo (immagine volantino)
+    const aboutModal = document.getElementById('aboutModal');
+    const openAbout = document.getElementById('openAbout');
+    const closeAbout = document.getElementById('closeAbout');
+    const closeAboutBtn = document.getElementById('closeAboutBtn');
+
+    function openAboutModal(e) {
+        e.preventDefault();
+        aboutModal.classList.add('active');
+    }
+
+    function closeAboutModal() {
+        aboutModal.classList.remove('active');
+    }
+
+    if (openAbout) openAbout.addEventListener('click', openAboutModal);
+    if (closeAbout) closeAbout.addEventListener('click', closeAboutModal);
+    if (closeAboutBtn) closeAboutBtn.addEventListener('click', closeAboutModal);
+
+    aboutModal.addEventListener('click', (e) => {
+        if (e.target === aboutModal) closeAboutModal();
+    });
+
+    // Modal Scopri di Più (testo)
+    const discoverModal = document.getElementById('discoverModal');
+    const openDiscover = document.getElementById('openAboutPrimary');
+    const closeDiscover = document.getElementById('closeDiscover');
+    const closeDiscoverBtn = document.getElementById('closeDiscoverBtn');
+
+    function openDiscoverModal(e) {
+        e.preventDefault();
+        discoverModal.classList.add('active');
+    }
+
+    function closeDiscoverModal() {
+        discoverModal.classList.remove('active');
+    }
+
+    if (openDiscover) openDiscover.addEventListener('click', openDiscoverModal);
+    if (closeDiscover) closeDiscover.addEventListener('click', closeDiscoverModal);
+    if (closeDiscoverBtn) closeDiscoverBtn.addEventListener('click', closeDiscoverModal);
+
+    discoverModal.addEventListener('click', (e) => {
+        if (e.target === discoverModal) closeDiscoverModal();
+    });
+
+    // Escape chiude entrambi
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (aboutModal.classList.contains('active')) closeAboutModal();
+            if (discoverModal.classList.contains('active')) closeDiscoverModal();
+        }
+    });
+}
 
 /**
  * Setup pulsanti condivisione social
