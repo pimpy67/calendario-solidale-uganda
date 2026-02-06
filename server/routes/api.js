@@ -75,7 +75,7 @@ router.get('/donations/:year/:month', (req, res) => {
  */
 router.post('/donations', async (req, res) => {
     try {
-        const { day, month, year, donor_name, is_anonymous, is_gift, gift_email, gift_recipient_name, gift_message } = req.body;
+        const { day, month, year, donor_name, is_anonymous, is_gift, gift_email, gift_recipient_name, gift_message, gift_card_design } = req.body;
 
         // Validazione
         if (!day || !month || !year) {
@@ -115,6 +115,7 @@ router.post('/donations', async (req, res) => {
             payment_id: paymentId,
             is_gift: is_gift || false,
             gift_recipient_name: gift_recipient_name || null,
+            gift_card_design: gift_card_design || 'card1',
             email: gift_email || null,
             message: gift_message || null
         });

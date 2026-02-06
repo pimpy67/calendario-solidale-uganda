@@ -664,6 +664,59 @@ body {
     display: block;
 }
 
+/* Selettore Gift Card */
+.giftcard-selector {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.giftcard-option {
+    position: relative;
+    border: 3px solid transparent;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+    opacity: 0.6;
+}
+
+.giftcard-option:hover {
+    opacity: 0.85;
+    transform: scale(1.03);
+}
+
+.giftcard-option.selected {
+    border-color: var(--green-available);
+    opacity: 1;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.giftcard-option img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.giftcard-check {
+    display: none;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: var(--green-available);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 24px;
+    text-align: center;
+}
+
+.giftcard-option.selected .giftcard-check {
+    display: block;
+}
+
 .checkbox-group {
     display: flex;
     align-items: center;

@@ -6,6 +6,7 @@ const Payment = (function() {
     // Stato corrente
     let selectedDate = null;
     let isProcessing = false;
+    let selectedCard = 'card1';
 
     // Elementi DOM
     let modal;
@@ -61,6 +62,18 @@ const Payment = (function() {
             }
         });
 
+        // Selettore gift card
+        const giftcardSelector = document.getElementById('giftcardSelector');
+        if (giftcardSelector) {
+            giftcardSelector.addEventListener('click', (e) => {
+                const option = e.target.closest('.giftcard-option');
+                if (!option) return;
+                giftcardSelector.querySelectorAll('.giftcard-option').forEach(el => el.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedCard = option.dataset.card;
+            });
+        }
+
         // Pulsante Satispay
         payWithSatispayBtn.addEventListener('click', handleSatispayPayment);
 
@@ -91,6 +104,9 @@ const Payment = (function() {
         giftRecipientNameInput.value = '';
         giftEmailInput.value = '';
         giftMessageInput.value = '';
+        selectedCard = 'card1';
+        const giftcardOptions = document.querySelectorAll('.giftcard-option');
+        giftcardOptions.forEach((el, i) => el.classList.toggle('selected', i === 0));
         isProcessing = false;
         payWithSatispayBtn.classList.remove('loading');
 
@@ -162,6 +178,7 @@ const Payment = (function() {
                 donationData.gift_email = giftEmailInput.value.trim();
                 donationData.gift_recipient_name = giftRecipientNameInput.value.trim();
                 donationData.gift_message = giftMessageInput.value.trim();
+                donationData.gift_card_design = selectedCard;
             }
 
             // Crea donazione sul server

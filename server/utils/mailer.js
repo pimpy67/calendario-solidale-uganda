@@ -3,6 +3,8 @@
  */
 
 const nodemailer = require('nodemailer');
+const path = require('path');
+const fs = require('fs');
 
 const MONTHS = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -23,9 +25,25 @@ function createTransporter() {
 }
 
 /**
+ * Trova il file immagine della gift card scelta
+ */
+function getGiftCardImagePath(cardName) {
+    const giftcardsDir = path.join(__dirname, '../../public/images/giftcards');
+    const extensions = ['.jpg', '.jpeg', '.png', '.svg', '.gif', '.webp'];
+
+    for (const ext of extensions) {
+        const filePath = path.join(giftcardsDir, cardName + ext);
+        if (fs.existsSync(filePath)) {
+            return filePath;
+        }
+    }
+    return null;
+}
+
+/**
  * Genera il template HTML della gift card
  */
-function generateGiftCardHTML(donation) {
+function generateGiftCardHTML(donation, hasImage) {
     const monthName = MONTHS[donation.month - 1];
     const donorName = donation.is_anonymous ? 'Un amico generoso' : (donation.donor_name || 'Un amico generoso');
     const recipientName = donation.gift_recipient_name || 'Amico/a';
@@ -57,9 +75,18 @@ function generateGiftCardHTML(donation) {
                         </td>
                     </tr>
 
+                    ${hasImage ? `
+                    <!-- Immagine Gift Card -->
+                    <tr>
+                        <td style="padding: 30px 30px 0;">
+                            <img src="cid:giftcard" alt="Gift Card" style="width: 100%; height: auto; border-radius: 12px; display: block;">
+                        </td>
+                    </tr>
+                    ` : ''}
+
                     <!-- Gift Card Body -->
                     <tr>
-                        <td style="padding: 40px 30px;">
+                        <td style="padding: ${hasImage ? '20px' : '40px'} 30px;">
 
                             <!-- Saluto -->
                             <p style="color: #333; font-size: 18px; margin: 0 0 20px 0;">
@@ -157,16 +184,28 @@ async function sendGiftCard(donation) {
     }
 
     const transporter = createTransporter();
-    const monthName = MONTHS[donation.month - 1];
     const donorName = donation.is_anonymous ? 'Un amico generoso' : (donation.donor_name || 'Qualcuno');
-    const recipientName = donation.gift_recipient_name || '';
+
+    // Cerca immagine gift card
+    const cardName = donation.gift_card_design || 'card1';
+    const imagePath = getGiftCardImagePath(cardName);
+    const hasImage = imagePath !== null;
 
     const mailOptions = {
         from: `"Calendario Solidale - Effatà" <${process.env.GMAIL_USER}>`,
         to: donation.email,
         subject: `${donorName} ti ha regalato un giorno del Calendario Solidale!`,
-        html: generateGiftCardHTML(donation)
+        html: generateGiftCardHTML(donation, hasImage)
     };
+
+    // Allega immagine gift card come inline
+    if (hasImage) {
+        mailOptions.attachments = [{
+            filename: path.basename(imagePath),
+            path: imagePath,
+            cid: 'giftcard'
+        }];
+    }
 
     const info = await transporter.sendMail(mailOptions);
     console.log('Gift card email inviata:', info.messageId);

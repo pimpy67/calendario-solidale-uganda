@@ -45,6 +45,9 @@ function init() {
     try {
         db.exec(`ALTER TABLE donations ADD COLUMN gift_recipient_name VARCHAR(100)`);
     } catch (e) { /* colonna gia esistente */ }
+    try {
+        db.exec(`ALTER TABLE donations ADD COLUMN gift_card_design VARCHAR(50) DEFAULT 'card1'`);
+    } catch (e) { /* colonna gia esistente */ }
 
     // Crea indici per performance
     db.exec(`
@@ -104,8 +107,8 @@ function isDayAdopted(day, month, year) {
  */
 function createDonation(data) {
     const stmt = db.prepare(`
-        INSERT INTO donations (day, month, year, donor_name, is_anonymous, amount, payment_id, payment_status, is_gift, gift_recipient_name, email, message)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
+        INSERT INTO donations (day, month, year, donor_name, is_anonymous, amount, payment_id, payment_status, is_gift, gift_recipient_name, gift_card_design, email, message)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -118,6 +121,7 @@ function createDonation(data) {
         data.payment_id,
         data.is_gift ? 1 : 0,
         data.gift_recipient_name || null,
+        data.gift_card_design || 'card1',
         data.email || null,
         data.message || null
     );
