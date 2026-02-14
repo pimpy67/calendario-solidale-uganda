@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "Calendario solidale per Casa Famiglia Uganda",
   "main": "server/server.js",
-  "engines": {
-    "node": "20.x"
-  },
   "scripts": {
     "start": "node server/server.js",
     "dev": "node server/server.js"
@@ -19,7 +16,7 @@
   "author": "Casa Famiglia Uganda",
   "license": "MIT",
   "dependencies": {
-    "better-sqlite3": "^12.6.2",
+    "better-sqlite3": "^9.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
