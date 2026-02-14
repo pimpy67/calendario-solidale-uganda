@@ -14,11 +14,9 @@ const Calendar = (function() {
         'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
     ];
 
-    // Immagini di sfondo per 24 mesi (gen 2026 - dic 2027)
+    // Immagini di sfondo per 22 mesi (mar 2026 - dic 2027)
     const MONTH_IMAGES = [
-        // 2026 (mobile/verticale)
-        '/images/months/desktop_2026/01_2027 orizzontale.jpeg',  // gennaio 2026
-        '/images/months/mobile_2026/02_2026 verticale.jpeg',     // febbraio 2026
+        // 2026 (mobile/verticale) - inizia da marzo
         '/images/months/mobile_2026/03_2026 verticale.jpeg',     // marzo 2026
         '/images/months/mobile_2026/04_2026 verticale.jpeg',     // aprile 2026
         '/images/months/mobile_2026/05_2026 verticale.jpeg',     // maggio 2026
@@ -46,9 +44,7 @@ const Calendar = (function() {
 
     // Desktop version (orizzontale)
     const MONTH_IMAGES_DESKTOP = [
-        // 2026 (desktop/orizzontale)
-        '/images/months/desktop_2026/01_2027 orizzontale.jpeg',  // gennaio 2026
-        '/images/months/desktop_2026/02_2027 orizzontale.jpeg',  // febbraio 2026
+        // 2026 (desktop/orizzontale) - inizia da marzo
         '/images/months/desktop_2027/03_2026 orizzontale.jpeg',  // marzo 2026
         '/images/months/desktop_2027/04 2026 orizzontale.jpeg',  // aprile 2026
         '/images/months/desktop_2027/05_2026 orizzontale.jpeg',  // maggio 2026
@@ -81,8 +77,9 @@ const Calendar = (function() {
         return window.innerWidth < 768;
     }
 
-    // Stato corrente - indice 0-23 (24 mesi da gen 2026 a dic 2027)
-    let currentMonthIndex = new Date().getMonth() + (new Date().getFullYear() === 2027 ? 12 : 0);
+    // Stato corrente - indice 0-21 (22 mesi da mar 2026 a dic 2027)
+    // Inizialmente mostra marzo 2026 (indice 0)
+    let currentMonthIndex = 0;
     let donations = {}; // { "2026-1-15": { donor: "Mario", status: "completed" } }
 
     // Elementi DOM
@@ -93,11 +90,12 @@ const Calendar = (function() {
     let totalRaisedEl;
 
     /**
-     * Ottiene anno e mese da indice (0-23)
+     * Ottiene anno e mese da indice (0-21, inizia da marzo 2026)
      */
     function getYearMonth(index) {
-        const year = 2026 + Math.floor(index / 12);
-        const month = (index % 12) + 1;
+        const globalMonth = index + 3; // Inizia da marzo 2026 (mese 3)
+        const year = 2026 + Math.floor((globalMonth - 1) / 12);
+        const month = ((globalMonth - 1) % 12) + 1;
         return { year, month };
     }
 
@@ -133,6 +131,9 @@ const Calendar = (function() {
             const { year, month } = getYearMonth(currentMonthIndex);
             const monthName = MONTHS[month - 1];
             updatePreview(monthName, year);
+            
+            // Inizializza stato pulsanti di navigazione
+            updateNavigationButtons();
         });
     }
 
@@ -330,6 +331,7 @@ const Calendar = (function() {
         if (currentMonthIndex > 0) {
             currentMonthIndex--;
             render();
+            updateNavigationButtons();
         }
     }
 
@@ -337,9 +339,27 @@ const Calendar = (function() {
      * Naviga al mese successivo
      */
     function nextMonth() {
-        if (currentMonthIndex < 23) {
+        if (currentMonthIndex < 21) {
             currentMonthIndex++;
             render();
+            updateNavigationButtons();
+        }
+    }
+
+    /**
+     * Aggiorna stato pulsanti prev/next (disabilitati agli estremi)
+     */
+    function updateNavigationButtons() {
+        const prevBtn = document.getElementById('prevMonth');
+        const nextBtn = document.getElementById('nextMonth');
+        
+        if (prevBtn) {
+            prevBtn.disabled = currentMonthIndex === 0;
+            prevBtn.style.opacity = currentMonthIndex === 0 ? '0.4' : '1';
+        }
+        if (nextBtn) {
+            nextBtn.disabled = currentMonthIndex === 21;
+            nextBtn.style.opacity = currentMonthIndex === 21 ? '0.4' : '1';
         }
     }
 
