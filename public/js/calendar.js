@@ -116,9 +116,12 @@ const Calendar = (function() {
         document.getElementById('prevMonth').addEventListener('click', prevMonth);
         document.getElementById('nextMonth').addEventListener('click', nextMonth);
 
-        // Aggiorna immagine di sfondo quando cambia il viewport (responsive)
+        // Aggiorna immagine di sfondo e anteprima quando cambia il viewport (responsive)
         window.addEventListener('resize', () => {
+            const { year, month } = getYearMonth(currentMonthIndex);
+            const monthName = MONTHS[month - 1];
             updateBackground();
+            updatePreview(monthName, year);
         });
 
         // Carica donazioni dal server e renderizza
@@ -175,6 +178,9 @@ const Calendar = (function() {
 
         // Aggiorna immagine di sfondo
         updateBackground();
+
+        // Aggiorna anteprima sidebar
+        updatePreview(monthName, year);
 
         // Svuota griglia
         daysGrid.innerHTML = '';
@@ -272,6 +278,29 @@ const Calendar = (function() {
         const images = isSmallScreen ? MONTH_IMAGES : MONTH_IMAGES_DESKTOP;
         const imageUrl = images[currentMonthIndex];
         calendarBackground.style.backgroundImage = `url('${imageUrl}')`;
+    }
+
+    /**
+     * Aggiorna l'anteprima nella sidebar
+     */
+    function updatePreview(monthName, year) {
+        // Capitalizza il primo carattere del nome mese
+        const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+        
+        // Aggiorna il titolo
+        const previewTitle = document.getElementById('previewTitle');
+        if (previewTitle) {
+            previewTitle.textContent = `${capitalizedMonth} ${year}`;
+        }
+        
+        // Aggiorna l'immagine
+        const previewImage = document.getElementById('previewImage');
+        if (previewImage) {
+            const isSmallScreen = isMobileLayout();
+            const images = isSmallScreen ? MONTH_IMAGES : MONTH_IMAGES_DESKTOP;
+            const imageUrl = images[currentMonthIndex];
+            previewImage.src = imageUrl;
+        }
     }
 
     /**
