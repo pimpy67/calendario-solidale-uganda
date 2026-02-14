@@ -18,7 +18,7 @@ const Calendar = (function() {
     const MONTH_IMAGES = [
         // 2026 (mobile/verticale)
         '/images/months/desktop_2026/01_2027 orizzontale.jpeg',  // gennaio 2026
-        '/images/months/desktop_2026/02_2027 orizzontale.jpeg',  // febbraio 2026
+        '/images/months/mobile_2026/02_2026 verticale.jpeg',     // febbraio 2026
         '/images/months/mobile_2026/03_2026 verticale.jpeg',     // marzo 2026
         '/images/months/mobile_2026/04_2026 verticale.jpeg',     // aprile 2026
         '/images/months/mobile_2026/05_2026 verticale.jpeg',     // maggio 2026
