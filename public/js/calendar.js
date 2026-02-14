@@ -15,20 +15,21 @@ const Calendar = (function() {
         'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
     ];
 
-    // Immagini di sfondo per ogni mese (placeholder)
+    // Immagini di sfondo per ogni mese
+    // Desktop per gennaio-febbraio, mobile per marzo-dicembre
     const MONTH_IMAGES = [
-        '/images/months/gennaio.jpg',
-        '/images/months/febbraio.jpg',
-        '/images/months/marzo.jpg',
-        '/images/months/aprile.jpg',
-        '/images/months/maggio.jpg',
-        '/images/months/giugno.jpg',
-        '/images/months/luglio.jpg',
-        '/images/months/agosto.jpg',
-        '/images/months/settembre.jpg',
-        '/images/months/ottobre.jpg',
-        '/images/months/novembre.jpg',
-        '/images/months/dicembre.jpg'
+        '/images/months/desktop_2026/01_2027 orizzontale.jpeg',  // gennaio
+        '/images/months/desktop_2026/02_2027 orizzontale.jpeg',  // febbraio
+        '/images/months/mobile_2026/03_2026 verticale.jpeg',     // marzo
+        '/images/months/mobile_2026/04_2026 verticale.jpeg',     // aprile
+        '/images/months/mobile_2026/05_2026 verticale.jpeg',     // maggio
+        '/images/months/mobile_2026/06_2026 verticale.jpeg',     // giugno
+        '/images/months/mobile_2026/07_2026 verticale.jpeg',     // luglio
+        '/images/months/mobile_2026/08_2026 verticale.jpeg',     // agosto
+        '/images/months/mobile_2026/09_2026 verticale.jpeg',     // settembre
+        '/images/months/mobile_2026/10_2026 verticale.jpeg',     // ottobre
+        '/images/months/mobile_2026/11_2026 verticale.jpeg',     // novembre
+        '/images/months/mobile_2026/12_2026 verticale.jpeg'      // dicembre
     ];
 
     // Stato corrente
