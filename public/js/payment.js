@@ -39,7 +39,24 @@ const Payment = (function() {
         payWithSatispayBtn = document.getElementById('payWithSatispay');
 
         // Event listeners
-        closeBtn.addEventListener('click', closeModal);
+        closeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal();
+        });
+        
+        // Backup listeners per mobile/touchscreen
+        closeBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal();
+        });
+        
+        closeBtn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
@@ -123,6 +140,7 @@ const Payment = (function() {
 
         modal.classList.remove('active');
         selectedDate = null;
+        console.log('Modal chiuso');
     }
 
     /**

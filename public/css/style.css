@@ -651,6 +651,8 @@ body {
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-md);
+    pointer-events: auto;
+    z-index: 1001;
 }
 
 .modal-close:hover {
