@@ -128,6 +128,11 @@ const Calendar = (function() {
         loadDonations().then(() => {
             render();
             updateStats();
+            
+            // Assicura che la preview sia inizializzata
+            const { year, month } = getYearMonth(currentMonthIndex);
+            const monthName = MONTHS[month - 1];
+            updatePreview(monthName, year);
         });
     }
 
