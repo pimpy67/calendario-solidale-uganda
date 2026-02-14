@@ -401,7 +401,7 @@ body {
     background-repeat: no-repeat;
     transition: background-image 0.5s ease;
     z-index: 0;
-    filter: brightness(1.3);
+    filter: brightness(1.5);
 }
 
 /* Mobile: cover the viewport height and slightly reduce brightness to balance colors */
@@ -409,14 +409,14 @@ body {
     .calendar-background {
         background-size: cover;
         background-position: center top;
-        filter: brightness(1.15);
+        filter: brightness(1.6);
     }
 
     /* When in calendar fullscreen ensure background covers and is centered */
     body.calendar-fullscreen .calendar-background {
         background-size: cover;
         background-position: center center;
-        filter: brightness(1.15);
+        filter: brightness(1.6);
     }
 }
 
