@@ -1006,6 +1006,36 @@ body.calendar-fullscreen .month-title {
     z-index: 10;
 }
 
+/* Exit fullscreen button */
+.exit-fullscreen-btn {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 999;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    color: var(--white);
+    border: none;
+    font-size: 1.6rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+
+body.calendar-fullscreen .exit-fullscreen-btn {
+    display: flex;
+}
+
+.exit-fullscreen-btn:hover {
+    transform: translateY(-2px);
+}
+
 @media (max-width: 480px) {
     .weekday-header span {
         font-size: 0.7rem;

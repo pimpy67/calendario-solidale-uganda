@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup bottone Accedi
     setupAccessButton();
 
+    // Setup exit fullscreen button
+    setupExitFullscreenButton();
+
     // Setup modal About
     setupAboutModal();
 
@@ -88,6 +91,31 @@ function setupAccessButton() {
             }
         });
     }
+}
+
+/**
+ * Setup exit fullscreen button (X)
+ */
+function setupExitFullscreenButton() {
+    const exitBtn = document.getElementById('exitFullscreenBtn');
+
+    if (!exitBtn) return;
+
+    exitBtn.addEventListener('click', () => {
+        document.body.classList.remove('calendar-fullscreen');
+        // optional: focus month title
+        const monthTitle = document.getElementById('monthTitle');
+        if (monthTitle) {
+            monthTitle.focus({ preventScroll: true });
+        }
+    });
+
+    // Allow Escape to exit fullscreen as well
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && document.body.classList.contains('calendar-fullscreen')) {
+            document.body.classList.remove('calendar-fullscreen');
+        }
+    });
 }
 
 /**
