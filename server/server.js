@@ -37,9 +37,9 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
         "relation": ["delegate_permission/common.handle_all_urls"],
         "target": {
             "namespace": "android_app",
-            "package_name": process.env.TWA_PACKAGE_NAME || "com.casafamigliauganda.calendario",
+            "package_name": process.env.TWA_PACKAGE_NAME || "app.railway.up.calendario_solidale_effata.twa",
             "sha256_cert_fingerprints": [
-                process.env.TWA_SHA256_FINGERPRINT || "PLACEHOLDER_SHA256_FINGERPRINT"
+                process.env.TWA_SHA256_FINGERPRINT || "2F:30:EA:39:32:FD:0A:BB:3B:5C:D9:84:07:BD:72:52:33:1B:F3:0B:D3:AD:49:6F:95:71:F3:5D:A9:46:6F:44"
             ]
         }
     }]);
