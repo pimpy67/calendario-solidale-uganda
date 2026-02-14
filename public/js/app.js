@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup sidebar toggle (mobile)
     setupSidebarToggle();
 
+    // Setup bottone Accedi
+    setupAccessButton();
+
     // Setup modal About
     setupAboutModal();
 
@@ -37,6 +40,28 @@ function setupSidebarToggle() {
         // Chiudi sidebar cliccando fuori (su mobile)
         document.querySelector('.main').addEventListener('click', () => {
             sidebar.classList.remove('open');
+        });
+    }
+}
+
+/**
+ * Setup bottone Accedi (chiude sidebar su mobile e mostra calendario)
+ */
+function setupAccessButton() {
+    const accessBtn = document.getElementById('accessBtn');
+    const sidebar = document.getElementById('sidebar');
+
+    if (accessBtn) {
+        accessBtn.addEventListener('click', () => {
+            // Chiudi sidebar su mobile
+            if (sidebar) {
+                sidebar.classList.remove('open');
+            }
+            // Scroll al calendario
+            const calendar = document.getElementById('calendar');
+            if (calendar) {
+                calendar.scrollIntoView({ behavior: 'smooth' });
+            }
         });
     }
 }
