@@ -45,10 +45,23 @@
   "categories": ["productivity", "lifestyle"],
   "shortcuts": [
     {
-      "name": "Apri Calendario",
-      "short_name": "Calendario",
-      "description": "Accedi direttamente al calendario solidale",
-      "url": "/?shortcut=calendar",
+      "name": "Adotta un Giorno",
+      "short_name": "Dona",
+      "description": "Adotta un giorno del calendario con una donazione",
+      "url": "/?action=donate",
+      "icons": [
+        {
+          "src": "/images/logo-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Chi Siamo",
+      "short_name": "Chi Siamo",
+      "description": "Scopri la Casa Famiglia Effatà in Uganda",
+      "url": "/?section=chi-siamo",
       "icons": [
         {
           "src": "/images/logo-192.png",
@@ -57,5 +70,14 @@
         }
       ]
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }
