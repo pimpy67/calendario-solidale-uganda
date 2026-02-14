@@ -2,6 +2,7 @@
   "name": "Calendario Solidale - Casa Famiglia Uganda",
   "short_name": "Calendario Solidale",
   "description": "Adotta un giorno del calendario 2026-2027 con una donazione di 50 euro per sostenere la Casa Famiglia Effatà in Uganda.",
+  "id": "calendario-solidale",
   "start_url": "/",
   "scope": "/",
   "dir": "ltr",
