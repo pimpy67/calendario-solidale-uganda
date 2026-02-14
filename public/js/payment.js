@@ -38,25 +38,17 @@ const Payment = (function() {
         giftMessageInput = document.getElementById('giftMessage');
         payWithSatispayBtn = document.getElementById('payWithSatispay');
 
-        // Event listeners
-        closeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            closeModal();
-        });
+        // Verifica che closeBtn esista
+        if (!closeBtn) {
+            console.error('closeBtn non trovato!');
+            return;
+        }
+
+        // Direct listener sulla X - uses capture phase to intercept
+        closeBtn.addEventListener('click', closeModal, true);
+        closeBtn.addEventListener('touchend', closeModal, true);
         
-        // Backup listeners per mobile/touchscreen
-        closeBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            closeModal();
-        });
-        
-        closeBtn.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-        });
-        
+        // Modal overlay listener
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
@@ -136,11 +128,10 @@ const Payment = (function() {
      * Chiude il modal
      */
     function closeModal() {
-        if (isProcessing) return; // Non chiudere durante il pagamento
-
         modal.classList.remove('active');
         selectedDate = null;
-        console.log('Modal chiuso');
+        isProcessing = false; // Resetta il flag di processing
+        payWithSatispayBtn.classList.remove('loading');
     }
 
     /**
