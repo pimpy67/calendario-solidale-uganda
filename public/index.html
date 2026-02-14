@@ -14,6 +14,17 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/images/favicon.png">
 
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="description" content="Adotta un giorno del calendario 2026-2027 con una donazione di 50 euro per sostenere la Casa Famiglia Effatà in Uganda.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Calendario Solidale">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -302,5 +313,20 @@
     <script src="/js/calendar.js"></script>
     <script src="/js/payment.js"></script>
     <script src="/js/app.js"></script>
+
+    <!-- Service Worker Registration (PWA) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered:', registration);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
