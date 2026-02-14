@@ -44,6 +44,7 @@ body {
     color: var(--white);
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
 }
 
 /* ===== SIDEBAR ===== */
@@ -57,6 +58,7 @@ body {
     z-index: 100;
     overflow-y: auto;
     transition: transform 0.3s ease;
+    display: flex;
 }
 
 .sidebar-content {
@@ -376,8 +378,21 @@ body {
 /* ===== MAIN SECTION ===== */
 .main {
     flex: 1;
-    margin-left: var(--sidebar-width);
+    width: 100%;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 901px) {
+    body {
+        flex-direction: row;
+    }
+    
+    .main {
+        margin-left: var(--sidebar-width);
+        width: calc(100% - var(--sidebar-width));
+    }
 }
 
 .calendar-section {
@@ -387,6 +402,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex: 1;
 }
 
 /* Background con immagine del mese */
@@ -409,13 +425,6 @@ body {
     .calendar-background {
         background-size: cover;
         background-position: center top;
-        filter: brightness(1.6);
-    }
-
-    /* When in calendar fullscreen ensure background covers and is centered */
-    body.calendar-fullscreen .calendar-background {
-        background-size: cover;
-        background-position: center center;
         filter: brightness(1.6);
     }
 }
@@ -952,15 +961,20 @@ body {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
+    body {
+        flex-direction: column;
+    }
+    
     .sidebar {
+        position: relative;
         width: 100%;
         height: 100vh;
-        transform: translateX(-100%);
-        overflow-y: auto;
+        transform: none;
+        order: -1;
     }
 
     .sidebar.open {
-        transform: translateX(0);
+        transform: none;
     }
 
     .sidebar-content {
@@ -971,11 +985,17 @@ body {
     }
 
     .sidebar-toggle {
-        display: flex;
+        display: none;
     }
 
     .main {
         margin-left: 0;
+        width: 100%;
+        display: none;
+    }
+
+    .main.show-calendar {
+        display: flex;
     }
 
     .calendar-section {
@@ -999,44 +1019,7 @@ body {
     }
 }
 
-/* Fullscreen calendar mode */
-body.calendar-fullscreen {
-    overflow: hidden;
-}
-
-body.calendar-fullscreen .sidebar {
-    display: none !important;
-}
-
-body.calendar-fullscreen .main {
-    margin-left: 0;
-    width: 100%;
-}
-
-body.calendar-fullscreen .calendar-section {
-    height: 100vh;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-body.calendar-fullscreen .calendar-container {
-    background: rgba(0,0,0,0.6);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 1rem 0;
-}
-
-/* Ensure month title is visible and centered a bit more on fullscreen */
-body.calendar-fullscreen .month-navigation,
-body.calendar-fullscreen .month-title {
-    z-index: 10;
-}
-
-/* Exit fullscreen button */
+/* Exit fullscreen button (visibile su mobile quando utente è nel calendario) */
 .exit-fullscreen-btn {
     display: none;
     position: fixed;
@@ -1051,15 +1034,16 @@ body.calendar-fullscreen .month-title {
     border: none;
     font-size: 1.6rem;
     line-height: 1;
-    display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     box-shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
 
-body.calendar-fullscreen .exit-fullscreen-btn {
-    display: flex;
+@media (max-width: 900px) {
+    .main.show-calendar .exit-fullscreen-btn {
+        display: flex;
+    }
 }
 
 .exit-fullscreen-btn:hover {

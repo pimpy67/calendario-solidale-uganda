@@ -48,41 +48,40 @@ function setupSidebarToggle() {
 }
 
 /**
- * Setup bottone Accedi (chiude sidebar su mobile e mostra calendario)
+ * Setup bottone Accedi (mostra calendario su mobile, navigazione su desktop)
  */
 function setupAccessButton() {
     const accessBtn = document.getElementById('accessBtn');
     const sidebar = document.getElementById('sidebar');
+    const main = document.querySelector('.main');
 
     if (accessBtn) {
         accessBtn.addEventListener('click', () => {
-            // Toggle fullscreen calendar mode on mobile
             const isMobile = window.innerWidth < 900;
+            
             if (isMobile) {
-                if (document.body.classList.contains('calendar-fullscreen')) {
-                    document.body.classList.remove('calendar-fullscreen');
-                } else {
-                    document.body.classList.add('calendar-fullscreen');
+                // Su mobile: mostra il calendario (main), nascondi sidebar
+                if (main) {
+                    main.classList.add('show-calendar');
+                }
+                if (sidebar) {
+                    sidebar.classList.remove('open');
                 }
             }
 
-            // Chiudi sidebar su mobile
-            if (sidebar) {
-                sidebar.classList.remove('open');
-            }
-
-            // Scroll al calendario e porta il focus sul mese corrente
+            // Scroll al calendario
             const calendar = document.getElementById('calendar');
             if (calendar) {
-                calendar.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => {
+                    calendar.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
 
                 // Richiama un aggiornamento del calendario per essere sicuri che il mese corrente sia visibile
                 if (typeof Calendar !== 'undefined' && Calendar && typeof Calendar.refresh === 'function') {
-                    // refresh ricarica le donazioni e renderizza
                     Calendar.refresh();
                 }
 
-                // Metti il focus sul titolo del mese (senza scroll aggiuntivo)
+                // Metti il focus sul titolo del mese
                 const monthTitle = document.getElementById('monthTitle');
                 if (monthTitle) {
                     monthTitle.setAttribute('tabindex', '-1');
@@ -94,26 +93,38 @@ function setupAccessButton() {
 }
 
 /**
- * Setup exit fullscreen button (X)
+ * Setup exit fullscreen button (X) e gestione back su mobile
  */
 function setupExitFullscreenButton() {
     const exitBtn = document.getElementById('exitFullscreenBtn');
+    const main = document.querySelector('.main');
 
     if (!exitBtn) return;
 
     exitBtn.addEventListener('click', () => {
-        document.body.classList.remove('calendar-fullscreen');
-        // optional: focus month title
-        const monthTitle = document.getElementById('monthTitle');
-        if (monthTitle) {
-            monthTitle.focus({ preventScroll: true });
+        const isMobile = window.innerWidth < 900;
+        
+        if (isMobile && main) {
+            // Su mobile: torna alla sidebar (home)
+            main.classList.remove('show-calendar');
         }
     });
 
-    // Allow Escape to exit fullscreen as well
+    // Gestisci back button su mobile
+    window.addEventListener('popstate', () => {
+        const isMobile = window.innerWidth < 900;
+        if (isMobile && main && main.classList.contains('show-calendar')) {
+            main.classList.remove('show-calendar');
+        }
+    });
+
+    // Escape chiude il calendario su mobile
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && document.body.classList.contains('calendar-fullscreen')) {
-            document.body.classList.remove('calendar-fullscreen');
+        if (e.key === 'Escape' && window.innerWidth < 900) {
+            const isMobile = window.innerWidth < 900;
+            if (isMobile && main) {
+                main.classList.remove('show-calendar');
+            }
         }
     });
 }
