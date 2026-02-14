@@ -866,6 +866,44 @@ body {
     transition: all 0.3s;
 }
 
+.stripe-btn {
+    background: #635BFF;
+    color: var(--white);
+    margin-bottom: 0;
+}
+
+.stripe-btn:hover {
+    background: #5147e5;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.payment-separator {
+    text-align: center;
+    margin: 0.75rem 0;
+    position: relative;
+    color: var(--gray);
+    font-size: 0.85rem;
+}
+
+.payment-separator::before,
+.payment-separator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: var(--light-gray);
+}
+
+.payment-separator::before {
+    left: 0;
+}
+
+.payment-separator::after {
+    right: 0;
+}
+
 .satispay-btn {
     background: #EF4135;
     color: var(--white);
@@ -879,6 +917,11 @@ body {
 
 .payment-logo {
     height: 24px;
+    width: auto;
+}
+
+.payment-logo-svg {
+    height: 20px;
     width: auto;
 }
 

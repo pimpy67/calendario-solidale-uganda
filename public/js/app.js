@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup modal About
     setupAboutModal();
 
+    // Gestisci ritorno da pagamento Stripe
+    handlePaymentReturn();
+
     console.log('Calendario Solidale inizializzato');
 });
 
@@ -186,6 +189,40 @@ function setupAboutModal() {
             if (discoverModal.classList.contains('active')) closeDiscoverModal();
         }
     });
+}
+
+/**
+ * Gestisci ritorno da pagamento Stripe (success/cancel)
+ */
+function handlePaymentReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const path = window.location.pathname;
+
+    if (path === '/payment-success') {
+        const donationId = params.get('donation_id');
+
+        // Mostra il calendario su mobile
+        const main = document.querySelector('.main');
+        if (main && window.innerWidth < 900) {
+            main.classList.add('show-calendar');
+        }
+
+        // Conferma il pagamento (il webhook Stripe potrebbe averlo già fatto)
+        if (donationId) {
+            fetch(`/api/donations/${donationId}/confirm`, { method: 'POST' })
+                .then(() => Calendar.refresh())
+                .catch(() => {});
+        }
+
+        alert('Grazie per la tua donazione!\n\nIl pagamento è stato completato con successo.\nLa Casa Famiglia in Uganda ti ringrazia di cuore!');
+
+        // Pulisci URL
+        window.history.replaceState({}, '', '/');
+
+    } else if (path === '/payment-cancel') {
+        alert('Pagamento annullato.\n\nPuoi riprovare quando vuoi selezionando un giorno dal calendario.');
+        window.history.replaceState({}, '', '/');
+    }
 }
 
 /**

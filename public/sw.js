@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calendario-solidale-v1';
+const CACHE_NAME = 'calendario-solidale-v2';
 const urlsToCache = [
   '/',
   '/index.html',

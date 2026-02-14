@@ -14,6 +14,13 @@ const SATISPAY_API_URL = process.env.SATISPAY_SANDBOX === 'true'
     ? 'https://staging.authservices.satispay.com'
     : 'https://authservices.satispay.com';
 
+// Configurazione Stripe
+const STRIPE_ENABLED = process.env.STRIPE_SECRET_KEY ? true : false;
+let stripe = null;
+if (STRIPE_ENABLED) {
+    stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+}
+
 /**
  * GET /api/stats
  * Healthcheck endpoint for Railway
@@ -131,21 +138,34 @@ router.post('/donations', async (req, res) => {
             message: gift_message || null
         });
 
-        // Se Satispay e configurato, crea pagamento
+        const paymentMethod = req.body.payment_method || 'satispay';
+
+        // Se Satispay
         let satispayUrl = null;
-        if (SATISPAY_ENABLED) {
+        if (paymentMethod === 'satispay' && SATISPAY_ENABLED) {
             try {
                 satispayUrl = await createSatispayPayment(donation);
             } catch (satispayError) {
                 console.error('Errore Satispay:', satispayError);
-                // Continua senza Satispay per test
+            }
+        }
+
+        // Se Stripe - crea Checkout Session
+        let stripeSessionUrl = null;
+        if (paymentMethod === 'stripe' && STRIPE_ENABLED) {
+            try {
+                stripeSessionUrl = await createStripeCheckout(donation);
+            } catch (stripeError) {
+                console.error('Errore Stripe:', stripeError);
             }
         }
 
         res.status(201).json({
             id: donation.id,
             payment_id: paymentId,
+            payment_method: paymentMethod,
             satispay_url: satispayUrl,
+            stripe_url: stripeSessionUrl,
             message: 'Donazione creata con successo'
         });
 
@@ -268,6 +288,89 @@ router.get('/stats', (req, res) => {
         });
     }
 });
+
+/**
+ * POST /api/webhook/stripe
+ * Webhook per conferma pagamento Stripe
+ */
+router.post('/webhook/stripe', async (req, res) => {
+    if (!STRIPE_ENABLED) {
+        return res.status(400).json({ error: 'Stripe non configurato' });
+    }
+
+    const sig = req.headers['stripe-signature'];
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    let event;
+    try {
+        if (endpointSecret && sig) {
+            event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+        } else {
+            // Senza webhook secret (dev/test)
+            event = JSON.parse(req.body.toString());
+        }
+    } catch (err) {
+        console.error('Errore verifica webhook Stripe:', err.message);
+        return res.status(400).json({ error: `Webhook Error: ${err.message}` });
+    }
+
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        const donationId = parseInt(session.metadata.donation_id);
+
+        if (donationId) {
+            const donation = db.getDonationById(donationId);
+            if (donation && donation.payment_status !== 'completed') {
+                db.confirmPayment(donationId);
+                console.log(`Donazione ${donationId} confermata via Stripe`);
+
+                if (donation.is_gift && donation.email) {
+                    try {
+                        await sendGiftCard(donation);
+                        console.log(`Gift card inviata a ${donation.email}`);
+                    } catch (emailError) {
+                        console.error('Errore invio gift card:', emailError);
+                    }
+                }
+            }
+        }
+    }
+
+    res.json({ received: true });
+});
+
+/**
+ * Crea sessione Stripe Checkout
+ * @param {Object} donation - Dati donazione
+ * @returns {String} URL per il checkout Stripe
+ */
+async function createStripeCheckout(donation) {
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{
+            price_data: {
+                currency: 'eur',
+                product_data: {
+                    name: `Adotta il ${donation.day}/${donation.month}/${donation.year}`,
+                    description: 'Donazione Calendario Solidale - Casa Famiglia Uganda',
+                },
+                unit_amount: donation.amount * 100, // Centesimi
+            },
+            quantity: 1,
+        }],
+        mode: 'payment',
+        success_url: `${process.env.BASE_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}&donation_id=${donation.id}`,
+        cancel_url: `${process.env.BASE_URL}/payment-cancel?donation_id=${donation.id}`,
+        metadata: {
+            donation_id: donation.id.toString(),
+            day: donation.day.toString(),
+            month: donation.month.toString(),
+            year: donation.year.toString(),
+        },
+    });
+
+    return session.url;
+}
 
 /**
  * Crea pagamento Satispay

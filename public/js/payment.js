@@ -20,6 +20,7 @@ const Payment = (function() {
     let giftEmailInput;
     let giftMessageInput;
     let payWithSatispayBtn;
+    let payWithStripeBtn;
 
     /**
      * Inizializza il modulo pagamento
@@ -37,6 +38,7 @@ const Payment = (function() {
         giftEmailInput = document.getElementById('giftEmail');
         giftMessageInput = document.getElementById('giftMessage');
         payWithSatispayBtn = document.getElementById('payWithSatispay');
+        payWithStripeBtn = document.getElementById('payWithStripe');
 
         // Verifica che closeBtn esista
         if (!closeBtn) {
@@ -83,8 +85,9 @@ const Payment = (function() {
             });
         }
 
-        // Pulsante Satispay
-        payWithSatispayBtn.addEventListener('click', handleSatispayPayment);
+        // Pulsanti pagamento
+        payWithStripeBtn.addEventListener('click', () => handlePayment('stripe'));
+        payWithSatispayBtn.addEventListener('click', () => handlePayment('satispay'));
 
         // ESC per chiudere
         document.addEventListener('keydown', (e) => {
@@ -118,6 +121,7 @@ const Payment = (function() {
         giftcardOptions.forEach((el, i) => el.classList.toggle('selected', i === 0));
         isProcessing = false;
         payWithSatispayBtn.classList.remove('loading');
+        payWithStripeBtn.classList.remove('loading');
 
         // Mostra modal
         modal.classList.add('active');
@@ -130,14 +134,15 @@ const Payment = (function() {
     function closeModal() {
         modal.classList.remove('active');
         selectedDate = null;
-        isProcessing = false; // Resetta il flag di processing
+        isProcessing = false;
         payWithSatispayBtn.classList.remove('loading');
+        payWithStripeBtn.classList.remove('loading');
     }
 
     /**
-     * Gestisce il pagamento Satispay
+     * Gestisce il pagamento (Stripe o Satispay)
      */
-    async function handleSatispayPayment() {
+    async function handlePayment(method) {
         if (isProcessing) return;
 
         // Valida input
@@ -169,7 +174,8 @@ const Payment = (function() {
 
         // Inizia processing
         isProcessing = true;
-        payWithSatispayBtn.classList.add('loading');
+        const activeBtn = method === 'stripe' ? payWithStripeBtn : payWithSatispayBtn;
+        activeBtn.classList.add('loading');
 
         try {
             // Prepara dati
@@ -178,7 +184,8 @@ const Payment = (function() {
                 month: selectedDate.month,
                 year: selectedDate.year,
                 donor_name: isAnonymous ? null : donorName,
-                is_anonymous: isAnonymous
+                is_anonymous: isAnonymous,
+                payment_method: method
             };
 
             // Aggiungi dati regalo se attivo
@@ -206,11 +213,13 @@ const Payment = (function() {
 
             const data = await response.json();
 
-            // Se c'e un URL Satispay, redirect
-            if (data.satispay_url) {
+            // Redirect al gateway di pagamento
+            if (data.stripe_url) {
+                window.location.href = data.stripe_url;
+            } else if (data.satispay_url) {
                 window.location.href = data.satispay_url;
             } else {
-                // Per test senza Satispay - simula successo
+                // Per test senza gateway configurato - simula successo
                 simulatePaymentSuccess(data.id);
             }
 
@@ -218,7 +227,7 @@ const Payment = (function() {
             console.error('Errore pagamento:', error);
             alert(`Errore: ${error.message}`);
             isProcessing = false;
-            payWithSatispayBtn.classList.remove('loading');
+            activeBtn.classList.remove('loading');
         }
     }
 
@@ -261,6 +270,7 @@ const Payment = (function() {
         } finally {
             isProcessing = false;
             payWithSatispayBtn.classList.remove('loading');
+            payWithStripeBtn.classList.remove('loading');
         }
     }
 

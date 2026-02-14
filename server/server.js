@@ -21,6 +21,10 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
+
+// Stripe webhook ha bisogno del raw body per verificare la firma
+app.use('/api/webhook/stripe', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
