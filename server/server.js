@@ -31,6 +31,20 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Digital Asset Links per TWA (Google Play)
+app.get('/.well-known/assetlinks.json', (req, res) => {
+    res.json([{
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target": {
+            "namespace": "android_app",
+            "package_name": process.env.TWA_PACKAGE_NAME || "com.casafamigliauganda.calendario",
+            "sha256_cert_fingerprints": [
+                process.env.TWA_SHA256_FINGERPRINT || "PLACEHOLDER_SHA256_FINGERPRINT"
+            ]
+        }
+    }]);
+});
+
 // API Routes
 app.use('/api', apiRoutes);
 app.use('/api/admin', adminRoutes);
