@@ -158,14 +158,15 @@ body {
     padding: 0.75rem 1rem;
     border-radius: var(--radius-md);
     text-decoration: none;
-    color: rgba(255,255,255,0.7);
+    color: var(--white) !important;
     font-weight: 500;
     font-size: 0.9rem;
     transition: all 0.3s;
+    background: var(--green-available);
 }
 
 .sidebar-link:hover {
-    background: rgba(255,255,255,0.1);
+    background: var(--green-hover);
     color: var(--white);
 }
 
@@ -265,7 +266,7 @@ body {
     width: 100%;
     padding: 0.9rem 1rem;
     margin-top: 0.75rem;
-    background: linear-gradient(135deg, var(--green-available), var(--green-hover));
+    background: linear-gradient(135deg, var(--red-adopted), #e74c3c);
     color: var(--white);
     border: none;
     border-radius: var(--radius-md);
@@ -274,12 +275,12 @@ body {
     cursor: pointer;
     transition: all 0.3s;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    box-shadow: 0 4px 15px rgba(192, 57, 43, 0.3);
 }
 
 .btn-accedi:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    box-shadow: 0 6px 20px rgba(192, 57, 43, 0.4);
 }
 
 .btn-accedi:active {
