@@ -15,6 +15,17 @@ const SATISPAY_API_URL = process.env.SATISPAY_SANDBOX === 'true'
     : 'https://authservices.satispay.com';
 
 /**
+ * GET /api/stats
+ * Healthcheck endpoint for Railway
+ */
+router.get('/stats', (req, res) => {
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString()
+    });
+});
+
+/**
  * GET /api/donations/:year
  * Ottieni tutte le donazioni di un anno
  */
