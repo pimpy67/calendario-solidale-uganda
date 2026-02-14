@@ -969,6 +969,43 @@ body {
     }
 }
 
+/* Fullscreen calendar mode */
+body.calendar-fullscreen {
+    overflow: hidden;
+}
+
+body.calendar-fullscreen .sidebar {
+    display: none !important;
+}
+
+body.calendar-fullscreen .main {
+    margin-left: 0;
+    width: 100%;
+}
+
+body.calendar-fullscreen .calendar-section {
+    height: 100vh;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+body.calendar-fullscreen .calendar-container {
+    background: rgba(0,0,0,0.6);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 1.5rem;
+}
+
+/* Ensure month title is visible and centered a bit more on fullscreen */
+body.calendar-fullscreen .month-navigation,
+body.calendar-fullscreen .month-title {
+    z-index: 10;
+}
+
 @media (max-width: 480px) {
     .weekday-header span {
         font-size: 0.7rem;

@@ -53,14 +53,38 @@ function setupAccessButton() {
 
     if (accessBtn) {
         accessBtn.addEventListener('click', () => {
+            // Toggle fullscreen calendar mode on mobile
+            const isMobile = window.innerWidth < 900;
+            if (isMobile) {
+                if (document.body.classList.contains('calendar-fullscreen')) {
+                    document.body.classList.remove('calendar-fullscreen');
+                } else {
+                    document.body.classList.add('calendar-fullscreen');
+                }
+            }
+
             // Chiudi sidebar su mobile
             if (sidebar) {
                 sidebar.classList.remove('open');
             }
-            // Scroll al calendario
+
+            // Scroll al calendario e porta il focus sul mese corrente
             const calendar = document.getElementById('calendar');
             if (calendar) {
                 calendar.scrollIntoView({ behavior: 'smooth' });
+
+                // Richiama un aggiornamento del calendario per essere sicuri che il mese corrente sia visibile
+                if (typeof Calendar !== 'undefined' && Calendar && typeof Calendar.refresh === 'function') {
+                    // refresh ricarica le donazioni e renderizza
+                    Calendar.refresh();
+                }
+
+                // Metti il focus sul titolo del mese (senza scroll aggiuntivo)
+                const monthTitle = document.getElementById('monthTitle');
+                if (monthTitle) {
+                    monthTitle.setAttribute('tabindex', '-1');
+                    monthTitle.focus({ preventScroll: true });
+                }
             }
         });
     }
