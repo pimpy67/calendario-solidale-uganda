@@ -906,12 +906,12 @@ body {
 }
 
 .satispay-btn {
-    background: #EF4135;
+    background: var(--green-available);
     color: var(--white);
 }
 
 .satispay-btn:hover {
-    background: #d63a2f;
+    background: #219a52;
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
