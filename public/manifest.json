@@ -4,6 +4,8 @@
   "description": "Adotta un giorno del calendario 2026-2027 con una donazione di 50 euro per sostenere la Casa Famiglia Effatà in Uganda.",
   "start_url": "/",
   "scope": "/",
+  "dir": "ltr",
+  "lang": "it",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
