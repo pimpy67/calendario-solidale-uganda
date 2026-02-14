@@ -5,7 +5,6 @@
 
 const Calendar = (function() {
     // Configurazione
-    const YEAR = 2026;
     const DONATION_AMOUNT = 50;
 
     // Nomi mesi in italiano
@@ -15,25 +14,75 @@ const Calendar = (function() {
         'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
     ];
 
-    // Immagini di sfondo per ogni mese
-    // Desktop per gennaio-febbraio, mobile per marzo-dicembre
+    // Immagini di sfondo per 24 mesi (gen 2026 - dic 2027)
     const MONTH_IMAGES = [
-        '/images/months/desktop_2026/01_2027 orizzontale.jpeg',  // gennaio
-        '/images/months/desktop_2026/02_2027 orizzontale.jpeg',  // febbraio
-        '/images/months/mobile_2026/03_2026 verticale.jpeg',     // marzo
-        '/images/months/mobile_2026/04_2026 verticale.jpeg',     // aprile
-        '/images/months/mobile_2026/05_2026 verticale.jpeg',     // maggio
-        '/images/months/mobile_2026/06_2026 verticale.jpeg',     // giugno
-        '/images/months/mobile_2026/07_2026 verticale.jpeg',     // luglio
-        '/images/months/mobile_2026/08_2026 verticale.jpeg',     // agosto
-        '/images/months/mobile_2026/09_2026 verticale.jpeg',     // settembre
-        '/images/months/mobile_2026/10_2026 verticale.jpeg',     // ottobre
-        '/images/months/mobile_2026/11_2026 verticale.jpeg',     // novembre
-        '/images/months/mobile_2026/12_2026 verticale.jpeg'      // dicembre
+        // 2026 (mobile/verticale)
+        '/images/months/desktop_2026/01_2027 orizzontale.jpeg',  // gennaio 2026
+        '/images/months/desktop_2026/02_2027 orizzontale.jpeg',  // febbraio 2026
+        '/images/months/mobile_2026/03_2026 verticale.jpeg',     // marzo 2026
+        '/images/months/mobile_2026/04_2026 verticale.jpeg',     // aprile 2026
+        '/images/months/mobile_2026/05_2026 verticale.jpeg',     // maggio 2026
+        '/images/months/mobile_2026/06_2026 verticale.jpeg',     // giugno 2026
+        '/images/months/mobile_2026/07_2026 verticale.jpeg',     // luglio 2026
+        '/images/months/mobile_2026/08_2026 verticale.jpeg',     // agosto 2026
+        '/images/months/mobile_2026/09_2026 verticale.jpeg',     // settembre 2026
+        '/images/months/mobile_2026/10_2026 verticale.jpeg',     // ottobre 2026
+        '/images/months/mobile_2026/11_2026 verticale.jpeg',     // novembre 2026
+        '/images/months/mobile_2026/12_2026 verticale.jpeg',     // dicembre 2026
+        // 2027 (mobile/verticale)
+        '/images/months/mobile_2027/01_2027 verticale.jpeg',     // gennaio 2027
+        '/images/months/mobile_2027/02_2027 verticale.jpeg',     // febbraio 2027
+        '/images/months/mobile_2027/03_2027 verticale.jpeg',     // marzo 2027
+        '/images/months/mobile_2027/04_2027 verticale.jpeg',     // aprile 2027
+        '/images/months/mobile_2027/05_2027 verticale.jpeg',     // maggio 2027
+        '/images/months/mobile_2027/06_2027 verticale.jpeg',     // giugno 2027
+        '/images/months/mobile_2027/07_2027 verticale.jpeg',     // luglio 2027
+        '/images/months/mobile_2027/08_2027 verticale.jpeg',     // agosto 2027
+        '/images/months/mobile_2027/09_2027 vertcale.jpeg',      // settembre 2027 (nota typo nel file)
+        '/images/months/mobile_2027/10_2027 verticale.jpeg',     // ottobre 2027
+        '/images/months/mobile_2027/11_2027 verticale.jpeg',     // novembre 2027
+        '/images/months/mobile_2027/12_ 2027 verticale.jpeg'     // dicembre 2027
     ];
 
-    // Stato corrente
-    let currentMonth = new Date().getMonth(); // 0-11
+    // Desktop version (orizzontale)
+    const MONTH_IMAGES_DESKTOP = [
+        // 2026 (desktop/orizzontale)
+        '/images/months/desktop_2026/01_2027 orizzontale.jpeg',  // gennaio 2026
+        '/images/months/desktop_2026/02_2027 orizzontale.jpeg',  // febbraio 2026
+        '/images/months/desktop_2027/03_2026 orizzontale.jpeg',  // marzo 2026
+        '/images/months/desktop_2027/04 2026 orizzontale.jpeg',  // aprile 2026
+        '/images/months/desktop_2027/05_2026 orizzontale.jpeg',  // maggio 2026
+        '/images/months/desktop_2027/06_2026 orizzontale.jpeg',  // giugno 2026
+        '/images/months/desktop_2027/07_2026 orizzontale.jpeg',  // luglio 2026
+        '/images/months/desktop_2027/08_2026 orizzontale.jpeg',  // agosto 2026
+        '/images/months/desktop_2027/09_2026 orizzontale.jpeg',  // settembre 2026
+        '/images/months/desktop_2027/10_2026 orizzontale.jpeg',  // ottobre 2026
+        '/images/months/desktop_2027/11_2026 orizzontale.jpeg',  // novembre 2026
+        '/images/months/desktop_2027/12_2026 orizzontale.jpeg',  // dicembre 2026
+        // 2027 (desktop/orizzontale)
+        '/images/months/desktop_2026/01_2027 orizzontale.jpeg',  // gennaio 2027
+        '/images/months/desktop_2026/02_2027 orizzontale.jpeg',  // febbraio 2027
+        '/images/months/desktop_2026/03_2027 orizzontale.jpeg',  // marzo 2027
+        '/images/months/desktop_2026/04_2027 orizzontale.jpeg',  // aprile 2027
+        '/images/months/desktop_2026/05_2027 arizzontale.jpeg',  // maggio 2027
+        '/images/months/desktop_2026/06_2027 orizzontale.jpeg',  // giugno 2027
+        '/images/months/desktop_2026/07_2027 orizzontale.jpeg',  // luglio 2027
+        '/images/months/desktop_2026/08_2027 orizzontale.jpeg',  // agosto 2027
+        '/images/months/desktop_2026/09_2027 orizzontale.jpeg',  // settembre 2027
+        '/images/months/desktop_2026/10_2027 orizzontale.jpeg',  // ottobre 2027
+        '/images/months/desktop_2026/11_2027 orizzontale.jpeg',  // novembre 2027
+        '/images/months/desktop_2026/12_2027 orizzontale.jpeg'   // dicembre 2027
+    ];
+
+    /**
+     * Determina il breakpoint responsive (mobile < 768px)
+     */
+    function isMobileLayout() {
+        return window.innerWidth < 768;
+    }
+
+    // Stato corrente - indice 0-23 (24 mesi da gen 2026 a dic 2027)
+    let currentMonthIndex = new Date().getMonth() + (new Date().getFullYear() === 2027 ? 12 : 0);
     let donations = {}; // { "2026-1-15": { donor: "Mario", status: "completed" } }
 
     // Elementi DOM
@@ -42,6 +91,15 @@ const Calendar = (function() {
     let calendarBackground;
     let adoptedCountEl;
     let totalRaisedEl;
+
+    /**
+     * Ottiene anno e mese da indice (0-23)
+     */
+    function getYearMonth(index) {
+        const year = 2026 + Math.floor(index / 12);
+        const month = (index % 12) + 1;
+        return { year, month };
+    }
 
     /**
      * Inizializza il calendario
@@ -58,6 +116,11 @@ const Calendar = (function() {
         document.getElementById('prevMonth').addEventListener('click', prevMonth);
         document.getElementById('nextMonth').addEventListener('click', nextMonth);
 
+        // Aggiorna immagine di sfondo quando cambia il viewport (responsive)
+        window.addEventListener('resize', () => {
+            updateBackground();
+        });
+
         // Carica donazioni dal server e renderizza
         loadDonations().then(() => {
             render();
@@ -66,15 +129,28 @@ const Calendar = (function() {
     }
 
     /**
-     * Carica le donazioni dal server
+     * Carica le donazioni dal server (entrambi gli anni)
      */
     async function loadDonations() {
         try {
-            const response = await fetch(`/api/donations/${YEAR}`);
-            if (response.ok) {
-                const data = await response.json();
-                // Converti array in oggetto per accesso rapido
-                data.forEach(d => {
+            // Carica donazioni per 2026 e 2027
+            const response2026 = await fetch('/api/donations/2026');
+            const response2027 = await fetch('/api/donations/2027');
+            
+            if (response2026.ok) {
+                const data2026 = await response2026.json();
+                data2026.forEach(d => {
+                    const key = `${d.year}-${d.month}-${d.day}`;
+                    donations[key] = {
+                        donor: d.is_anonymous ? 'ADOTTATO' : d.donor_name,
+                        status: d.payment_status
+                    };
+                });
+            }
+            
+            if (response2027.ok) {
+                const data2027 = await response2027.json();
+                data2027.forEach(d => {
                     const key = `${d.year}-${d.month}-${d.day}`;
                     donations[key] = {
                         donor: d.is_anonymous ? 'ADOTTATO' : d.donor_name,
@@ -91,8 +167,11 @@ const Calendar = (function() {
      * Renderizza il calendario per il mese corrente
      */
     function render() {
+        const { year, month } = getYearMonth(currentMonthIndex);
+        const monthName = MONTHS[month - 1];
+        
         // Aggiorna titolo
-        monthTitle.textContent = `${MONTHS[currentMonth]} ${YEAR}`;
+        monthTitle.textContent = `${monthName} ${year}`;
 
         // Aggiorna immagine di sfondo
         updateBackground();
@@ -101,8 +180,8 @@ const Calendar = (function() {
         daysGrid.innerHTML = '';
 
         // Calcola giorni del mese
-        const firstDay = new Date(YEAR, currentMonth, 1);
-        const lastDay = new Date(YEAR, currentMonth + 1, 0);
+        const firstDay = new Date(year, month - 1, 1);
+        const lastDay = new Date(year, month, 0);
         const daysInMonth = lastDay.getDate();
 
         // Calcola giorno della settimana del primo giorno (0=Domenica, 1=Lunedi, ...)
@@ -118,9 +197,9 @@ const Calendar = (function() {
 
         // Aggiungi giorni del mese
         for (let day = 1; day <= daysInMonth; day++) {
-            const key = `${YEAR}-${currentMonth + 1}-${day}`;
+            const key = `${year}-${month}-${day}`;
             const donation = donations[key];
-            const cell = createDayCell(day, donation);
+            const cell = createDayCell(day, donation, year, month);
             daysGrid.appendChild(cell);
         }
     }
@@ -128,7 +207,7 @@ const Calendar = (function() {
     /**
      * Crea una cella del calendario
      */
-    function createDayCell(day, donation = null) {
+    function createDayCell(day, donation = null, year = 2026, month = 1) {
         const cell = document.createElement('div');
         cell.className = 'day-cell';
 
@@ -152,8 +231,8 @@ const Calendar = (function() {
 
         cell.classList.add(status);
         cell.dataset.day = day;
-        cell.dataset.month = currentMonth + 1;
-        cell.dataset.year = YEAR;
+        cell.dataset.month = month;
+        cell.dataset.year = year;
 
         // Contenuto cella
         const dayNumber = document.createElement('span');
@@ -178,7 +257,7 @@ const Calendar = (function() {
         // Click handler per celle disponibili
         if (status === 'available') {
             cell.addEventListener('click', () => {
-                onDayClick(day, currentMonth + 1, YEAR);
+                onDayClick(day, month, year);
             });
         }
 
@@ -186,10 +265,12 @@ const Calendar = (function() {
     }
 
     /**
-     * Aggiorna l'immagine di sfondo
+     * Aggiorna l'immagine di sfondo con responsivo
      */
     function updateBackground() {
-        const imageUrl = MONTH_IMAGES[currentMonth];
+        const isSmallScreen = isMobileLayout();
+        const images = isSmallScreen ? MONTH_IMAGES : MONTH_IMAGES_DESKTOP;
+        const imageUrl = images[currentMonthIndex];
         calendarBackground.style.backgroundImage = `url('${imageUrl}')`;
     }
 
@@ -212,8 +293,8 @@ const Calendar = (function() {
      * Naviga al mese precedente
      */
     function prevMonth() {
-        if (currentMonth > 0) {
-            currentMonth--;
+        if (currentMonthIndex > 0) {
+            currentMonthIndex--;
             render();
         }
     }
@@ -222,8 +303,8 @@ const Calendar = (function() {
      * Naviga al mese successivo
      */
     function nextMonth() {
-        if (currentMonth < 11) {
-            currentMonth++;
+        if (currentMonthIndex < 23) {
+            currentMonthIndex++;
             render();
         }
     }
@@ -264,7 +345,6 @@ const Calendar = (function() {
         addDonation,
         refresh,
         MONTHS,
-        YEAR,
         DONATION_AMOUNT
     };
 })();
