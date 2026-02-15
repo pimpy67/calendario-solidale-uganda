@@ -52,6 +52,16 @@ app.use('/api/admin', adminRoutes);
 // Serve admin panel
 app.use('/admin', express.static(path.join(__dirname, '../admin')));
 
+// Pagina successo pagamento
+app.get('/payment-success', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/payment-success.html'));
+});
+
+// Pagina cancellamento pagamento (torna al calendario)
+app.get('/payment-cancel', (req, res) => {
+    res.redirect('/');
+});
+
 // Fallback per SPA
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));

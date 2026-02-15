@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Completato - Calendario Solidale</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .success-container {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+            color: #4CAF50;
+        }
+
+        .success-message {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .donation-detail {
+            background: rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .donation-detail .date {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #4CAF50;
+        }
+
+        .donation-detail .donor {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .gift-card-section {
+            display: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .gift-card-section.active {
+            display: block;
+        }
+
+        .gift-card-section h3 {
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .gift-card-preview {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 8px;
+            margin: 0 auto 1rem;
+            display: block;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.85rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .btn-download {
+            background: #4CAF50;
+            color: #fff;
+            margin-bottom: 0.75rem;
+            width: 100%;
+        }
+
+        .btn-download:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-home {
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 100%;
+        }
+
+        .btn-home:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+
+        .loading-state {
+            color: rgba(255,255,255,0.5);
+            padding: 2rem;
+        }
+
+        .error-state {
+            display: none;
+            color: #e74c3c;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div id="loadingState" class="loading-state">
+            Caricamento...
+        </div>
+
+        <div id="successContent" style="display:none;">
+            <img src="/images/logo.png" alt="Effata" class="logo">
+            <div class="success-icon">&#10004;</div>
+            <h1>Grazie di cuore!</h1>
+            <p class="success-message">
+                La tua donazione e stata completata con successo.<br>
+                I bambini della Casa Famiglia Effata ti ringraziano!
+            </p>
+
+            <div class="donation-detail">
+                <div class="date" id="donationDate">--</div>
+                <div class="donor" id="donationDonor">--</div>
+            </div>
+
+            <div class="gift-card-section" id="giftCardSection">
+                <h3>La tua Gift Card</h3>
+                <img src="" alt="Gift Card" class="gift-card-preview" id="giftCardImg">
+                <button class="btn btn-download" id="downloadBtn">Scarica Gift Card</button>
+            </div>
+
+            <a href="/" class="btn btn-home">Torna al Calendario</a>
+        </div>
+
+        <div id="errorState" class="error-state">
+            <div class="success-icon">&#10060;</div>
+            <h1 style="color:#e74c3c;">Errore</h1>
+            <p class="success-message">Non siamo riusciti a recuperare i dati della donazione.</p>
+            <a href="/" class="btn btn-home">Torna al Calendario</a>
+        </div>
+    </div>
+
+    <script>
+        const MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+                        'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+        const CARD_MAP = {
+            card1: '/images/gift_card/1.png',
+            card2: '/images/gift_card/2.png',
+            card3: '/images/gift_card/3.png',
+            card4: '/images/gift_card/4.png'
+        };
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const donationId = params.get('donation_id');
+
+            if (!donationId) {
+                showError();
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/donations/detail/${donationId}`);
+                if (!res.ok) throw new Error('Not found');
+                const donation = await res.json();
+
+                // Mostra dettagli
+                document.getElementById('donationDate').textContent =
+                    `${donation.day} ${MONTHS[donation.month - 1]} ${donation.year}`;
+                document.getElementById('donationDonor').textContent =
+                    `Donazione di ${donation.donor_name || 'Anonimo'}`;
+
+                // Gift card
+                if (donation.is_gift && donation.gift_card_design) {
+                    const cardUrl = CARD_MAP[donation.gift_card_design] || CARD_MAP.card1;
+                    const giftSection = document.getElementById('giftCardSection');
+                    const giftImg = document.getElementById('giftCardImg');
+
+                    giftImg.src = cardUrl;
+                    giftSection.classList.add('active');
+
+                    document.getElementById('downloadBtn').addEventListener('click', () => {
+                        const link = document.createElement('a');
+                        link.href = cardUrl;
+                        link.download = `gift-card-effata.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    });
+                }
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('successContent').style.display = 'block';
+
+            } catch (err) {
+                showError();
+            }
+        }
+
+        function showError() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+        }
+
+        init();
+    </script>
+</body>
+</html>
