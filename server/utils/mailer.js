@@ -16,7 +16,10 @@ const MONTHS = [
  */
 function createTransporter() {
     return nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        family: 4, // Forza IPv4 (Railway non supporta IPv6 verso Gmail)
         auth: {
             user: process.env.GMAIL_USER,
             pass: process.env.GMAIL_APP_PASSWORD
