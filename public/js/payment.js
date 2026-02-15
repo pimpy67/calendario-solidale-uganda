@@ -283,21 +283,8 @@ const Payment = (function() {
             });
 
             if (response.ok) {
-                // Aggiorna calendario
-                const isAnonymous = isAnonymousCheckbox.checked;
-                const donorName = isAnonymous ? 'ADOTTATO' : donorNameInput.value.trim();
-
-                Calendar.addDonation(
-                    selectedDate.day,
-                    selectedDate.month,
-                    selectedDate.year,
-                    donorName,
-                    'completed'
-                );
-
-                // Mostra messaggio successo
-                showSuccessMessage();
-                closeModal();
+                // Redirect alla pagina di successo
+                window.location.href = `/payment-success?donation_id=${donationId}`;
             } else {
                 throw new Error('Errore conferma pagamento');
             }
@@ -305,7 +292,6 @@ const Payment = (function() {
         } catch (error) {
             console.error('Errore conferma:', error);
             alert('Errore nella conferma del pagamento');
-        } finally {
             isProcessing = false;
             payWithSatispayBtn.classList.remove('loading');
             payWithStripeBtn.classList.remove('loading');

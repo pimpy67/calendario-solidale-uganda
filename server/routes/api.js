@@ -234,21 +234,18 @@ router.post('/donations/:id/confirm', async (req, res) => {
 
         db.confirmPayment(id);
 
-        // Se e un regalo, invia la gift card via email
-        if (donation.is_gift && donation.email) {
-            try {
-                await sendGiftCard(donation);
-                console.log(`Gift card inviata a ${donation.email} per donazione ${id}`);
-            } catch (emailError) {
-                console.error('Errore invio gift card:', emailError);
-                // Non bloccare la conferma se l'email fallisce
-            }
-        }
-
+        // Rispondi subito al client
         res.json({
             success: true,
             message: 'Donazione confermata'
         });
+
+        // Invia gift card via email in background (non blocca la risposta)
+        if (donation.is_gift && donation.email) {
+            sendGiftCard(donation)
+                .then(() => console.log(`Gift card inviata a ${donation.email} per donazione ${id}`))
+                .catch(emailError => console.error('Errore invio gift card:', emailError));
+        }
 
     } catch (error) {
         console.error('Errore confirm donation:', error);
