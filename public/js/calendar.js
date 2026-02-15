@@ -100,6 +100,40 @@ const Calendar = (function() {
     }
 
     /**
+     * Setup swipe touch per navigazione mesi su mobile
+     */
+    function setupSwipe() {
+        const calendarSection = document.getElementById('calendar');
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        const SWIPE_THRESHOLD = 50;
+
+        calendarSection.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        calendarSection.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+
+            const diffX = touchStartX - touchEndX;
+            const diffY = Math.abs(touchStartY - touchEndY);
+
+            // Solo swipe orizzontale (ignora scroll verticale)
+            if (Math.abs(diffX) > SWIPE_THRESHOLD && diffY < Math.abs(diffX)) {
+                if (diffX > 0) {
+                    nextMonth(); // Swipe sinistra = mese successivo
+                } else {
+                    prevMonth(); // Swipe destra = mese precedente
+                }
+            }
+        }, { passive: true });
+    }
+
+    /**
      * Inizializza il calendario
      */
     function init() {
@@ -113,6 +147,9 @@ const Calendar = (function() {
         // Setup navigazione
         document.getElementById('prevMonth').addEventListener('click', prevMonth);
         document.getElementById('nextMonth').addEventListener('click', nextMonth);
+
+        // Setup swipe touch per navigazione mesi su mobile
+        setupSwipe();
 
         // Aggiorna immagine di sfondo e anteprima quando cambia il viewport (responsive)
         window.addEventListener('resize', () => {
