@@ -28,11 +28,13 @@ function createTransporter() {
  * Trova il file immagine della gift card scelta
  */
 function getGiftCardImagePath(cardName) {
-    const giftcardsDir = path.join(__dirname, '../../public/images/giftcards');
-    const extensions = ['.jpg', '.jpeg', '.png', '.svg', '.gif', '.webp'];
+    const giftcardsDir = path.join(__dirname, '../../public/images/gift_card');
+    // cardName è tipo "card1", "card2" etc. - i file sono 1.png, 2.png etc.
+    const cardNumber = cardName.replace('card', '');
+    const extensions = ['.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp'];
 
     for (const ext of extensions) {
-        const filePath = path.join(giftcardsDir, cardName + ext);
+        const filePath = path.join(giftcardsDir, cardNumber + ext);
         if (fs.existsSync(filePath)) {
             return filePath;
         }
