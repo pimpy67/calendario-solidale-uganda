@@ -776,7 +776,7 @@ body {
 /* Selettore Gift Card */
 .giftcard-selector {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 0.75rem;
 }
 
@@ -792,7 +792,6 @@ body {
 
 .giftcard-option:hover {
     opacity: 0.85;
-    transform: scale(1.03);
 }
 
 .giftcard-option.selected {
@@ -824,6 +823,62 @@ body {
 
 .giftcard-option.selected .giftcard-check {
     display: block;
+}
+
+/* Fullscreen preview gift card */
+.giftcard-preview-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.giftcard-preview-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.giftcard-preview-overlay img {
+    max-width: 90%;
+    max-height: 85vh;
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.giftcard-preview-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.giftcard-zoom-hint {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    pointer-events: none;
 }
 
 .checkbox-group {

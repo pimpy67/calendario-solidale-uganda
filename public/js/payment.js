@@ -73,15 +73,37 @@ const Payment = (function() {
             }
         });
 
-        // Selettore gift card
+        // Selettore gift card + doppio tap per zoom
         const giftcardSelector = document.getElementById('giftcardSelector');
         if (giftcardSelector) {
+            let lastTap = 0;
             giftcardSelector.addEventListener('click', (e) => {
                 const option = e.target.closest('.giftcard-option');
                 if (!option) return;
+
+                const now = Date.now();
+                const img = option.querySelector('img');
+
+                // Doppio tap = zoom preview
+                if (now - lastTap < 400) {
+                    openGiftcardPreview(img.src);
+                    lastTap = 0;
+                    return;
+                }
+                lastTap = now;
+
+                // Singolo tap = seleziona
                 giftcardSelector.querySelectorAll('.giftcard-option').forEach(el => el.classList.remove('selected'));
                 option.classList.add('selected');
                 selectedCard = option.dataset.card;
+            });
+        }
+
+        // Preview fullscreen gift card
+        const previewOverlay = document.getElementById('giftcardPreview');
+        if (previewOverlay) {
+            previewOverlay.addEventListener('click', () => {
+                previewOverlay.classList.remove('active');
             });
         }
 
@@ -91,10 +113,26 @@ const Payment = (function() {
 
         // ESC per chiudere
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('active')) {
-                closeModal();
+            if (e.key === 'Escape') {
+                if (previewOverlay && previewOverlay.classList.contains('active')) {
+                    previewOverlay.classList.remove('active');
+                } else if (modal.classList.contains('active')) {
+                    closeModal();
+                }
             }
         });
+    }
+
+    /**
+     * Apre la preview fullscreen di una gift card
+     */
+    function openGiftcardPreview(imageSrc) {
+        const overlay = document.getElementById('giftcardPreview');
+        const img = document.getElementById('giftcardPreviewImg');
+        if (overlay && img) {
+            img.src = imageSrc;
+            overlay.classList.add('active');
+        }
     }
 
     /**
@@ -275,17 +313,35 @@ const Payment = (function() {
     }
 
     /**
-     * Mostra messaggio di successo
+     * Mostra messaggio di successo con opzione download gift card
      */
     function showSuccessMessage() {
         const monthName = Calendar.MONTHS[selectedDate.month - 1];
         let message = `Grazie per la tua donazione!\n\nHai adottato il ${selectedDate.day} ${monthName} ${selectedDate.year}.\n\nLa Casa Famiglia in Uganda ti ringrazia di cuore!`;
 
         if (isGiftCheckbox.checked) {
-            message += `\n\nUna gift card verra inviata a ${giftEmailInput.value.trim()}!`;
+            message += `\n\nUna gift card verrà inviata a ${giftEmailInput.value.trim()}!`;
+            alert(message);
+            // Offri il download della gift card selezionata
+            downloadGiftCard();
+        } else {
+            alert(message);
         }
+    }
 
-        alert(message);
+    /**
+     * Scarica la gift card selezionata
+     */
+    function downloadGiftCard() {
+        const cardNumber = selectedCard.replace('card', '');
+        const imgUrl = `/images/gift_card/${cardNumber}.png`;
+
+        const link = document.createElement('a');
+        link.href = imgUrl;
+        link.download = `gift-card-effata-${cardNumber}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     /**
