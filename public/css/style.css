@@ -436,7 +436,7 @@ body {
 .calendar-container {
     position: relative;
     z-index: 1;
-    background: rgba(0, 0, 0, 0.40);
+    background: rgba(0, 0, 0, 0.20);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     width: 100%;
@@ -528,28 +528,31 @@ body {
 
 /* Stato: Disponibile */
 .day-cell.available {
-    background: rgba(76, 175, 80, 0.70);
+    background: rgba(76, 175, 80, 0.80);
     color: var(--white);
+    border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .day-cell.available:hover {
-    background: rgba(76, 175, 80, 0.40);
+    background: rgba(76, 175, 80, 0.50);
     transform: scale(1.05);
     box-shadow: var(--shadow-md);
 }
 
 /* Stato: Adottato */
 .day-cell.adopted {
-    background: rgba(219, 144, 136, 0.20);
+    background: rgba(192, 57, 43, 0.50);
     color: var(--white);
     cursor: default;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* Stato: In attesa pagamento */
 .day-cell.pending {
-    background: rgba(243, 156, 18, 0.50);
+    background: rgba(243, 156, 18, 0.60);
     color: var(--white);
     cursor: default;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* Contenuto cella */
