@@ -436,10 +436,7 @@ body {
 .calendar-container {
     position: relative;
     z-index: 1;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.40);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     width: 100%;
