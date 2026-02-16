@@ -5,6 +5,9 @@
 const nodemailer = require('nodemailer');
 const path = require('path');
 const fs = require('fs');
+const dns = require('dns');
+const { promisify } = require('util');
+const resolve4 = promisify(dns.resolve4);
 
 const MONTHS = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -14,12 +17,26 @@ const MONTHS = [
 /**
  * Crea il transporter Nodemailer con Gmail
  */
-function createTransporter() {
+async function createTransporter() {
+    // Risolvi smtp.gmail.com a IPv4 manualmente (Railway non supporta IPv6)
+    let host = 'smtp.gmail.com';
+    try {
+        const addresses = await resolve4('smtp.gmail.com');
+        if (addresses && addresses.length > 0) {
+            host = addresses[0];
+            console.log(`SMTP Gmail risolto a IPv4: ${host}`);
+        }
+    } catch (e) {
+        console.warn('Fallback a smtp.gmail.com (DNS resolve4 fallito)');
+    }
+
     return nodemailer.createTransport({
-        host: 'smtp.gmail.com',
+        host,
         port: 587,
         secure: false,
-        family: 4, // Forza IPv4 (Railway non supporta IPv6 verso Gmail)
+        tls: {
+            servername: 'smtp.gmail.com' // Necessario per TLS quando si usa IP diretto
+        },
         auth: {
             user: process.env.GMAIL_USER,
             pass: process.env.GMAIL_APP_PASSWORD
@@ -188,7 +205,7 @@ async function sendGiftCard(donation) {
         return;
     }
 
-    const transporter = createTransporter();
+    const transporter = await createTransporter();
     const donorName = donation.is_anonymous ? 'Un amico generoso' : (donation.donor_name || 'Qualcuno');
 
     // Cerca immagine gift card
