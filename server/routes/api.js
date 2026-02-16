@@ -242,10 +242,14 @@ router.post('/donations/:id/confirm', async (req, res) => {
         });
 
         // Invia gift card via email in background (non blocca la risposta)
+        console.log(`Donazione ${id} confermata. is_gift=${donation.is_gift}, email=${donation.email}`);
         if (donation.is_gift && donation.email) {
+            console.log(`Invio gift card a ${donation.email}...`);
             sendGiftCard(donation)
                 .then(() => console.log(`Gift card inviata a ${donation.email} per donazione ${id}`))
                 .catch(emailError => console.error('Errore invio gift card:', emailError));
+        } else {
+            console.log(`Gift card NON inviata: is_gift=${donation.is_gift}, email=${donation.email}`);
         }
 
     } catch (error) {
