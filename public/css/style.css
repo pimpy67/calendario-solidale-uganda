@@ -834,18 +834,14 @@ body {
     bottom: 0;
     background: rgba(0, 0, 0, 0.85);
     z-index: 2000;
-    display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s;
+    display: none;
     cursor: pointer;
 }
 
 .giftcard-preview-overlay.active {
-    opacity: 1;
-    visibility: visible;
+    display: flex;
 }
 
 .giftcard-preview-overlay img {
