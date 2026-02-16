@@ -129,6 +129,7 @@ function createDonation(data) {
     return {
         id: result.lastInsertRowid,
         ...data,
+        amount: data.amount || 50.00,
         payment_status: 'pending'
     };
 }
