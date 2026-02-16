@@ -33,6 +33,38 @@ router.get('/stats', (req, res) => {
 });
 
 /**
+ * GET /api/donations/detail/:id
+ * Ottieni dettagli di una singola donazione (per pagina successo)
+ * NOTA: deve stare PRIMA delle route con :year/:month per evitare conflitti
+ */
+router.get('/donations/detail/:id', (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const donation = db.getDonationById(id);
+
+        if (!donation) {
+            return res.status(404).json({ error: true, message: 'Donazione non trovata' });
+        }
+
+        // Restituisci solo dati pubblici
+        res.json({
+            id: donation.id,
+            day: donation.day,
+            month: donation.month,
+            year: donation.year,
+            donor_name: donation.is_anonymous ? 'Anonimo' : donation.donor_name,
+            is_gift: donation.is_gift,
+            gift_recipient_name: donation.gift_recipient_name,
+            gift_card_design: donation.gift_card_design,
+            payment_status: donation.payment_status
+        });
+    } catch (error) {
+        console.error('Errore GET donation detail:', error);
+        res.status(500).json({ error: true, message: 'Errore nel recupero della donazione' });
+    }
+});
+
+/**
  * GET /api/donations/:year
  * Ottieni tutte le donazioni di un anno
  */
@@ -84,37 +116,6 @@ router.get('/donations/:year/:month', (req, res) => {
             error: true,
             message: 'Errore nel recupero delle donazioni'
         });
-    }
-});
-
-/**
- * GET /api/donations/detail/:id
- * Ottieni dettagli di una singola donazione (per pagina successo)
- */
-router.get('/donations/detail/:id', (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        const donation = db.getDonationById(id);
-
-        if (!donation) {
-            return res.status(404).json({ error: true, message: 'Donazione non trovata' });
-        }
-
-        // Restituisci solo dati pubblici
-        res.json({
-            id: donation.id,
-            day: donation.day,
-            month: donation.month,
-            year: donation.year,
-            donor_name: donation.is_anonymous ? 'Anonimo' : donation.donor_name,
-            is_gift: donation.is_gift,
-            gift_recipient_name: donation.gift_recipient_name,
-            gift_card_design: donation.gift_card_design,
-            payment_status: donation.payment_status
-        });
-    } catch (error) {
-        console.error('Errore GET donation detail:', error);
-        res.status(500).json({ error: true, message: 'Errore nel recupero della donazione' });
     }
 });
 
