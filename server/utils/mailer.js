@@ -292,10 +292,10 @@ async function sendGiftCard(donation) {
     const imagePath = getGiftCardImagePath(cardName);
     const hasImage = imagePath !== null;
 
-    // Per Resend, prepara immagine base64 per embed nell'HTML
+    // Per Brevo, prepara immagine base64 per embed nell'HTML
     let imageBase64 = null;
     let imageMime = 'image/png';
-    if (hasImage && useResend) {
+    if (hasImage && useBrevo) {
         const imageBuffer = fs.readFileSync(imagePath);
         imageBase64 = imageBuffer.toString('base64');
         const ext = path.extname(imagePath).toLowerCase();
