@@ -183,9 +183,9 @@
                 <button class="btn btn-download" id="downloadBtn">Scarica Gift Card</button>
             </div>
 
-            <button class="btn btn-whatsapp" id="whatsappBtn">
+            <a href="" class="btn btn-whatsapp" id="whatsappBtn" target="_blank" rel="noopener noreferrer">
                 Condividi su WhatsApp
-            </button>
+            </a>
             <a href="/" class="btn btn-home">Torna al Calendario</a>
         </div>
 
@@ -266,9 +266,7 @@
                 }
 
                 const waUrl = `https://wa.me/?text=${encodeURIComponent(waText)}`;
-                document.getElementById('whatsappBtn').addEventListener('click', () => {
-                    window.open(waUrl, '_blank');
-                });
+                document.getElementById('whatsappBtn').href = waUrl;
 
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('successContent').style.display = 'block';
