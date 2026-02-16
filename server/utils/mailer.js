@@ -32,10 +32,13 @@ async function createTransporter() {
 
     return nodemailer.createTransport({
         host,
-        port: 587,
-        secure: false,
+        port: 465,
+        secure: true,
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
         tls: {
-            servername: 'smtp.gmail.com' // Necessario per TLS quando si usa IP diretto
+            servername: 'smtp.gmail.com'
         },
         auth: {
             user: process.env.GMAIL_USER,
