@@ -1,6 +1,6 @@
 /**
  * Mailer.js - Invio email gift card
- * Usa Resend API (HTTP) su Railway, Gmail SMTP in locale
+ * Usa Brevo API (HTTP) su Railway, Gmail SMTP in locale
  */
 
 const nodemailer = require('nodemailer');
@@ -201,35 +201,41 @@ function generateGiftCardHTML(donation, hasImage, imageBase64, imageMime) {
 }
 
 /**
- * Invia email tramite Resend API (HTTP - funziona su Railway)
+ * Invia email tramite Brevo (Sendinblue) API (HTTP - funziona su Railway)
+ * Non richiede dominio verificato, solo mittente verificato via email
  */
-async function sendViaResend(mailOptions, imagePath) {
-    const apiKey = process.env.RESEND_API_KEY;
+async function sendViaBrevo(mailOptions, imagePath) {
+    const apiKey = process.env.BREVO_API_KEY;
     if (!apiKey) {
-        throw new Error('RESEND_API_KEY non configurata');
+        throw new Error('BREVO_API_KEY non configurata');
     }
 
+    // Estrai nome e indirizzo dal campo from (es: "Nome <email@example.com>")
+    const fromMatch = mailOptions.from.match(/^"?([^"<]+)"?\s*<(.+)>$/);
+    const fromName = fromMatch ? fromMatch[1].trim() : 'Calendario Solidale';
+    const fromEmail = fromMatch ? fromMatch[2].trim() : mailOptions.from;
+
     const body = {
-        from: mailOptions.from,
-        to: [mailOptions.to],
+        sender: { name: fromName, email: fromEmail },
+        to: [{ email: mailOptions.to }],
         subject: mailOptions.subject,
-        html: mailOptions.html
+        htmlContent: mailOptions.html
     };
 
     // Aggiungi immagine come allegato se presente
     if (imagePath) {
         const imageBuffer = fs.readFileSync(imagePath);
         const base64Content = imageBuffer.toString('base64');
-        body.attachments = [{
-            filename: path.basename(imagePath),
+        body.attachment = [{
+            name: path.basename(imagePath),
             content: base64Content
         }];
     }
 
-    const response = await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${apiKey}`,
+            'api-key': apiKey,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(body)
@@ -237,7 +243,7 @@ async function sendViaResend(mailOptions, imagePath) {
 
     if (!response.ok) {
         const errorData = await response.text();
-        throw new Error(`Resend API error ${response.status}: ${errorData}`);
+        throw new Error(`Brevo API error ${response.status}: ${errorData}`);
     }
 
     const result = await response.json();
@@ -266,11 +272,11 @@ async function sendViaGmail(mailOptions, imagePath) {
  * @param {Object} donation - Dati della donazione dal database
  */
 async function sendGiftCard(donation) {
-    const useResend = !!process.env.RESEND_API_KEY;
+    const useBrevo = !!process.env.BREVO_API_KEY;
     const useGmail = process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD;
 
-    if (!useResend && !useGmail) {
-        console.warn('Nessun servizio email configurato (RESEND_API_KEY o GMAIL). Gift card non inviata.');
+    if (!useBrevo && !useGmail) {
+        console.warn('Nessun servizio email configurato (BREVO_API_KEY o GMAIL). Gift card non inviata.');
         return;
     }
 
@@ -300,8 +306,8 @@ async function sendGiftCard(donation) {
     }
 
     // Scegli il from address
-    const fromAddress = useResend
-        ? `Calendario Solidale - Effata <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`
+    const fromAddress = useBrevo
+        ? `Calendario Solidale - Effata <${process.env.GMAIL_USER || 'effataitalia@gmail.com'}>`
         : `"Calendario Solidale - Effatà" <${process.env.GMAIL_USER}>`;
 
     const mailOptions = {
@@ -311,10 +317,10 @@ async function sendGiftCard(donation) {
         html: generateGiftCardHTML(donation, hasImage, imageBase64, imageMime)
     };
 
-    if (useResend) {
-        console.log('Invio email tramite Resend API...');
-        const result = await sendViaResend(mailOptions, hasImage ? imagePath : null);
-        console.log('Gift card email inviata via Resend:', result.id);
+    if (useBrevo) {
+        console.log('Invio email tramite Brevo API...');
+        const result = await sendViaBrevo(mailOptions, hasImage ? imagePath : null);
+        console.log('Gift card email inviata via Brevo:', result.messageId);
         return result;
     } else {
         console.log('Invio email tramite Gmail SMTP...');
