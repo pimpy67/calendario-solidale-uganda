@@ -181,11 +181,11 @@
                 <h3>La tua Gift Card</h3>
                 <img src="" alt="Gift Card" class="gift-card-preview" id="giftCardImg">
                 <button class="btn btn-download" id="downloadBtn">Scarica Gift Card</button>
-                <a href="#" class="btn btn-whatsapp" id="whatsappBtn" target="_blank" rel="noopener">
-                    Invia su WhatsApp
-                </a>
             </div>
 
+            <a href="#" class="btn btn-whatsapp" id="whatsappBtn" target="_blank" rel="noopener">
+                Condividi su WhatsApp
+            </a>
             <a href="/" class="btn btn-home">Torna al Calendario</a>
         </div>
 
@@ -245,21 +245,28 @@
                         link.click();
                         document.body.removeChild(link);
                     });
+                }
 
-                    // WhatsApp share
-                    const dateStr = `${donation.day} ${MONTHS[donation.month - 1]} ${donation.year}`;
+                // WhatsApp share (sempre visibile)
+                const dateStr = `${donation.day} ${MONTHS[donation.month - 1]} ${donation.year}`;
+                const donorName = donation.donor_name || 'Qualcuno';
+                const siteUrl = window.location.origin;
+                let waText;
+
+                if (donation.is_gift) {
                     const recipientName = donation.gift_recipient_name || '';
-                    const donorName = donation.donor_name || 'Qualcuno';
-                    const pageUrl = window.location.href;
-
-                    let waText = `Ciao${recipientName ? ' ' + recipientName : ''}! ` +
+                    waText = `Ciao${recipientName ? ' ' + recipientName : ''}! ` +
                         `${donorName} ti ha regalato il giorno ${dateStr} del Calendario Solidale ` +
                         `della Casa Famiglia Effata in Uganda! ` +
-                        `Scopri la tua gift card qui: ${pageUrl}`;
-
-                    const waUrl = `https://wa.me/?text=${encodeURIComponent(waText)}`;
-                    document.getElementById('whatsappBtn').href = waUrl;
+                        `Scopri di piu: ${siteUrl}`;
+                } else {
+                    waText = `Ho appena adottato il giorno ${dateStr} del Calendario Solidale ` +
+                        `della Casa Famiglia Effata in Uganda! ` +
+                        `Adotta anche tu un giorno: ${siteUrl}`;
                 }
+
+                const waUrl = `https://wa.me/?text=${encodeURIComponent(waText)}`;
+                document.getElementById('whatsappBtn').href = waUrl;
 
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('successContent').style.display = 'block';
