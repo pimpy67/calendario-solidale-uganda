@@ -13,6 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup condivisione social
     setupSocialSharing();
 
+    // Setup bottone condividi nativo
+    setupNativeShare();
+
+    // Genera QR code
+    generateQRCode();
+
     // Setup sidebar toggle (mobile)
     setupSidebarToggle();
 
@@ -223,6 +229,75 @@ function handlePaymentReturn() {
         alert('Pagamento annullato.\n\nPuoi riprovare quando vuoi selezionando un giorno dal calendario.');
         window.history.replaceState({}, '', '/');
     }
+}
+
+/**
+ * Setup bottone condividi nativo (Web Share API)
+ */
+function setupNativeShare() {
+    const shareBtn = document.getElementById('shareNativeBtn');
+    if (!shareBtn) return;
+
+    if (navigator.share) {
+        shareBtn.addEventListener('click', async () => {
+            try {
+                await navigator.share({
+                    title: 'Calendario Solidale - Casa Famiglia Uganda',
+                    text: 'Adotta un giorno del calendario 2026 con 50 euro per sostenere la Casa Famiglia Effatà in Uganda!',
+                    url: window.location.origin
+                });
+            } catch (err) {
+                // L'utente ha annullato la condivisione, nessun problema
+            }
+        });
+    } else {
+        // Fallback: copia link negli appunti
+        shareBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(window.location.origin).then(() => {
+                const originalText = shareBtn.querySelector('span').textContent;
+                shareBtn.querySelector('span').textContent = 'Link copiato!';
+                setTimeout(() => {
+                    shareBtn.querySelector('span').textContent = originalText;
+                }, 2000);
+            }).catch(() => {
+                prompt('Copia questo link:', window.location.origin);
+            });
+        });
+    }
+}
+
+/**
+ * Genera QR code nella sidebar
+ */
+function generateQRCode() {
+    const canvas = document.getElementById('qrcodeCanvas');
+    if (!canvas) return;
+
+    const url = window.location.origin;
+    const size = 140;
+    const ctx = canvas.getContext('2d');
+    canvas.width = size;
+    canvas.height = size;
+
+    // Usa la libreria QR code esterna tramite un'immagine generata da API
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, 8, 8, size - 16, size - 16);
+    };
+    img.onerror = function() {
+        // Fallback: mostra il link testualmente
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = '#333333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('QR non disponibile', size/2, size/2 - 5);
+        ctx.fillText(url, size/2, size/2 + 10);
+    };
+    img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=' + (size - 16) + 'x' + (size - 16) + '&data=' + encodeURIComponent(url);
 }
 
 /**
