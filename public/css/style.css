@@ -101,10 +101,11 @@ body {
 }
 
 .sidebar-description p {
-    font-size: 0.95rem;
-    color: rgba(255,255,255,0.9);
+    font-size: 1.05rem;
+    color: rgba(255,255,255,0.95);
     line-height: 1.6;
     margin-bottom: 0.5rem;
+    font-weight: 500;
 }
 
 .sidebar-description strong {
@@ -112,8 +113,9 @@ body {
 }
 
 .sidebar-subtitle {
-    font-size: 0.9rem !important;
-    color: rgb(254, 254, 254) !important;
+    font-size: 0.8rem !important;
+    color: rgba(255,255,255,0.6) !important;
+    font-weight: 400 !important;
 }
 
 /* Stats nella sidebar */
@@ -287,22 +289,41 @@ body {
     transform: translateY(0);
 }
 
-/* Social sidebar */
-.sidebar-social {
-    padding-top: 0.75rem;
-    margin-top: 0;
-}
-
-.sidebar-social > span {
-    font-size: 0.8rem;
-    color: rgba(255,255,255,0.5);
-    display: block;
-    margin-bottom: 0.75rem;
-}
-
-.social-buttons {
+/* Share row: QR code a sinistra, icone a destra */
+.sidebar-share-row {
     display: flex;
-    gap: 0.75rem;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: auto;
+}
+
+.share-qr {
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.share-qr canvas {
+    width: 100px !important;
+    height: 100px !important;
+    border-radius: var(--radius-sm);
+    background: white;
+    padding: 6px;
+    display: block;
+}
+
+.share-qr span {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.4);
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.share-icons-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .social-btn {
@@ -314,6 +335,8 @@ body {
     justify-content: center;
     text-decoration: none;
     color: var(--white);
+    border: none;
+    cursor: pointer;
     transition: transform 0.3s;
 }
 
@@ -333,63 +356,8 @@ body {
     background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
 }
 
-/* Bottone Condividi Nativo */
-.sidebar-share-native {
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    margin-top: auto;
-}
-
-.btn-share-native {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
+.social-btn.share-native {
     background: linear-gradient(135deg, #4CAF50, #2196F3);
-    color: var(--white);
-    border: none;
-    border-radius: var(--radius-md);
-    font-family: var(--font-primary);
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-share-native:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
-}
-
-.btn-share-native:active {
-    transform: translateY(0);
-}
-
-.btn-share-native svg {
-    flex-shrink: 0;
-}
-
-/* QR Code */
-.sidebar-qrcode {
-    padding-top: 1rem;
-    text-align: center;
-}
-
-.sidebar-qrcode > span {
-    font-size: 0.8rem;
-    color: rgba(255,255,255,0.5);
-    display: block;
-    margin-bottom: 0.5rem;
-}
-
-.sidebar-qrcode canvas {
-    width: 140px !important;
-    height: 140px !important;
-    border-radius: var(--radius-md);
-    background: white;
-    padding: 8px;
 }
 
 /* Footer sidebar */
@@ -1346,18 +1314,14 @@ body {
         flex-shrink: 0;
     }
 
-    .sidebar-social {
+    .sidebar-share-row {
         padding-top: 0.5rem;
-        margin-top: auto;
+        gap: 0.75rem;
     }
 
-    .sidebar-social > span {
-        font-size: 0.7rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .social-buttons {
-        gap: 0.5rem;
+    .share-qr canvas {
+        width: 80px !important;
+        height: 80px !important;
     }
 
     .social-btn {
@@ -1365,18 +1329,8 @@ body {
         height: 32px;
     }
 
-    .sidebar-share-native {
-        padding-top: 0.5rem;
-    }
-
-    .btn-share-native {
-        font-size: 0.85rem;
-        padding: 0.6rem 0.75rem;
-    }
-
-    .sidebar-qrcode canvas {
-        width: 110px !important;
-        height: 110px !important;
+    .share-icons-vertical {
+        gap: 0.4rem;
     }
 
     .sidebar-footer {
