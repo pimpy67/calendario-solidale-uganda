@@ -258,8 +258,8 @@ const Payment = (function() {
                 donorCFInput.classList.add('form-error');
             }
 
-            // Validazione formato email
-            if (donorEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(donorEmail)) {
+            // Validazione formato email (nome@dominio.xx con TLD di almeno 2 caratteri)
+            if (donorEmail && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(donorEmail)) {
                 missingFields.push('Email non valida');
                 donorEmailInput.classList.add('form-error');
             }
