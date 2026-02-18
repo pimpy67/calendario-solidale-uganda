@@ -399,11 +399,11 @@ const Payment = (function() {
      */
     function downloadGiftCard() {
         const cardNumber = selectedCard.replace('card', '');
-        const imgUrl = `/images/gift_card/${cardNumber}.png`;
+        const imgUrl = `/images/gift_card/${cardNumber}.webp`;
 
         const link = document.createElement('a');
         link.href = imgUrl;
-        link.download = `gift-card-effata-${cardNumber}.png`;
+        link.download = `gift-card-effata-${cardNumber}.webp`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
