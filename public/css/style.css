@@ -86,20 +86,26 @@ body {
     object-fit: cover;
 }
 
-.logo-text {
-    font-size: 1.4rem;
+.logo-titles {
+    display: flex;
+    flex-direction: column;
+}
+
+.logo-text-top {
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--white);
+    line-height: 1.2;
+}
+
+.logo-text-bottom {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.2;
 }
 
 /* Descrizione */
-.sidebar-description h2 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--white);
-    margin-bottom: 0.75rem;
-}
-
 .sidebar-description p {
     font-size: 1.05rem;
     color: rgba(255,255,255,0.95);
@@ -151,6 +157,14 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+}
+
+.sidebar-nav-text {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    font-style: italic;
+    margin: 0;
 }
 
 .sidebar-link {
@@ -1397,13 +1411,12 @@ body {
         height: 40px;
     }
 
-    .logo-text {
-        font-size: 1.1rem;
+    .logo-text-top {
+        font-size: 0.95rem;
     }
 
-    .sidebar-description h2 {
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
+    .logo-text-bottom {
+        font-size: 0.7rem;
     }
 
     .sidebar-description p {
