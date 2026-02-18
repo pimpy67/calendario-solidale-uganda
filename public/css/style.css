@@ -245,11 +245,15 @@ body {
 
 /* Calendar legend (sotto il calendario) */
 .calendar-legend {
-    display: flex;
+    display: inline-flex;
     gap: 1rem;
     align-items: center;
     margin-top: 0.75rem;
     flex-wrap: wrap;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    justify-content: center;
 }
 .calendar-legend .legend-item {
     font-size: 0.9rem;
@@ -1430,10 +1434,12 @@ body {
         display: none !important;
     }
     .donation-info .donation-text-mobile {
-        display: inline-block !important;
+        display: block !important;
         padding: 0.4rem 0.5rem;
-        width: 95%;
+        width: 100%;
         box-sizing: border-box;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
 

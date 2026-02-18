@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calendario-solidale-v27';
+const CACHE_NAME = 'calendario-solidale-v28';
 const OFFLINE_URL = '/offline.html';
 
 const urlsToCache = [
