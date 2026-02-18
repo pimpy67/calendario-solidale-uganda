@@ -87,26 +87,24 @@ const Payment = (function() {
             }
         });
 
-        // Selettore gift card + doppio tap per zoom
+        // Selettore gift card + bottone zoom
         const giftcardSelector = document.getElementById('giftcardSelector');
         if (giftcardSelector) {
-            let lastTap = 0;
             giftcardSelector.addEventListener('click', (e) => {
-                const option = e.target.closest('.giftcard-option');
-                if (!option) return;
-
-                const now = Date.now();
-                const img = option.querySelector('img');
-
-                // Doppio tap = zoom preview
-                if (now - lastTap < 400) {
-                    openGiftcardPreview(img.src);
-                    lastTap = 0;
+                // Click su bottone zoom = apri preview
+                if (e.target.closest('.giftcard-zoom-btn')) {
+                    e.stopPropagation();
+                    const option = e.target.closest('.giftcard-option');
+                    if (option) {
+                        const img = option.querySelector('img');
+                        openGiftcardPreview(img.src);
+                    }
                     return;
                 }
-                lastTap = now;
 
-                // Singolo tap = seleziona
+                // Click sulla card = seleziona
+                const option = e.target.closest('.giftcard-option');
+                if (!option) return;
                 giftcardSelector.querySelectorAll('.giftcard-option').forEach(el => el.classList.remove('selected'));
                 option.classList.add('selected');
                 selectedCard = option.dataset.card;

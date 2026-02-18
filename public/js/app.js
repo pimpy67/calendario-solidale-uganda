@@ -142,7 +142,6 @@ function setupAboutModal() {
     // Modal Chi Siamo (immagine + testo combinati)
     const aboutModal = document.getElementById('aboutModal');
     const openAbout = document.getElementById('openAbout');
-    const openAboutPrimary = document.getElementById('openAboutPrimary');
     const closeAbout = document.getElementById('closeAbout');
     const closeAboutBtn = document.getElementById('closeAboutBtn');
 
@@ -155,9 +154,7 @@ function setupAboutModal() {
         aboutModal.classList.remove('active');
     }
 
-    // Entrambi i bottoni aprono lo stesso modal
     if (openAbout) openAbout.addEventListener('click', openAboutModal);
-    if (openAboutPrimary) openAboutPrimary.addEventListener('click', openAboutModal);
     if (closeAbout) closeAbout.addEventListener('click', closeAboutModal);
     if (closeAboutBtn) closeAboutBtn.addEventListener('click', closeAboutModal);
 
@@ -165,10 +162,65 @@ function setupAboutModal() {
         if (e.target === aboutModal) closeAboutModal();
     });
 
-    // Escape chiude
+    // Carosello Gift Card
+    const carouselModal = document.getElementById('giftCardCarousel');
+    const openCarousel = document.getElementById('openAboutPrimary');
+    const closeCarousel = document.getElementById('closeCarousel');
+    const prevBtn = document.getElementById('carouselPrev');
+    const nextBtn = document.getElementById('carouselNext');
+    const images = carouselModal.querySelectorAll('.carousel-img');
+    const dots = carouselModal.querySelectorAll('.carousel-dot');
+    let currentSlide = 0;
+
+    function showSlide(index) {
+        images.forEach(img => img.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+        currentSlide = (index + images.length) % images.length;
+        images[currentSlide].classList.add('active');
+        dots[currentSlide].classList.add('active');
+    }
+
+    function openCarouselModal(e) {
+        e.preventDefault();
+        showSlide(0);
+        carouselModal.classList.add('active');
+    }
+
+    function closeCarouselModal() {
+        carouselModal.classList.remove('active');
+    }
+
+    if (openCarousel) openCarousel.addEventListener('click', openCarouselModal);
+    if (closeCarousel) closeCarousel.addEventListener('click', closeCarouselModal);
+    if (prevBtn) prevBtn.addEventListener('click', () => showSlide(currentSlide - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => showSlide(currentSlide + 1));
+
+    dots.forEach(dot => {
+        dot.addEventListener('click', () => showSlide(parseInt(dot.dataset.index)));
+    });
+
+    carouselModal.addEventListener('click', (e) => {
+        if (e.target === carouselModal) closeCarouselModal();
+    });
+
+    // Swipe su mobile
+    let touchStartX = 0;
+    const slideEl = carouselModal.querySelector('.carousel-slide');
+    if (slideEl) {
+        slideEl.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+        slideEl.addEventListener('touchend', (e) => {
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) {
+                showSlide(diff > 0 ? currentSlide + 1 : currentSlide - 1);
+            }
+        });
+    }
+
+    // Escape chiude entrambi
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             if (aboutModal.classList.contains('active')) closeAboutModal();
+            if (carouselModal.classList.contains('active')) closeCarouselModal();
         }
     });
 }
