@@ -685,6 +685,10 @@ body {
     border-radius: 8px;
 }
 
+.donation-text-mobile {
+    display: none;
+}
+
 .donation-info strong {
     color: var(--green-available);
     font-size: 1.1rem;
@@ -1418,6 +1422,13 @@ body {
 
     .day-donor {
         font-size: 0.5rem;
+    }
+
+    .donation-text-desktop {
+        display: none !important;
+    }
+    .donation-text-mobile {
+        display: inline-block;
     }
 }
 
