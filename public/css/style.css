@@ -1231,8 +1231,8 @@ body {
 
 /* ===== CAROSELLO GIFT CARD ===== */
 .carousel-modal {
-    max-width: 700px;
-    width: 90vw;
+    max-width: 900px;
+    width: 95vw;
     padding: 1.5rem;
     text-align: center;
 }
