@@ -291,20 +291,23 @@ body {
 
 /* Barra condivisione orizzontale */
 .sidebar-share-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
     padding-top: 0.75rem;
 }
 
 .sidebar-share-bar > span {
     font-size: 0.75rem;
     color: rgba(255,255,255,0.5);
-    display: block;
-    margin-bottom: 0.5rem;
+    white-space: nowrap;
 }
 
 .share-buttons {
     display: flex;
-    gap: 0.75rem;
-    justify-content: center;
+    gap: 0;
+    justify-content: space-evenly;
+    flex: 1;
 }
 
 .social-btn {
