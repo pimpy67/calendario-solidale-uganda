@@ -686,7 +686,7 @@ body {
 }
 
 .donation-info .donation-text-mobile {
-    display: none;
+    display: none !important;
 }
 
 .donation-info strong {
@@ -1428,7 +1428,7 @@ body {
         display: none !important;
     }
     .donation-info .donation-text-mobile {
-        display: inline-block;
+        display: inline-block !important;
     }
 }
 
