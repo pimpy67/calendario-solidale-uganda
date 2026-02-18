@@ -13,6 +13,10 @@ const Payment = (function() {
     let closeBtn;
     let selectedDateEl;
     let donorNameInput;
+    let donorSurnameInput;
+    let donorCFInput;
+    let donorEmailInput;
+    let donorFieldsSection;
     let isAnonymousCheckbox;
     let isGiftCheckbox;
     let giftSection;
@@ -31,6 +35,10 @@ const Payment = (function() {
         closeBtn = document.getElementById('closeModal');
         selectedDateEl = document.getElementById('selectedDate');
         donorNameInput = document.getElementById('donorName');
+        donorSurnameInput = document.getElementById('donorSurname');
+        donorCFInput = document.getElementById('donorCF');
+        donorEmailInput = document.getElementById('donorEmail');
+        donorFieldsSection = document.getElementById('donorFieldsSection');
         isAnonymousCheckbox = document.getElementById('isAnonymous');
         isGiftCheckbox = document.getElementById('isGift');
         giftSection = document.getElementById('giftSection');
@@ -55,11 +63,17 @@ const Payment = (function() {
             if (e.target === modal) closeModal();
         });
 
-        // Checkbox anonimo disabilita campo nome
+        // Checkbox anonimo nasconde/mostra sezione dati donatore
         isAnonymousCheckbox.addEventListener('change', () => {
-            donorNameInput.disabled = isAnonymousCheckbox.checked;
-            if (isAnonymousCheckbox.checked) {
+            const isAnon = isAnonymousCheckbox.checked;
+            donorFieldsSection.style.display = isAnon ? 'none' : 'block';
+            if (isAnon) {
                 donorNameInput.value = '';
+                donorSurnameInput.value = '';
+                donorCFInput.value = '';
+                donorEmailInput.value = '';
+                // Rimuovi eventuali stati di errore
+                donorFieldsSection.querySelectorAll('.form-error').forEach(el => el.classList.remove('form-error'));
             }
         });
 
@@ -147,8 +161,16 @@ const Payment = (function() {
 
         // Reset form
         donorNameInput.value = '';
-        donorNameInput.disabled = false;
+        donorSurnameInput.value = '';
+        donorCFInput.value = '';
+        donorEmailInput.value = '';
+        donorFieldsSection.style.display = 'block';
         isAnonymousCheckbox.checked = false;
+        // Rimuovi stati di errore
+        modal.querySelectorAll('.form-error').forEach(el => el.classList.remove('form-error'));
+        // Rimuovi popup validazione se presente
+        const existingPopup = modal.querySelector('.validation-popup');
+        if (existingPopup) existingPopup.remove();
         isGiftCheckbox.checked = false;
         giftSection.classList.remove('active');
         giftRecipientNameInput.value = '';
@@ -186,12 +208,37 @@ const Payment = (function() {
         // Valida input
         const isAnonymous = isAnonymousCheckbox.checked;
         const donorName = donorNameInput.value.trim();
+        const donorSurname = donorSurnameInput.value.trim();
+        const donorCF = donorCFInput.value.trim().toUpperCase();
+        const donorEmail = donorEmailInput.value.trim();
         const isGift = isGiftCheckbox.checked;
 
-        if (!isAnonymous && !donorName) {
-            alert('Inserisci il tuo nome oppure seleziona "Preferisco restare anonimo"');
-            donorNameInput.focus();
-            return;
+        // Rimuovi errori precedenti
+        modal.querySelectorAll('.form-error').forEach(el => el.classList.remove('form-error'));
+
+        if (!isAnonymous) {
+            const missingFields = [];
+            if (!donorName) { missingFields.push('Nome'); donorNameInput.classList.add('form-error'); }
+            if (!donorSurname) { missingFields.push('Cognome'); donorSurnameInput.classList.add('form-error'); }
+            if (!donorCF) { missingFields.push('Codice Fiscale'); donorCFInput.classList.add('form-error'); }
+            if (!donorEmail) { missingFields.push('Email'); donorEmailInput.classList.add('form-error'); }
+
+            // Validazione formato CF (16 caratteri alfanumerici)
+            if (donorCF && !/^[A-Z0-9]{16}$/.test(donorCF)) {
+                missingFields.push('Codice Fiscale non valido (16 caratteri)');
+                donorCFInput.classList.add('form-error');
+            }
+
+            // Validazione formato email
+            if (donorEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(donorEmail)) {
+                missingFields.push('Email non valida');
+                donorEmailInput.classList.add('form-error');
+            }
+
+            if (missingFields.length > 0) {
+                showValidationPopup(missingFields);
+                return;
+            }
         }
 
         // Valida campi regalo
@@ -222,6 +269,9 @@ const Payment = (function() {
                 month: selectedDate.month,
                 year: selectedDate.year,
                 donor_name: isAnonymous ? null : donorName,
+                donor_surname: isAnonymous ? null : donorSurname,
+                donor_cf: isAnonymous ? null : donorCF,
+                donor_email: isAnonymous ? null : donorEmail,
                 is_anonymous: isAnonymous,
                 payment_method: method
             };
@@ -328,6 +378,37 @@ const Payment = (function() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    /**
+     * Mostra popup di validazione con i campi mancanti
+     */
+    function showValidationPopup(missingFields) {
+        // Rimuovi popup precedente
+        const existing = modal.querySelector('.validation-popup');
+        if (existing) existing.remove();
+
+        const popup = document.createElement('div');
+        popup.className = 'validation-popup';
+        popup.innerHTML = `
+            <div class="validation-popup-content">
+                <button class="validation-popup-close">&times;</button>
+                <div class="validation-popup-icon">&#9888;</div>
+                <h4>Compila tutti i campi obbligatori</h4>
+                <p>Per garantire la deducibilita della donazione e l'invio della lettera, compila i seguenti campi:</p>
+                <ul>${missingFields.map(f => `<li>${f}</li>`).join('')}</ul>
+                <p class="validation-popup-hint">Oppure seleziona "Preferisco restare anonimo"</p>
+            </div>
+        `;
+
+        modal.querySelector('.modal-body').appendChild(popup);
+
+        // Chiudi popup
+        popup.querySelector('.validation-popup-close').addEventListener('click', () => popup.remove());
+        popup.addEventListener('click', (e) => { if (e.target === popup) popup.remove(); });
+
+        // Auto-chiudi dopo 6 secondi
+        setTimeout(() => { if (popup.parentNode) popup.remove(); }, 6000);
     }
 
     /**

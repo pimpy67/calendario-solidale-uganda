@@ -206,8 +206,7 @@
                 &times;
             </button>
 
-            <div class="modal-header">
-                <span class="modal-icon">&#128197;</span>
+            <div class="modal-header" style="padding-bottom: 0.5rem;">
                 <h3>Adotta questo giorno</h3>
             </div>
 
@@ -222,14 +221,34 @@
                     <span class="amount-value">50,00 euro</span>
                 </div>
 
-                <div class="form-group">
-                    <label for="donorName">Il tuo nome (apparira sul calendario)</label>
-                    <input type="text" id="donorName" placeholder="es. Mario Rossi" maxlength="50">
-                </div>
-
                 <div class="form-group checkbox-group">
                     <input type="checkbox" id="isAnonymous">
                     <label for="isAnonymous">Preferisco restare anonimo</label>
+                </div>
+
+                <div id="donorFieldsSection">
+                    <div class="form-row">
+                        <div class="form-group form-group-half">
+                            <label for="donorName">Nome *</label>
+                            <input type="text" id="donorName" placeholder="es. Mario" maxlength="50">
+                        </div>
+                        <div class="form-group form-group-half">
+                            <label for="donorSurname">Cognome *</label>
+                            <input type="text" id="donorSurname" placeholder="es. Rossi" maxlength="50">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="donorCF">Codice Fiscale *</label>
+                        <input type="text" id="donorCF" placeholder="es. RSSMRA85M01H501Z" maxlength="16" style="text-transform: uppercase;">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="donorEmail">Email *</label>
+                        <input type="email" id="donorEmail" placeholder="es. mario.rossi@email.com">
+                    </div>
+
+                    <p class="donor-fields-note">* Dati necessari per garantire la deducibilita della donazione e l'invio della relativa lettera.</p>
                 </div>
 
                 <div class="form-group checkbox-group">

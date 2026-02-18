@@ -941,6 +941,115 @@ body {
     pointer-events: none;
 }
 
+/* Form row (due colonne Nome/Cognome) */
+.form-row {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.form-group-half {
+    flex: 1;
+}
+
+/* Stato errore sui campi */
+.form-error {
+    border-color: #e74c3c !important;
+    background: rgba(231, 76, 60, 0.05);
+}
+
+/* Nota campi obbligatori */
+.donor-fields-note {
+    font-size: 0.75rem;
+    color: var(--gray);
+    font-style: italic;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+/* Validation Popup */
+.validation-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.validation-popup-content {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+    max-width: 360px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+}
+
+.validation-popup-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--gray);
+    cursor: pointer;
+}
+
+.validation-popup-icon {
+    font-size: 2.5rem;
+    color: #e74c3c;
+    margin-bottom: 0.5rem;
+}
+
+.validation-popup-content h4 {
+    color: var(--dark);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.validation-popup-content p {
+    color: var(--gray);
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.validation-popup-content ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 0.75rem;
+}
+
+.validation-popup-content ul li {
+    color: #e74c3c;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+}
+
+.validation-popup-content ul li::before {
+    content: '\2022 ';
+}
+
+.validation-popup-hint {
+    font-size: 0.8rem !important;
+    color: var(--gray) !important;
+    font-style: italic;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 .checkbox-group {
     display: flex;
     align-items: center;
