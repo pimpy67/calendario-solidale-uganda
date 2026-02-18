@@ -685,7 +685,7 @@ body {
     border-radius: 8px;
 }
 
-.donation-text-mobile {
+.donation-info .donation-text-mobile {
     display: none;
 }
 
@@ -1424,10 +1424,10 @@ body {
         font-size: 0.5rem;
     }
 
-    .donation-text-desktop {
+    .donation-info .donation-text-desktop {
         display: none !important;
     }
-    .donation-text-mobile {
+    .donation-info .donation-text-mobile {
         display: inline-block;
     }
 }
