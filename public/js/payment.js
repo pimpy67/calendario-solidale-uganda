@@ -394,10 +394,8 @@ const Payment = (function() {
             <div class="validation-popup-content">
                 <button class="validation-popup-close">&times;</button>
                 <div class="validation-popup-icon">&#9888;</div>
-                <h4>Compila tutti i campi obbligatori</h4>
-                <p>Per garantire la deducibilita della donazione e l'invio della lettera, compila i seguenti campi:</p>
+                <p>Inserisci il tuo nome, codice fiscale e mail (per poter fruire della deducibilita) oppure seleziona <strong>"Preferisco restare anonimo"</strong></p>
                 <ul>${missingFields.map(f => `<li>${f}</li>`).join('')}</ul>
-                <p class="validation-popup-hint">Oppure seleziona "Preferisco restare anonimo"</p>
             </div>
         `;
 
