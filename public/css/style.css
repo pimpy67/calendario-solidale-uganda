@@ -156,16 +156,17 @@ body {
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
 }
 
 .sidebar-nav-text {
-    font-size: 0.8rem;
-    color: rgba(255,255,255,0.7);
+    font-size: 0.95rem;
+    color: #fff;
     text-align: center;
     font-style: italic;
     font-weight: 700;
-    margin: 0;
+    margin: 0.25rem 0;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 
 .sidebar-link {
