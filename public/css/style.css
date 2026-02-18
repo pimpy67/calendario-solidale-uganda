@@ -1200,6 +1200,18 @@ body {
     padding: 1rem;
 }
 
+/* Sezione testo dentro modal Chi Siamo */
+.about-text-section {
+    padding: 1.5rem 2rem;
+    text-align: center;
+}
+
+.about-text-section h3 {
+    color: var(--dark);
+    font-size: 1.3rem;
+    margin-bottom: 0.75rem;
+}
+
 .about-close-btn {
     background: var(--green-available);
     color: var(--white);

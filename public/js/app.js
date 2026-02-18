@@ -139,9 +139,10 @@ function setupExitFullscreenButton() {
  * Setup modal Chi Siamo (immagine) e Scopri di Più (testo)
  */
 function setupAboutModal() {
-    // Modal Chi Siamo (immagine volantino)
+    // Modal Chi Siamo (immagine + testo combinati)
     const aboutModal = document.getElementById('aboutModal');
     const openAbout = document.getElementById('openAbout');
+    const openAboutPrimary = document.getElementById('openAboutPrimary');
     const closeAbout = document.getElementById('closeAbout');
     const closeAboutBtn = document.getElementById('closeAboutBtn');
 
@@ -154,7 +155,9 @@ function setupAboutModal() {
         aboutModal.classList.remove('active');
     }
 
+    // Entrambi i bottoni aprono lo stesso modal
     if (openAbout) openAbout.addEventListener('click', openAboutModal);
+    if (openAboutPrimary) openAboutPrimary.addEventListener('click', openAboutModal);
     if (closeAbout) closeAbout.addEventListener('click', closeAboutModal);
     if (closeAboutBtn) closeAboutBtn.addEventListener('click', closeAboutModal);
 
@@ -162,34 +165,10 @@ function setupAboutModal() {
         if (e.target === aboutModal) closeAboutModal();
     });
 
-    // Modal Scopri di Più (testo)
-    const discoverModal = document.getElementById('discoverModal');
-    const openDiscover = document.getElementById('openAboutPrimary');
-    const closeDiscover = document.getElementById('closeDiscover');
-    const closeDiscoverBtn = document.getElementById('closeDiscoverBtn');
-
-    function openDiscoverModal(e) {
-        e.preventDefault();
-        discoverModal.classList.add('active');
-    }
-
-    function closeDiscoverModal() {
-        discoverModal.classList.remove('active');
-    }
-
-    if (openDiscover) openDiscover.addEventListener('click', openDiscoverModal);
-    if (closeDiscover) closeDiscover.addEventListener('click', closeDiscoverModal);
-    if (closeDiscoverBtn) closeDiscoverBtn.addEventListener('click', closeDiscoverModal);
-
-    discoverModal.addEventListener('click', (e) => {
-        if (e.target === discoverModal) closeDiscoverModal();
-    });
-
-    // Escape chiude entrambi
+    // Escape chiude
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             if (aboutModal.classList.contains('active')) closeAboutModal();
-            if (discoverModal.classList.contains('active')) closeDiscoverModal();
         }
     });
 }
