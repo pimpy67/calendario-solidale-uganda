@@ -246,12 +246,12 @@ body {
 /* Calendar legend (sotto il calendario) */
 .calendar-legend {
     display: inline-flex;
-    gap: 1rem;
+    gap: 0.6rem;
     align-items: center;
     margin-top: 0.75rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     background: rgba(0, 0, 0, 0.5);
-    padding: 0.4rem 1rem;
+    padding: 0.3rem 0.75rem;
     border-radius: 8px;
     justify-content: center;
 }
