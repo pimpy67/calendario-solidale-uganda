@@ -1430,6 +1430,9 @@ body {
     }
     .donation-info .donation-text-mobile {
         display: inline-block !important;
+        padding: 0.4rem 0.5rem;
+        width: 95%;
+        box-sizing: border-box;
     }
 }
 
