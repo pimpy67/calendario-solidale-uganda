@@ -49,6 +49,17 @@ function init() {
         db.exec(`ALTER TABLE donations ADD COLUMN gift_card_design VARCHAR(50) DEFAULT 'card1'`);
     } catch (e) { /* colonna gia esistente */ }
 
+    // Aggiungi colonne dati donatore (se non esistono)
+    try {
+        db.exec(`ALTER TABLE donations ADD COLUMN donor_surname VARCHAR(100)`);
+    } catch (e) { /* colonna gia esistente */ }
+    try {
+        db.exec(`ALTER TABLE donations ADD COLUMN donor_cf VARCHAR(16)`);
+    } catch (e) { /* colonna gia esistente */ }
+    try {
+        db.exec(`ALTER TABLE donations ADD COLUMN donor_email VARCHAR(255)`);
+    } catch (e) { /* colonna gia esistente */ }
+
     // Crea indici per performance
     db.exec(`
         CREATE INDEX IF NOT EXISTS idx_donations_date ON donations(year, month, day);
@@ -107,8 +118,8 @@ function isDayAdopted(day, month, year) {
  */
 function createDonation(data) {
     const stmt = db.prepare(`
-        INSERT INTO donations (day, month, year, donor_name, is_anonymous, amount, payment_id, payment_status, is_gift, gift_recipient_name, gift_card_design, email, message)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
+        INSERT INTO donations (day, month, year, donor_name, donor_surname, donor_cf, donor_email, is_anonymous, amount, payment_id, payment_status, is_gift, gift_recipient_name, gift_card_design, email, message)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -116,6 +127,9 @@ function createDonation(data) {
         data.month,
         data.year,
         data.donor_name,
+        data.donor_surname || null,
+        data.donor_cf || null,
+        data.donor_email || null,
         data.is_anonymous ? 1 : 0,
         data.amount || 50.00,
         data.payment_id,
@@ -222,6 +236,9 @@ function exportDonations(year = null) {
         SELECT
             id, day, month, year,
             CASE WHEN is_anonymous = 1 THEN 'Anonimo' ELSE donor_name END as donor_name,
+            CASE WHEN is_anonymous = 1 THEN '' ELSE COALESCE(donor_surname, '') END as donor_surname,
+            CASE WHEN is_anonymous = 1 THEN '' ELSE COALESCE(donor_cf, '') END as donor_cf,
+            CASE WHEN is_anonymous = 1 THEN '' ELSE COALESCE(donor_email, '') END as donor_email,
             amount, payment_status, payment_id, created_at
         FROM donations
         WHERE payment_status = 'completed'

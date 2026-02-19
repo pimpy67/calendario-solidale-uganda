@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../database/db');
-const { sendGiftCard } = require('../utils/mailer');
+const { sendGiftCard, sendDonationNotification } = require('../utils/mailer');
 
 // Configurazione Satispay
 const SATISPAY_ENABLED = process.env.SATISPAY_API_KEY ? true : false;
@@ -61,6 +61,47 @@ router.get('/donations/detail/:id', (req, res) => {
     } catch (error) {
         console.error('Errore GET donation detail:', error);
         res.status(500).json({ error: true, message: 'Errore nel recupero della donazione' });
+    }
+});
+
+/**
+ * GET /api/donations/export
+ * Esporta tutte le donazioni completate in CSV per il gestionale
+ */
+router.get('/donations/export', (req, res) => {
+    try {
+        const year = req.query.year ? parseInt(req.query.year) : null;
+        const donations = db.exportDonations(year);
+
+        const headers = ['ID', 'Giorno', 'Mese', 'Anno', 'Nome', 'Cognome', 'Codice Fiscale', 'Email', 'Importo', 'Stato Pagamento', 'ID Pagamento', 'Data Creazione'];
+        const csvRows = [headers.join(';')];
+
+        for (const d of donations) {
+            csvRows.push([
+                d.id,
+                d.day,
+                d.month,
+                d.year,
+                `"${(d.donor_name || '').replace(/"/g, '""')}"`,
+                `"${(d.donor_surname || '').replace(/"/g, '""')}"`,
+                `"${(d.donor_cf || '').replace(/"/g, '""')}"`,
+                `"${(d.donor_email || '').replace(/"/g, '""')}"`,
+                d.amount,
+                d.payment_status,
+                d.payment_id,
+                d.created_at
+            ].join(';'));
+        }
+
+        const csv = csvRows.join('\n');
+        const filename = year ? `donazioni_${year}.csv` : 'donazioni_tutte.csv';
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send('\uFEFF' + csv); // BOM per Excel
+    } catch (error) {
+        console.error('Errore export CSV:', error);
+        res.status(500).json({ error: true, message: 'Errore nell\'export' });
     }
 });
 
@@ -125,7 +166,7 @@ router.get('/donations/:year/:month', (req, res) => {
  */
 router.post('/donations', async (req, res) => {
     try {
-        const { day, month, year, donor_name, is_anonymous, is_gift, gift_email, gift_recipient_name, gift_message, gift_card_design } = req.body;
+        const { day, month, year, donor_name, donor_surname, donor_cf, donor_email, is_anonymous, is_gift, gift_email, gift_recipient_name, gift_message, gift_card_design } = req.body;
 
         // Validazione
         if (!day || !month || !year) {
@@ -161,6 +202,9 @@ router.post('/donations', async (req, res) => {
             month,
             year,
             donor_name: is_anonymous ? null : donor_name,
+            donor_surname: is_anonymous ? null : donor_surname,
+            donor_cf: is_anonymous ? null : donor_cf,
+            donor_email: is_anonymous ? null : donor_email,
             is_anonymous,
             payment_id: paymentId,
             is_gift: is_gift || false,
@@ -241,6 +285,10 @@ router.post('/donations/:id/confirm', async (req, res) => {
             message: 'Donazione confermata'
         });
 
+        // Invia notifica all'associazione in background
+        sendDonationNotification(donation)
+            .catch(err => console.error('Errore notifica associazione:', err));
+
         // Invia gift card via email in background (non blocca la risposta)
         console.log(`Donazione ${id} confermata. is_gift=${donation.is_gift}, email=${donation.email}`);
         if (donation.is_gift && donation.email) {
@@ -282,6 +330,10 @@ router.post('/webhook/satispay', async (req, res) => {
             if (donation) {
                 db.confirmPayment(donation.id);
                 console.log(`Donazione ${donation.id} confermata via Satispay`);
+
+                // Notifica all'associazione
+                sendDonationNotification(donation)
+                    .catch(err => console.error('Errore notifica associazione:', err));
 
                 // Se e un regalo, invia gift card
                 if (donation.is_gift && donation.email) {
@@ -356,6 +408,10 @@ router.post('/webhook/stripe', async (req, res) => {
             if (donation && donation.payment_status !== 'completed') {
                 db.confirmPayment(donationId);
                 console.log(`Donazione ${donationId} confermata via Stripe`);
+
+                // Notifica all'associazione
+                sendDonationNotification(donation)
+                    .catch(err => console.error('Errore notifica associazione:', err));
 
                 if (donation.is_gift && donation.email) {
                     try {

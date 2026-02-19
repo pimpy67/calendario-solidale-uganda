@@ -330,6 +330,114 @@ async function sendGiftCard(donation) {
     }
 }
 
+/**
+ * Invia notifica di avvenuta donazione all'associazione
+ * @param {Object} donation - Dati della donazione dal database
+ */
+async function sendDonationNotification(donation) {
+    const notifyEmail = process.env.ASSOCIATION_EMAIL || process.env.GMAIL_USER;
+    if (!notifyEmail) {
+        console.warn('Nessuna email associazione configurata (ASSOCIATION_EMAIL o GMAIL_USER). Notifica non inviata.');
+        return;
+    }
+
+    const useBrevo = !!process.env.BREVO_API_KEY;
+    const useGmail = process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD;
+
+    if (!useBrevo && !useGmail) {
+        console.warn('Nessun servizio email configurato. Notifica non inviata.');
+        return;
+    }
+
+    const monthName = MONTHS[donation.month - 1];
+    const dateStr = `${donation.day} ${monthName} ${donation.year}`;
+    const donorName = donation.is_anonymous ? 'Anonimo' : (donation.donor_name || 'N/D');
+    const donorSurname = donation.donor_surname || '';
+    const donorCF = donation.donor_cf || 'Non fornito';
+    const donorEmail = donation.donor_email || 'Non fornita';
+    const amount = donation.amount || 50;
+
+    const fromAddress = useBrevo
+        ? `Calendario Solidale <${process.env.GMAIL_USER || 'effataitalia@gmail.com'}>`
+        : `"Calendario Solidale" <${process.env.GMAIL_USER}>`;
+
+    const html = `
+<!DOCTYPE html>
+<html lang="it">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0; padding:0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color:#f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding: 20px 0;">
+        <tr><td align="center">
+            <table width="550" cellpadding="0" cellspacing="0" style="background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.1);">
+                <tr>
+                    <td style="background:linear-gradient(135deg,#2e7d32,#4caf50); padding:25px; text-align:center;">
+                        <h2 style="color:#fff; margin:0; font-size:22px;">Nuova Donazione Ricevuta</h2>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:30px;">
+                        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px; width:140px;">Giorno adottato</td>
+                                <td style="color:#333; font-size:15px; font-weight:600;">${dateStr}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Importo</td>
+                                <td style="color:#2e7d32; font-size:15px; font-weight:600;">${amount.toFixed(2)} &euro;</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Nome</td>
+                                <td style="color:#333; font-size:15px;">${donorName}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Cognome</td>
+                                <td style="color:#333; font-size:15px;">${donorSurname || 'N/D'}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Codice Fiscale</td>
+                                <td style="color:#333; font-size:15px; font-family:monospace;">${donorCF}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Email</td>
+                                <td style="color:#333; font-size:15px;">${donorEmail}</td>
+                            </tr>
+                            ${donation.is_gift ? `
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Regalo per</td>
+                                <td style="color:#333; font-size:15px;">${donation.gift_recipient_name || 'N/D'} (${donation.email || 'no email'})</td>
+                            </tr>` : ''}
+                        </table>
+                        <p style="color:#999; font-size:12px; margin-top:20px; text-align:center;">
+                            Donazione #${donation.id} &bull; Pagamento confermato
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td></tr>
+    </table>
+</body>
+</html>`;
+
+    const mailOptions = {
+        from: fromAddress,
+        to: notifyEmail,
+        subject: `Donazione confermata: ${donorName} ${donorSurname} - ${dateStr} (${amount.toFixed(2)}€)`,
+        html
+    };
+
+    try {
+        if (useBrevo) {
+            await sendViaBrevo(mailOptions, null);
+        } else {
+            await sendViaGmail(mailOptions, null);
+        }
+        console.log(`Notifica donazione #${donation.id} inviata a ${notifyEmail}`);
+    } catch (error) {
+        console.error('Errore invio notifica associazione:', error);
+    }
+}
+
 module.exports = {
-    sendGiftCard
+    sendGiftCard,
+    sendDonationNotification
 };
