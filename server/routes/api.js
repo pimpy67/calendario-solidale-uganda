@@ -70,6 +70,12 @@ router.get('/donations/detail/:id', (req, res) => {
  */
 router.get('/donations/export', (req, res) => {
     try {
+        // Protezione con password admin
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        if (!adminPassword || req.query.password !== adminPassword) {
+            return res.status(401).json({ error: true, message: 'Password non valida' });
+        }
+
         const year = req.query.year ? parseInt(req.query.year) : null;
         const donations = db.exportDonations(year);
 
