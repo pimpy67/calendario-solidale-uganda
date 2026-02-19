@@ -431,6 +431,20 @@ body {
     text-align: center;
 }
 
+.privacy-link {
+    display: block;
+    text-align: center;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.4);
+    text-decoration: underline;
+    margin-top: 0.3rem;
+    transition: color 0.3s;
+}
+
+.privacy-link:hover {
+    color: rgba(255,255,255,0.7);
+}
+
 /* Toggle sidebar (mobile) */
 .sidebar-toggle {
     display: none;
@@ -1669,4 +1683,92 @@ body {
     to {
         transform: rotate(360deg);
     }
+}
+
+/* ===== PRIVACY POLICY ===== */
+.privacy-modal {
+    max-width: 700px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.privacy-content {
+    padding: 2rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    color: var(--dark);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.privacy-content h3 {
+    color: var(--dark);
+    font-size: 1.4rem;
+    margin-bottom: 0.3rem;
+}
+
+.privacy-content .privacy-subtitle {
+    color: var(--gray);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.privacy-content h4 {
+    color: var(--dark);
+    font-size: 1rem;
+    margin-top: 1.2rem;
+    margin-bottom: 0.4rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.privacy-content ul {
+    padding-left: 1.2rem;
+    margin: 0.4rem 0;
+}
+
+.privacy-content li {
+    margin-bottom: 0.2rem;
+}
+
+.privacy-content a {
+    color: var(--green-available);
+}
+
+.privacy-update {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--gray);
+    font-style: italic;
+}
+
+.privacy-modal .modal-footer {
+    padding: 1rem 2rem;
+}
+
+/* Privacy checkbox nel form */
+.privacy-checkbox-group {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.6rem 0.8rem;
+    background: rgba(76, 175, 80, 0.06);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(76, 175, 80, 0.15);
+}
+
+.privacy-checkbox-group label {
+    font-size: 0.82rem;
+    color: var(--dark);
+}
+
+.privacy-checkbox-group a {
+    color: var(--green-available);
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.privacy-checkbox-group.form-error {
+    border-color: #e74c3c;
+    background: rgba(231, 76, 60, 0.06);
 }

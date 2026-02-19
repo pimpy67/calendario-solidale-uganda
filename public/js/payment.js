@@ -25,6 +25,7 @@ const Payment = (function() {
     let giftMessageInput;
     let payWithSatispayBtn;
     let payWithStripeBtn;
+    let privacyConsentCheckbox;
 
     /**
      * Inizializza il modulo pagamento
@@ -47,6 +48,7 @@ const Payment = (function() {
         giftMessageInput = document.getElementById('giftMessage');
         payWithSatispayBtn = document.getElementById('payWithSatispay');
         payWithStripeBtn = document.getElementById('payWithStripe');
+        privacyConsentCheckbox = document.getElementById('privacyConsent');
 
         // Verifica che closeBtn esista
         if (!closeBtn) {
@@ -133,6 +135,37 @@ const Payment = (function() {
                 }
             }
         });
+
+        // Privacy modal
+        const privacyModal = document.getElementById('privacyModal');
+        const openPrivacyBtn = document.getElementById('openPrivacy');
+        const openPrivacyFromFormBtn = document.getElementById('openPrivacyFromForm');
+        const closePrivacyBtn = document.getElementById('closePrivacy');
+        const closePrivacyBtn2 = document.getElementById('closePrivacyBtn');
+
+        if (openPrivacyBtn) {
+            openPrivacyBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                privacyModal.classList.add('active');
+            });
+        }
+        if (openPrivacyFromFormBtn) {
+            openPrivacyFromFormBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                privacyModal.classList.add('active');
+            });
+        }
+        if (closePrivacyBtn) {
+            closePrivacyBtn.addEventListener('click', () => privacyModal.classList.remove('active'));
+        }
+        if (closePrivacyBtn2) {
+            closePrivacyBtn2.addEventListener('click', () => privacyModal.classList.remove('active'));
+        }
+        if (privacyModal) {
+            privacyModal.addEventListener('click', (e) => {
+                if (e.target === privacyModal) privacyModal.classList.remove('active');
+            });
+        }
     }
 
     /**
@@ -180,6 +213,7 @@ const Payment = (function() {
         isProcessing = false;
         payWithSatispayBtn.classList.remove('loading');
         payWithStripeBtn.classList.remove('loading');
+        privacyConsentCheckbox.checked = false;
 
         // Mostra modal
         modal.classList.add('active');
@@ -244,6 +278,8 @@ const Payment = (function() {
 
         // Rimuovi errori precedenti
         modal.querySelectorAll('.form-error').forEach(el => el.classList.remove('form-error'));
+        const existingPopup = modal.querySelector('.validation-popup');
+        if (existingPopup) existingPopup.remove();
 
         if (!isAnonymous) {
             const missingFields = [];
@@ -268,6 +304,13 @@ const Payment = (function() {
                 showValidationPopup(missingFields);
                 return;
             }
+        }
+
+        // Valida consenso privacy
+        if (!privacyConsentCheckbox.checked) {
+            privacyConsentCheckbox.closest('.privacy-checkbox-group').classList.add('form-error');
+            showValidationPopup(['Consenso alla privacy obbligatorio']);
+            return;
         }
 
         // Valida campi regalo

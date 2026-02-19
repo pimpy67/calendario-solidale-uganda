@@ -130,6 +130,7 @@
             <!-- Footer sidebar -->
             <div class="sidebar-footer">
                 <p>&copy; 2026 Casa Famiglia Uganda</p>
+                <a href="#" class="privacy-link" id="openPrivacy">Privacy Policy</a>
             </div>
         </div>
     </aside>
@@ -307,6 +308,11 @@
                     </div>
                 </div>
 
+                <div class="form-group checkbox-group privacy-checkbox-group">
+                    <input type="checkbox" id="privacyConsent">
+                    <label for="privacyConsent">Ho letto e accetto l'<a href="#" id="openPrivacyFromForm">informativa sulla privacy</a> *</label>
+                </div>
+
                 <div class="payment-methods">
                     <h4>Metodo di pagamento</h4>
                     <button class="payment-btn stripe-btn" id="payWithStripe">
@@ -388,6 +394,79 @@
     <div class="giftcard-preview-overlay" id="giftcardPreview">
         <button class="giftcard-preview-close" aria-label="Chiudi">&times;</button>
         <img src="" alt="" id="giftcardPreviewImg">
+    </div>
+
+    <!-- Modal Privacy Policy -->
+    <div class="modal-overlay" id="privacyModal">
+        <div class="modal privacy-modal">
+            <button class="modal-close" id="closePrivacy" aria-label="Chiudi">&times;</button>
+            <div class="privacy-content">
+                <h3>Informativa sulla Privacy</h3>
+                <p class="privacy-subtitle">ai sensi dell'art. 13 del Regolamento UE 2016/679 (GDPR)</p>
+
+                <h4>Titolare del trattamento</h4>
+                <p><strong>Effat&agrave; Italia Charity Organisation ODV</strong><br>
+                Sede: Via Brustolon 1, 31044 Montebelluna (TV)<br>
+                Email: effataitalia@gmail.com<br>
+                Telefono segreteria: 370 142 1570</p>
+
+                <h4>Dati raccolti</h4>
+                <p>Attraverso il form di donazione raccogliamo i seguenti dati personali:</p>
+                <ul>
+                    <li>Nome e cognome</li>
+                    <li>Codice fiscale</li>
+                    <li>Indirizzo email</li>
+                    <li>Dati di pagamento (gestiti direttamente da Stripe/Satispay)</li>
+                </ul>
+
+                <h4>Finalit&agrave; del trattamento</h4>
+                <p>I dati personali sono trattati per le seguenti finalit&agrave;:</p>
+                <ul>
+                    <li>Gestione della donazione e del relativo pagamento</li>
+                    <li>Emissione della documentazione necessaria per la deducibilit&agrave;/detraibilit&agrave; fiscale della donazione</li>
+                    <li>Invio della conferma di donazione e della eventuale gift card</li>
+                    <li>Adempimenti di legge e obblighi fiscali</li>
+                </ul>
+
+                <h4>Base giuridica</h4>
+                <p>Il trattamento dei dati &egrave; basato su:</p>
+                <ul>
+                    <li>Il consenso dell'interessato (art. 6.1.a GDPR)</li>
+                    <li>L'esecuzione della donazione (art. 6.1.b GDPR)</li>
+                    <li>Obblighi di legge in materia fiscale (art. 6.1.c GDPR)</li>
+                </ul>
+
+                <h4>Conservazione dei dati</h4>
+                <p>I dati saranno conservati per il tempo necessario al perseguimento delle finalit&agrave; sopra indicate e comunque per un periodo non superiore a quanto previsto dalla normativa fiscale vigente (10 anni).</p>
+
+                <h4>Condivisione dei dati</h4>
+                <p>I dati non saranno ceduti a terzi, ad eccezione di:</p>
+                <ul>
+                    <li>Fornitori di servizi di pagamento (Stripe, Satispay) per l'elaborazione delle transazioni</li>
+                    <li>Autorit&agrave; competenti, quando richiesto dalla legge</li>
+                </ul>
+
+                <h4>Diritti dell'interessato</h4>
+                <p>In qualsiasi momento puoi esercitare i seguenti diritti:</p>
+                <ul>
+                    <li>Accesso ai tuoi dati personali</li>
+                    <li>Rettifica dei dati inesatti</li>
+                    <li>Cancellazione dei dati (diritto all'oblio)</li>
+                    <li>Limitazione del trattamento</li>
+                    <li>Portabilit&agrave; dei dati</li>
+                    <li>Opposizione al trattamento</li>
+                </ul>
+                <p>Per esercitare i tuoi diritti, contattaci a: <strong>effataitalia@gmail.com</strong></p>
+
+                <h4>Reclami</h4>
+                <p>Hai il diritto di proporre reclamo al Garante per la Protezione dei Dati Personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">www.garanteprivacy.it</a>).</p>
+
+                <p class="privacy-update">Ultima modifica: febbraio 2026</p>
+            </div>
+            <div class="modal-footer">
+                <button class="about-close-btn" id="closePrivacyBtn">Chiudi</button>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
