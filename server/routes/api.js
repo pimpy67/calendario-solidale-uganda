@@ -435,6 +435,32 @@ router.post('/webhook/stripe', async (req, res) => {
 });
 
 /**
+ * POST /api/admin/clear-database
+ * Svuota tutte le donazioni dal database (protetto da password)
+ */
+router.post('/admin/clear-database', (req, res) => {
+    try {
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        const password = req.query.password || req.body.password;
+
+        if (!adminPassword || password !== adminPassword) {
+            return res.status(401).json({ error: true, message: 'Password non valida' });
+        }
+
+        const deleted = db.clearAllDonations();
+        console.log(`Database svuotato: ${deleted} donazioni eliminate`);
+
+        res.json({
+            success: true,
+            message: `Database svuotato: ${deleted} donazioni eliminate`
+        });
+    } catch (error) {
+        console.error('Errore clear database:', error);
+        res.status(500).json({ error: true, message: 'Errore nella pulizia del database' });
+    }
+});
+
+/**
  * Crea sessione Stripe Checkout
  * @param {Object} donation - Dati donazione
  * @returns {String} URL per il checkout Stripe

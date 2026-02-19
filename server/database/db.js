@@ -257,6 +257,14 @@ function exportDonations(year = null) {
 }
 
 /**
+ * Cancella tutte le donazioni (reset database)
+ */
+function clearAllDonations() {
+    const info = db.prepare('DELETE FROM donations').run();
+    return info.changes;
+}
+
+/**
  * Chiudi connessione database
  */
 function close() {
@@ -279,5 +287,6 @@ module.exports = {
     getStatsByMonth,
     getRecentDonations,
     exportDonations,
+    clearAllDonations,
     close
 };
