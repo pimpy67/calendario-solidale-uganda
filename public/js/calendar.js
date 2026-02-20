@@ -188,7 +188,7 @@ const Calendar = (function() {
                 data2026.forEach(d => {
                     const key = `${d.year}-${d.month}-${d.day}`;
                     donations[key] = {
-                        donor: d.is_anonymous ? 'ADOTTATO' : d.donor_name,
+                        donor: d.is_anonymous ? 'ADOTTATO' : (d.donor_name || '').split(' ')[0],
                         status: d.payment_status
                     };
                 });
@@ -199,7 +199,7 @@ const Calendar = (function() {
                 data2027.forEach(d => {
                     const key = `${d.year}-${d.month}-${d.day}`;
                     donations[key] = {
-                        donor: d.is_anonymous ? 'ADOTTATO' : d.donor_name,
+                        donor: d.is_anonymous ? 'ADOTTATO' : (d.donor_name || '').split(' ')[0],
                         status: d.payment_status
                     };
                 });
