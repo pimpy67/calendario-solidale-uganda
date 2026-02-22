@@ -179,7 +179,7 @@
 
             <div class="gift-card-section" id="giftCardSection">
                 <h3>La tua Gift Card</h3>
-                <img src="" alt="Gift Card" class="gift-card-preview" id="giftCardImg">
+                <img src="" alt="Gift Card" class="gift-card-preview" id="giftCardImg" style="display:none;">
                 <button class="btn btn-download" id="downloadBtn">Scarica Gift Card</button>
             </div>
 
@@ -202,10 +202,10 @@
                         'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
         const CARD_MAP = {
-            card1: '/images/gift_card/1.png',
-            card2: '/images/gift_card/2.png',
-            card3: '/images/gift_card/3.png',
-            card4: '/images/gift_card/4.png'
+            card1: '/images/gift_card/1.webp',
+            card2: '/images/gift_card/2.webp',
+            card3: '/images/gift_card/3.webp',
+            card4: '/images/gift_card/4.webp'
         };
 
         async function init() {
@@ -235,6 +235,7 @@
                     const giftImg = document.getElementById('giftCardImg');
 
                     giftImg.src = cardUrl;
+                    giftImg.style.display = 'block';
                     giftSection.classList.add('active');
 
                     document.getElementById('downloadBtn').addEventListener('click', () => {
