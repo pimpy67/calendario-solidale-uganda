@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    container_name: calendario-effata
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - calendario_data:/data
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - DATABASE_PATH=/data/calendario.db
+
+volumes:
+  calendario_data:

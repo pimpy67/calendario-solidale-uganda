@@ -1,0 +1,8 @@
+node_modules
+.env
+.git
+.gitignore
+*.md
+server/database/*.db
+server/database/*.db-shm
+server/database/*.db-wal
