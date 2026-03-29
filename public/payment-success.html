@@ -205,22 +205,30 @@
             card1: '/images/gift_card/1.webp',
             card2: '/images/gift_card/2.webp',
             card3: '/images/gift_card/3.webp',
-            card4: '/images/gift_card/4.webp'
+            card4: '/images/gift_card/4.webp',
+            card5: '/images/gift_card/5.webp'
         };
+
+        async function fetchWithRetry(sessionId, attempts = 6, delay = 2000) {
+            for (let i = 0; i < attempts; i++) {
+                const res = await fetch(`/api/donations/by-session/${sessionId}`);
+                if (res.ok) return await res.json();
+                if (i < attempts - 1) await new Promise(r => setTimeout(r, delay));
+            }
+            throw new Error('Not found');
+        }
 
         async function init() {
             const params = new URLSearchParams(window.location.search);
-            const donationId = params.get('donation_id');
+            const sessionId = params.get('session_id');
 
-            if (!donationId) {
+            if (!sessionId) {
                 showError();
                 return;
             }
 
             try {
-                const res = await fetch(`/api/donations/detail/${donationId}`);
-                if (!res.ok) throw new Error('Not found');
-                const donation = await res.json();
+                const donation = await fetchWithRetry(sessionId);
 
                 // Mostra dettagli
                 document.getElementById('donationDate').textContent =

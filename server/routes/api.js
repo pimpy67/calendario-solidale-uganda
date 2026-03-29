@@ -33,6 +33,33 @@ router.get('/stats', (req, res) => {
 });
 
 /**
+ * GET /api/donations/by-session/:sessionId
+ * Ottieni donazione tramite Stripe session_id (per pagina successo)
+ */
+router.get('/donations/by-session/:sessionId', (req, res) => {
+    try {
+        const donation = db.getDonationBySessionId(req.params.sessionId);
+        if (!donation || donation.payment_status !== 'completed') {
+            return res.status(404).json({ error: true, message: 'Donazione non trovata' });
+        }
+        res.json({
+            id: donation.id,
+            day: donation.day,
+            month: donation.month,
+            year: donation.year,
+            donor_name: donation.is_anonymous ? 'Anonimo' : donation.donor_name,
+            is_gift: donation.is_gift,
+            gift_recipient_name: donation.gift_recipient_name,
+            gift_card_design: donation.gift_card_design,
+            payment_status: donation.payment_status
+        });
+    } catch (error) {
+        console.error('Errore GET by-session:', error);
+        res.status(500).json({ error: true, message: 'Errore nel recupero della donazione' });
+    }
+});
+
+/**
  * GET /api/donations/detail/:id
  * Ottieni dettagli di una singola donazione (per pagina successo)
  * NOTA: deve stare PRIMA delle route con :year/:month per evitare conflitti
@@ -168,103 +195,101 @@ router.get('/donations/:year/:month', (req, res) => {
 
 /**
  * POST /api/donations
- * Crea una nuova donazione
+ * Valida il giorno e crea la sessione Stripe — nessuna scrittura su DB (no pending)
+ * La donazione viene creata nel DB solo dopo conferma pagamento via webhook
  */
 router.post('/donations', async (req, res) => {
     try {
         const { day, month, year, donor_name, donor_surname, donor_cf, donor_email, is_anonymous, is_gift, gift_email, gift_recipient_name, gift_message, gift_card_design } = req.body;
 
-        // Validazione
+        // Validazione data
         if (!day || !month || !year) {
-            return res.status(400).json({
-                error: true,
-                message: 'Data mancante'
-            });
+            return res.status(400).json({ error: true, message: 'Data mancante' });
         }
-
-        // Verifica data valida
         const date = new Date(year, month - 1, day);
         if (date.getDate() !== day || date.getMonth() !== month - 1) {
-            return res.status(400).json({
-                error: true,
-                message: 'Data non valida'
-            });
+            return res.status(400).json({ error: true, message: 'Data non valida' });
         }
 
-        // Verifica se gia adottato
+        // Verifica se già adottato
         if (db.isDayAdopted(day, month, year)) {
-            return res.status(409).json({
-                error: true,
-                message: 'Questo giorno e gia stato adottato!'
-            });
+            return res.status(409).json({ error: true, message: 'Questo giorno e gia stato adottato!' });
         }
 
-        // Genera ID pagamento
-        const paymentId = uuidv4();
+        const paymentMethod = req.body.payment_method || 'stripe';
 
-        // Crea donazione
-        const donation = db.createDonation({
-            day,
-            month,
-            year,
-            donor_name: is_anonymous ? null : donor_name,
-            donor_surname: is_anonymous ? null : donor_surname,
-            donor_cf: is_anonymous ? null : donor_cf,
-            donor_email: is_anonymous ? null : donor_email,
-            is_anonymous,
-            payment_id: paymentId,
-            is_gift: is_gift || false,
-            gift_recipient_name: gift_recipient_name || null,
-            gift_card_design: gift_card_design || 'card1',
-            email: gift_email || null,
-            message: gift_message || null
-        });
-
-        const paymentMethod = req.body.payment_method || 'satispay';
-
-        // Se Satispay
-        let satispayUrl = null;
-        if (paymentMethod === 'satispay' && SATISPAY_ENABLED) {
-            try {
-                satispayUrl = await createSatispayPayment(donation);
-            } catch (satispayError) {
-                console.error('Errore Satispay:', satispayError);
-            }
-        }
-
-        // Se Stripe - crea Checkout Session
-        let stripeSessionUrl = null;
+        // Stripe: crea sessione con tutti i dati nel metadata (nessun record DB)
         if (paymentMethod === 'stripe' && STRIPE_ENABLED) {
+            const paymentId = uuidv4();
+            const sessionUrl = await createStripeCheckout({
+                day, month, year,
+                donor_name: is_anonymous ? null : (donor_name || null),
+                donor_surname: is_anonymous ? null : (donor_surname || null),
+                donor_cf: is_anonymous ? null : (donor_cf || null),
+                donor_email: is_anonymous ? null : (donor_email || null),
+                is_anonymous: is_anonymous || false,
+                is_gift: is_gift || false,
+                gift_recipient_name: gift_recipient_name || null,
+                gift_card_design: gift_card_design || 'card1',
+                email: gift_email || null,
+                message: gift_message || null,
+                payment_id: paymentId
+            });
+            return res.status(201).json({ stripe_url: sessionUrl, payment_method: 'stripe' });
+        }
+
+        // Satispay (invariato)
+        if (paymentMethod === 'satispay' && SATISPAY_ENABLED) {
+            const paymentId = uuidv4();
+            const donation = db.createDonation({
+                day, month, year,
+                donor_name: is_anonymous ? null : donor_name,
+                donor_surname: is_anonymous ? null : donor_surname,
+                donor_cf: is_anonymous ? null : donor_cf,
+                donor_email: is_anonymous ? null : donor_email,
+                is_anonymous,
+                payment_id: paymentId,
+                is_gift: is_gift || false,
+                gift_recipient_name: gift_recipient_name || null,
+                gift_card_design: gift_card_design || 'card1',
+                email: gift_email || null,
+                message: gift_message || null
+            });
             try {
-                stripeSessionUrl = await createStripeCheckout(donation);
-            } catch (stripeError) {
-                console.error('Errore Stripe:', stripeError);
+                const satispayUrl = await createSatispayPayment(donation);
+                return res.status(201).json({ id: donation.id, satispay_url: satispayUrl, payment_method: 'satispay' });
+            } catch (e) {
+                console.error('Errore Satispay:', e);
             }
         }
 
-        res.status(201).json({
-            id: donation.id,
-            payment_id: paymentId,
-            payment_method: paymentMethod,
-            satispay_url: satispayUrl,
-            stripe_url: stripeSessionUrl,
-            message: 'Donazione creata con successo'
-        });
+        res.status(400).json({ error: true, message: 'Metodo di pagamento non disponibile' });
 
     } catch (error) {
         console.error('Errore POST donation:', error);
-        res.status(500).json({
-            error: true,
-            message: 'Errore nella creazione della donazione'
-        });
+        res.status(500).json({ error: true, message: 'Errore nella creazione della donazione' });
     }
 });
 
 /**
  * POST /api/donations/:id/confirm
- * Conferma manualmente una donazione (per test)
+ * Conferma manualmente una donazione (solo admin)
  */
 router.post('/donations/:id/confirm', async (req, res) => {
+    // Verifica password admin
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin2026';
+    const authHeader = req.headers['authorization'] || '';
+    let authorized = false;
+    if (authHeader.startsWith('Basic ')) {
+        const password = Buffer.from(authHeader.split(' ')[1], 'base64').toString();
+        authorized = (password === adminPassword);
+    } else if (req.body && req.body.password) {
+        authorized = (req.body.password === adminPassword);
+    }
+    if (!authorized) {
+        return res.status(403).json({ error: true, message: 'Non autorizzato' });
+    }
+
     try {
         const id = parseInt(req.params.id);
 
@@ -407,31 +432,80 @@ router.post('/webhook/stripe', async (req, res) => {
 
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
-        const donationId = parseInt(session.metadata.donation_id);
+        const meta = session.metadata;
 
-        if (donationId) {
-            const donation = db.getDonationById(donationId);
-            if (donation && donation.payment_status !== 'completed') {
-                db.confirmPayment(donationId);
-                console.log(`Donazione ${donationId} confermata via Stripe`);
+        // Evita duplicati (webhook può arrivare più volte)
+        const existing = db.getDonationBySessionId(session.id);
+        if (existing) {
+            console.log(`Webhook duplicato ignorato per sessione ${session.id}`);
+            return res.json({ received: true });
+        }
 
-                // Notifica all'associazione
-                sendDonationNotification(donation)
-                    .catch(err => console.error('Errore notifica associazione:', err));
+        const day = parseInt(meta.day);
+        const month = parseInt(meta.month);
+        const year = parseInt(meta.year);
 
-                if (donation.is_gift && donation.email) {
-                    try {
-                        await sendGiftCard(donation);
-                        console.log(`Gift card inviata a ${donation.email}`);
-                    } catch (emailError) {
-                        console.error('Errore invio gift card:', emailError);
-                    }
-                }
-            }
+        // Verifica che il giorno sia ancora libero
+        if (db.isDayAdopted(day, month, year)) {
+            console.warn(`Giorno ${day}/${month}/${year} già adottato al momento del webhook!`);
+            return res.json({ received: true });
+        }
+
+        // Crea donazione direttamente come completed
+        const donation = db.createCompletedDonation({
+            day, month, year,
+            donor_name: meta.donor_name || null,
+            donor_surname: meta.donor_surname || null,
+            donor_cf: meta.donor_cf || null,
+            donor_email: meta.donor_email || null,
+            is_anonymous: meta.is_anonymous === '1',
+            is_gift: meta.is_gift === '1',
+            gift_recipient_name: meta.gift_recipient_name || null,
+            gift_card_design: meta.gift_card_design || 'card1',
+            email: meta.gift_email || null,
+            message: meta.gift_message || null,
+            payment_id: meta.payment_id || session.id,
+            stripe_session_id: session.id
+        });
+
+        console.log(`Donazione ${donation.id} creata via Stripe webhook (${day}/${month}/${year})`);
+
+        // Email in background
+        sendDonationNotification(donation)
+            .catch(err => console.error('Errore notifica associazione:', err));
+
+        if (donation.is_gift && donation.email) {
+            sendGiftCard(donation)
+                .then(() => console.log(`Gift card inviata a ${donation.email}`))
+                .catch(err => console.error('Errore invio gift card:', err));
         }
     }
 
     res.json({ received: true });
+});
+
+/**
+ * POST /api/send-gift/:paymentId
+ * Invia la gift card per email al destinatario (chiamato dalla pagina gift-card view)
+ */
+router.post('/send-gift/:paymentId', async (req, res) => {
+    try {
+        const donation = db.getDonationByPaymentId(req.params.paymentId);
+        if (!donation || donation.payment_status !== 'completed' || !donation.is_gift) {
+            return res.status(404).json({ error: true, message: 'Gift card non trovata' });
+        }
+        if (!donation.email) {
+            return res.status(400).json({ error: true, message: 'Email destinatario non presente' });
+        }
+
+        const { sendGiftCardToRecipient } = require('../utils/mailer');
+        await sendGiftCardToRecipient(donation);
+
+        res.json({ success: true, message: `Gift card inviata a ${donation.email}` });
+    } catch (error) {
+        console.error('Errore invio gift card al destinatario:', error);
+        res.status(500).json({ error: true, message: error.message });
+    }
 });
 
 /**
@@ -475,18 +549,28 @@ async function createStripeCheckout(donation) {
                     name: `Adotta il ${donation.day}/${donation.month}/${donation.year}`,
                     description: 'Donazione Calendario Solidale - Casa Famiglia Uganda',
                 },
-                unit_amount: donation.amount * 100, // Centesimi
+                unit_amount: 5000, // 50,00 €
             },
             quantity: 1,
         }],
         mode: 'payment',
-        success_url: `${process.env.BASE_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}&donation_id=${donation.id}`,
-        cancel_url: `${process.env.BASE_URL}/payment-cancel?donation_id=${donation.id}`,
+        success_url: `${process.env.BASE_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.BASE_URL}/`,
         metadata: {
-            donation_id: donation.id.toString(),
+            payment_id: donation.payment_id || '',
             day: donation.day.toString(),
             month: donation.month.toString(),
             year: donation.year.toString(),
+            donor_name: donation.donor_name || '',
+            donor_surname: donation.donor_surname || '',
+            donor_cf: donation.donor_cf || '',
+            donor_email: donation.donor_email || '',
+            is_anonymous: donation.is_anonymous ? '1' : '0',
+            is_gift: donation.is_gift ? '1' : '0',
+            gift_recipient_name: donation.gift_recipient_name || '',
+            gift_email: donation.email || '',
+            gift_message: (donation.message || '').substring(0, 490),
+            gift_card_design: donation.gift_card_design || 'card1',
         },
     });
 

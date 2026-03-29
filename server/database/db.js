@@ -49,6 +49,11 @@ function init() {
         db.exec(`ALTER TABLE donations ADD COLUMN gift_card_design VARCHAR(50) DEFAULT 'card1'`);
     } catch (e) { /* colonna gia esistente */ }
 
+    // Aggiungi colonna tracciamento invio gift card schedulata (se non esiste)
+    try {
+        db.exec(`ALTER TABLE donations ADD COLUMN gift_card_scheduled_sent_at DATETIME`);
+    } catch (e) { /* colonna gia esistente */ }
+
     // Aggiungi colonne dati donatore (se non esistono)
     try {
         db.exec(`ALTER TABLE donations ADD COLUMN donor_surname VARCHAR(100)`);
@@ -58,6 +63,11 @@ function init() {
     } catch (e) { /* colonna gia esistente */ }
     try {
         db.exec(`ALTER TABLE donations ADD COLUMN donor_email VARCHAR(255)`);
+    } catch (e) { /* colonna gia esistente */ }
+
+    // Aggiungi colonna stripe_session_id (se non esiste)
+    try {
+        db.exec(`ALTER TABLE donations ADD COLUMN stripe_session_id VARCHAR(200)`);
     } catch (e) { /* colonna gia esistente */ }
 
     // Crea indici per performance
@@ -117,6 +127,12 @@ function isDayAdopted(day, month, year) {
  * Crea una nuova donazione
  */
 function createDonation(data) {
+    // Rimuovi eventuali donazioni cancellate per questo giorno
+    // (evita UNIQUE constraint violation che blocca ri-prenotazioni)
+    db.prepare(`
+        DELETE FROM donations WHERE day = ? AND month = ? AND year = ? AND payment_status = 'cancelled'
+    `).run(data.day, data.month, data.year);
+
     const stmt = db.prepare(`
         INSERT INTO donations (day, month, year, donor_name, donor_surname, donor_cf, donor_email, is_anonymous, amount, payment_id, payment_status, is_gift, gift_recipient_name, gift_card_design, email, message)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
@@ -257,6 +273,102 @@ function exportDonations(year = null) {
 }
 
 /**
+ * Ottieni donazioni regalo da inviare oggi (giorno e mese coincidono con oggi)
+ */
+function getGiftDonationsForToday() {
+    const now = new Date();
+    const today_day = now.getDate();
+    const today_month = now.getMonth() + 1;
+    const stmt = db.prepare(`
+        SELECT * FROM donations
+        WHERE is_gift = 1
+        AND payment_status = 'completed'
+        AND day = ?
+        AND month = ?
+        AND gift_card_scheduled_sent_at IS NULL
+    `);
+    return stmt.all(today_day, today_month);
+}
+
+/**
+ * Segna la gift card schedulata come inviata
+ */
+function markGiftCardScheduledSent(id) {
+    const stmt = db.prepare(`
+        UPDATE donations SET gift_card_scheduled_sent_at = CURRENT_TIMESTAMP WHERE id = ?
+    `);
+    return stmt.run(id);
+}
+
+/**
+ * Trova una donazione tramite payment_id (UUID pubblico)
+ */
+function getDonationByPaymentId(paymentId) {
+    const stmt = db.prepare('SELECT * FROM donations WHERE payment_id = ?');
+    return stmt.get(paymentId);
+}
+
+/**
+ * Crea una donazione già confermata (completed) direttamente dal webhook Stripe
+ * Non passa per lo stato pending
+ */
+function createCompletedDonation(data) {
+    const stmt = db.prepare(`
+        INSERT INTO donations (day, month, year, donor_name, donor_surname, donor_cf, donor_email, is_anonymous, amount, payment_id, payment_status, is_gift, gift_recipient_name, gift_card_design, email, message, stripe_session_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', ?, ?, ?, ?, ?, ?)
+    `);
+
+    const result = stmt.run(
+        data.day,
+        data.month,
+        data.year,
+        data.donor_name || null,
+        data.donor_surname || null,
+        data.donor_cf || null,
+        data.donor_email || null,
+        data.is_anonymous ? 1 : 0,
+        50.00,
+        data.payment_id,
+        data.is_gift ? 1 : 0,
+        data.gift_recipient_name || null,
+        data.gift_card_design || 'card1',
+        data.email || null,
+        data.message || null,
+        data.stripe_session_id || null
+    );
+
+    return {
+        id: result.lastInsertRowid,
+        ...data,
+        amount: 50.00,
+        payment_status: 'completed'
+    };
+}
+
+/**
+ * Trova una donazione tramite stripe_session_id
+ */
+function getDonationBySessionId(sessionId) {
+    const stmt = db.prepare('SELECT * FROM donations WHERE stripe_session_id = ?');
+    return stmt.get(sessionId);
+}
+
+/**
+ * Cancella le donazioni pending più vecchie di X minuti
+ * Evita che giorni rimangano bloccati se il pagamento non viene completato
+ */
+function cancelStalePendingDonations(olderThanMinutes = 120) {
+    const stmt = db.prepare(`
+        UPDATE donations
+        SET payment_status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+        WHERE payment_status = 'pending'
+        AND created_at <= datetime('now', '-' || ? || ' minutes')
+    `);
+    const result = stmt.run(olderThanMinutes);
+    return result.changes;
+}
+
+/**
  * Cancella tutte le donazioni (reset database)
  */
 function clearAllDonations() {
@@ -288,5 +400,11 @@ module.exports = {
     getRecentDonations,
     exportDonations,
     clearAllDonations,
+    getGiftDonationsForToday,
+    markGiftCardScheduledSent,
+    getDonationByPaymentId,
+    cancelStalePendingDonations,
+    createCompletedDonation,
+    getDonationBySessionId,
     close
 };

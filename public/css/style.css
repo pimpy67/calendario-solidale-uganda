@@ -1021,6 +1021,16 @@ body {
     line-height: 1.4;
 }
 
+.donor-fields-warning {
+    color: #b45309;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    padding: 0.5rem 0.65rem;
+    font-style: normal;
+    font-size: 0.72rem;
+}
+
 /* Validation Popup */
 .validation-popup {
     position: fixed;

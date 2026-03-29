@@ -212,4 +212,46 @@ router.delete('/donations/:id', authMiddleware, (req, res) => {
     }
 });
 
+/**
+ * POST /api/admin/trigger-scheduler
+ * Triggerare manualmente l'invio delle gift card schedulate (per test o recupero)
+ */
+router.post('/trigger-scheduler', authMiddleware, async (req, res) => {
+    try {
+        const db = require('../database/db');
+        const { sendScheduledGiftCard } = require('../utils/mailer');
+
+        const donations = db.getGiftDonationsForToday();
+
+        if (donations.length === 0) {
+            return res.json({
+                success: true,
+                message: 'Nessuna gift card da inviare oggi',
+                sent: 0
+            });
+        }
+
+        const results = [];
+        for (const donation of donations) {
+            try {
+                await sendScheduledGiftCard(donation);
+                db.markGiftCardScheduledSent(donation.id);
+                results.push({ id: donation.id, status: 'inviata' });
+            } catch (err) {
+                results.push({ id: donation.id, status: 'errore', error: err.message });
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Gift card inviate: ${results.filter(r => r.status === 'inviata').length}/${donations.length}`,
+            results
+        });
+
+    } catch (error) {
+        console.error('Errore trigger scheduler:', error);
+        res.status(500).json({ error: true, message: 'Errore nel trigger scheduler' });
+    }
+});
+
 module.exports = router;
