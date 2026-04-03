@@ -78,8 +78,8 @@ const Calendar = (function() {
     }
 
     // Stato corrente - indice 0-21 (22 mesi da mar 2026 a dic 2027)
-    // Inizialmente mostra marzo 2026 (indice 0)
-    let currentMonthIndex = 0;
+    // Inizialmente mostra aprile 2026 (indice 1), marzo nascosto
+    let currentMonthIndex = 1;
     let donations = {}; // { "2026-1-15": { donor: "Mario", status: "completed" } }
 
     // Elementi DOM
@@ -365,7 +365,7 @@ const Calendar = (function() {
      * Naviga al mese precedente
      */
     function prevMonth() {
-        if (currentMonthIndex > 0) {
+        if (currentMonthIndex > 1) {
             currentMonthIndex--;
             render();
             updateNavigationButtons();
@@ -391,8 +391,8 @@ const Calendar = (function() {
         const nextBtn = document.getElementById('nextMonth');
         
         if (prevBtn) {
-            prevBtn.disabled = currentMonthIndex === 0;
-            prevBtn.style.opacity = currentMonthIndex === 0 ? '0.4' : '1';
+            prevBtn.disabled = currentMonthIndex === 1;
+            prevBtn.style.opacity = currentMonthIndex === 1 ? '0.4' : '1';
         }
         if (nextBtn) {
             nextBtn.disabled = currentMonthIndex === 21;
