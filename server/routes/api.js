@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../database/db');
-const { sendGiftCard, sendDonationNotification } = require('../utils/mailer');
+const { sendGiftCard, sendDonationNotification, sendDonorGiftCard } = require('../utils/mailer');
 
 // Configurazione Satispay
 const SATISPAY_ENABLED = process.env.SATISPAY_API_KEY ? true : false;
@@ -238,29 +238,24 @@ router.post('/donations', async (req, res) => {
             return res.status(201).json({ stripe_url: sessionUrl, payment_method: 'stripe' });
         }
 
-        // Satispay (invariato)
-        if (paymentMethod === 'satispay' && SATISPAY_ENABLED) {
+        // Satispay via Stripe
+        if (paymentMethod === 'satispay' && STRIPE_ENABLED) {
             const paymentId = uuidv4();
-            const donation = db.createDonation({
+            const sessionUrl = await createStripeCheckout({
                 day, month, year,
-                donor_name: is_anonymous ? null : donor_name,
-                donor_surname: is_anonymous ? null : donor_surname,
-                donor_cf: is_anonymous ? null : donor_cf,
-                donor_email: is_anonymous ? null : donor_email,
-                is_anonymous,
-                payment_id: paymentId,
+                donor_name: is_anonymous ? null : (donor_name || null),
+                donor_surname: is_anonymous ? null : (donor_surname || null),
+                donor_cf: is_anonymous ? null : (donor_cf || null),
+                donor_email: is_anonymous ? null : (donor_email || null),
+                is_anonymous: is_anonymous || false,
                 is_gift: is_gift || false,
                 gift_recipient_name: gift_recipient_name || null,
                 gift_card_design: gift_card_design || 'card1',
                 email: gift_email || null,
-                message: gift_message || null
-            });
-            try {
-                const satispayUrl = await createSatispayPayment(donation);
-                return res.status(201).json({ id: donation.id, satispay_url: satispayUrl, payment_method: 'satispay' });
-            } catch (e) {
-                console.error('Errore Satispay:', e);
-            }
+                message: gift_message || null,
+                payment_id: paymentId
+            }, ['satispay']);
+            return res.status(201).json({ stripe_url: sessionUrl, payment_method: 'satispay' });
         }
 
         res.status(400).json({ error: true, message: 'Metodo di pagamento non disponibile' });
@@ -322,13 +317,18 @@ router.post('/donations/:id/confirm', async (req, res) => {
 
         // Invia gift card via email in background (non blocca la risposta)
         console.log(`Donazione ${id} confermata. is_gift=${donation.is_gift}, email=${donation.email}`);
-        if (donation.is_gift && donation.email) {
+        if (donation.is_gift) {
             console.log(`Invio gift card a ${donation.email}...`);
             sendGiftCard(donation)
                 .then(() => console.log(`Gift card inviata a ${donation.email} per donazione ${id}`))
                 .catch(emailError => console.error('Errore invio gift card:', emailError));
+        } else if (!donation.is_gift && !donation.is_anonymous && donation.donor_email) {
+            console.log(`Invio conferma gift card a ${donation.donor_email}...`);
+            sendDonorGiftCard(donation)
+                .then(() => console.log(`Conferma gift card inviata a ${donation.donor_email} per donazione ${id}`))
+                .catch(emailError => console.error('Errore invio conferma donante:', emailError));
         } else {
-            console.log(`Gift card NON inviata: is_gift=${donation.is_gift}, email=${donation.email}`);
+            console.log(`Gift card NON inviata: is_gift=${donation.is_gift}, is_anonymous=${donation.is_anonymous}, donor_email=${donation.donor_email}`);
         }
 
     } catch (error) {
@@ -366,13 +366,20 @@ router.post('/webhook/satispay', async (req, res) => {
                 sendDonationNotification(donation)
                     .catch(err => console.error('Errore notifica associazione:', err));
 
-                // Se e un regalo, invia gift card
-                if (donation.is_gift && donation.email) {
+                // Invia gift card al destinatario (regalo) o conferma al donante (donazione normale)
+                if (donation.is_gift) {
                     try {
                         await sendGiftCard(donation);
                         console.log(`Gift card inviata a ${donation.email}`);
                     } catch (emailError) {
                         console.error('Errore invio gift card:', emailError);
+                    }
+                } else if (!donation.is_gift && !donation.is_anonymous && donation.donor_email) {
+                    try {
+                        await sendDonorGiftCard(donation);
+                        console.log(`Conferma gift card inviata a ${donation.donor_email}`);
+                    } catch (emailError) {
+                        console.error('Errore invio conferma donante:', emailError);
                     }
                 }
             }
@@ -474,10 +481,14 @@ router.post('/webhook/stripe', async (req, res) => {
         sendDonationNotification(donation)
             .catch(err => console.error('Errore notifica associazione:', err));
 
-        if (donation.is_gift && donation.email) {
+        if (donation.is_gift) {
             sendGiftCard(donation)
                 .then(() => console.log(`Gift card inviata a ${donation.email}`))
                 .catch(err => console.error('Errore invio gift card:', err));
+        } else if (!donation.is_gift && !donation.is_anonymous && donation.donor_email) {
+            sendDonorGiftCard(donation)
+                .then(() => console.log(`Conferma gift card inviata a ${donation.donor_email}`))
+                .catch(err => console.error('Errore invio conferma donante:', err));
         }
     }
 
@@ -539,9 +550,9 @@ router.post('/admin/clear-database', (req, res) => {
  * @param {Object} donation - Dati donazione
  * @returns {String} URL per il checkout Stripe
  */
-async function createStripeCheckout(donation) {
+async function createStripeCheckout(donation, paymentMethodTypes = ['card']) {
     const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
+        payment_method_types: paymentMethodTypes,
         line_items: [{
             price_data: {
                 currency: 'eur',
