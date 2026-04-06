@@ -70,14 +70,26 @@ function getGiftCardImagePath(cardName) {
 function generateGiftCardHTML(donation, hasImage, imageBase64, imageMime) {
     const monthName = MONTHS[donation.month - 1];
     const donorName = donation.is_anonymous ? 'Un amico generoso' : (donation.donor_name || 'Un amico generoso');
-    const recipientName = donation.gift_recipient_name || 'Amico/a';
+    const isGift = !!donation.is_gift;
+    const recipientName = isGift ? (donation.gift_recipient_name || 'Amico/a') : donorName;
     const personalMessage = donation.message || '';
     const dateStr = `${donation.day} ${monthName} ${donation.year}`;
     const recipientEmail = donation.email || null;
     const baseUrl = process.env.BASE_URL || 'https://calendario.effataitalia.it';
     const giftCardViewUrl = `${baseUrl}/gift-card/${donation.payment_id}`;
-    const whatsappText = `🎉 Ciao ${recipientName}! Oggi è il tuo giorno speciale!\n${donorName} ti ha regalato il ${dateStr} del Calendario Solidale della Casa Famiglia Effata in Uganda ❤\n\nQuesta donazione aiuta a garantire cibo, istruzione e cure ai bambini della Casa Famiglia Effata in Uganda.\nOgni giorno adottato fa la differenza!\nGrazie di Cuore da parte dei nostri bambini\n\nEcco la tua gift card:\n${giftCardViewUrl}\n\nGRAZIE!\n\nhttps://www.effatacharityorganisation.org/`;
-    const mailtoUrl = recipientEmail ? giftCardViewUrl : null;
+
+    let whatsappText, mailtoUrl, introText, shareText;
+    if (isGift) {
+        whatsappText = `🎉 Ciao ${recipientName}! Oggi è il tuo giorno speciale!\n${donorName} ti ha regalato il ${dateStr} del Calendario Solidale della Casa Famiglia Effata in Uganda ❤\n\nQuesta donazione aiuta a garantire cibo, istruzione e cure ai bambini della Casa Famiglia Effata in Uganda.\nOgni giorno adottato fa la differenza!\nGrazie di Cuore da parte dei nostri bambini\n\nEcco la tua gift card:\n${giftCardViewUrl}\n\nGRAZIE!\n\nhttps://www.effatacharityorganisation.org/`;
+        mailtoUrl = recipientEmail ? giftCardViewUrl : null;
+        introText = `Hai ricevuto un regalo speciale! <strong>${donorName}</strong> ha adottato un giorno del Calendario Solidale in tuo nome.`;
+        shareText = `Manda gli auguri a <strong>${recipientName}</strong> — il messaggio è già pronto, puoi modificarlo come vuoi! 💝`;
+    } else {
+        whatsappText = `🎉 Ho adottato il ${dateStr} del Calendario Solidale della Casa Famiglia Effatà in Uganda ❤\n\nOgni donazione aiuta a garantire cibo, istruzione e cure ai bambini di Effatà.\nL'amore non si divide, si moltiplica! ❤\nAdotta anche tu un giorno su: ${baseUrl}\n\nGRAZIE!\nhttps://www.effatacharityorganisation.org/`;
+        mailtoUrl = null;
+        introText = `Grazie per il tuo gesto generoso! Hai adottato un giorno del <strong>Calendario Solidale Effatà</strong> a sostegno dei bambini della Casa Famiglia in Uganda.`;
+        shareText = `Condividi la tua adozione — l'amore non si divide, si moltiplica! 💚`;
+    }
 
     // Per Resend usiamo immagine base64 inline, per SMTP usiamo cid:
     let imageTag = '';
@@ -132,7 +144,7 @@ function generateGiftCardHTML(donation, hasImage, imageBase64, imageMime) {
                             </p>
 
                             <p style="color: #555; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
-                                Hai ricevuto un regalo speciale! <strong>${donorName}</strong> ha adottato un giorno del Calendario Solidale in tuo nome.
+                                ${introText}
                             </p>
 
                             <!-- Card data adottata -->
@@ -188,11 +200,11 @@ function generateGiftCardHTML(donation, hasImage, imageBase64, imageMime) {
                                 <tr>
                                     <td style="text-align: center;">
                                         <p style="color: #555; font-size: 14px; margin: 0 0 14px 0;">
-                                            Manda gli auguri a <strong>${recipientName}</strong> — il messaggio è già pronto, puoi modificarlo come vuoi! 💝
+                                            ${shareText}
                                         </p>
                                         <a href="https://wa.me/?text=${encodeURIComponent(whatsappText)}"
                                            style="display: inline-block; background-color: #25D366; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700; padding: 14px 24px; border-radius: 50px; margin: 4px;">
-                                            💬 Auguri su WhatsApp
+                                            💬 ${isGift ? 'Auguri su WhatsApp' : 'Condividi su WhatsApp'}
                                         </a>
                                         ${mailtoUrl ? `
                                         <a href="${mailtoUrl}"
@@ -567,9 +579,142 @@ async function sendDonationNotification(donation) {
     }
 }
 
+/**
+ * Invia email di conferma donazione al donante (non regalo, non anonima)
+ * con la gift card allegata come immagine
+ * @param {Object} donation - Dati della donazione dal database
+ */
+async function sendDonorGiftCard(donation) {
+    const useBrevo = !!process.env.BREVO_API_KEY;
+    const useGmail = process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD;
+
+    if (!useBrevo && !useGmail) return;
+
+    const donorEmail = donation.donor_email;
+    if (!donorEmail) {
+        console.warn('Email donante mancante. Conferma non inviata.');
+        return;
+    }
+
+    const monthName = MONTHS[donation.month - 1];
+    const dateStr = `${donation.day} ${monthName} ${donation.year}`;
+    const donorName = donation.donor_name || 'Donatore';
+    const donorSurname = donation.donor_surname || '';
+    const donorCF = donation.donor_cf || 'Non fornito';
+    const amount = donation.amount || 50;
+
+    // Gift card come allegato (immagine)
+    const cardName = donation.gift_card_design || 'card1';
+    const imagePath = getGiftCardImagePath(cardName);
+
+    const fromAddress = useBrevo
+        ? `Calendario Solidale - Effata <${process.env.GMAIL_USER || 'effataitalia@gmail.com'}>`
+        : `"Calendario Solidale - Effatà" <${process.env.GMAIL_USER}>`;
+
+    const html = `
+<!DOCTYPE html>
+<html lang="it">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0; padding:0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color:#f5f0eb;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding: 30px 0;">
+        <tr><td align="center">
+            <table width="550" cellpadding="0" cellspacing="0" style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+                <tr>
+                    <td style="background:linear-gradient(135deg,#2e7d32,#4caf50); padding:35px 30px; text-align:center;">
+                        <h1 style="color:#fff; margin:0 0 8px 0; font-size:26px; font-weight:700;">Calendario Solidale</h1>
+                        <p style="color:rgba(255,255,255,0.9); margin:0; font-size:15px;">Effat&agrave; Children's Home - Uganda</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:30px;">
+                        <p style="color:#333; font-size:18px; margin:0 0 20px 0;">
+                            Caro/a <strong>${donorName}</strong>,
+                        </p>
+                        <p style="color:#555; font-size:15px; line-height:1.6; margin:0 0 25px 0;">
+                            Grazie di cuore! La tua donazione è stata confermata con successo.<br>
+                            Trovi in allegato la tua <strong>gift card</strong> del Calendario Solidale Effatà.
+                        </p>
+
+                        <!-- Riepilogo donazione -->
+                        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; margin-bottom:25px;">
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px; width:140px;">Giorno adottato</td>
+                                <td style="color:#1b5e20; font-size:16px; font-weight:700;">${dateStr}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Importo</td>
+                                <td style="color:#2e7d32; font-size:15px; font-weight:600;">${amount.toFixed(2)} &euro;</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Nome</td>
+                                <td style="color:#333; font-size:15px;">${donorName} ${donorSurname}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Codice Fiscale</td>
+                                <td style="color:#333; font-size:15px; font-family:monospace;">${donorCF}</td>
+                            </tr>
+                        </table>
+
+                        <!-- Box cuore -->
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#fff8e1; border-radius:12px; margin-bottom:20px;">
+                            <tr>
+                                <td style="padding:20px; text-align:center;">
+                                    <p style="color:#f57f17; font-size:22px; margin:0 0 8px 0;">&#10084;</p>
+                                    <p style="color:#555; font-size:14px; line-height:1.6; margin:0;">
+                                        Questa donazione aiuta a garantire <strong>cibo, istruzione e cure</strong><br>
+                                        ai bambini della Casa Famiglia Effat&agrave; in Uganda.<br>
+                                        <em>L'amore non si divide, si moltiplica!</em>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="color:#999; font-size:12px; margin:0; text-align:center;">
+                            Donazione #${donation.id} &bull; Pagamento confermato
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="background-color:#263238; padding:20px 30px; text-align:center;">
+                        <p style="color:rgba(255,255,255,0.7); font-size:13px; margin:0 0 4px 0;">
+                            Effat&agrave; Children's Home &bull; Calendario Solidale 2026
+                        </p>
+                        <p style="color:rgba(255,255,255,0.5); font-size:12px; margin:0;">
+                            &copy; 2026 Casa Famiglia Uganda
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td></tr>
+    </table>
+</body>
+</html>`;
+
+    const mailOptions = {
+        from: fromAddress,
+        to: donorEmail,
+        subject: `🎉 Grazie ${donorName}! Hai adottato il ${dateStr} — ecco la tua gift card`,
+        html
+    };
+
+    try {
+        if (useBrevo) {
+            await sendViaBrevo(mailOptions, imagePath);
+            console.log(`Conferma + gift card inviata via Brevo a ${donorEmail} per donazione ${donation.id}`);
+        } else {
+            await sendViaGmail(mailOptions, imagePath);
+            console.log(`Conferma + gift card inviata via Gmail a ${donorEmail} per donazione ${donation.id}`);
+        }
+    } catch (error) {
+        console.error('Errore invio conferma donante:', error);
+        throw error;
+    }
+}
+
 module.exports = {
     sendGiftCard,
     sendScheduledGiftCard,
     sendGiftCardToRecipient,
-    sendDonationNotification
+    sendDonationNotification,
+    sendDonorGiftCard
 };
