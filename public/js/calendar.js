@@ -78,8 +78,26 @@ const Calendar = (function() {
     }
 
     // Stato corrente - indice 0-21 (22 mesi da mar 2026 a dic 2027)
-    // Inizialmente mostra maggio 2026 (indice 2), marzo e aprile in archivio
-    let currentMonthIndex = 2;
+    const LAST_MONTH_INDEX = 21;
+    // I mesi da marzo ad agosto 2026 (indici 0-5) restano sempre in archivio.
+    const ARCHIVE_UNTIL_INDEX = 6; // settembre 2026
+
+    // Indice del mese reale di oggi (inverso di getYearMonth): marzo 2026 = 0.
+    // Ogni 1° del mese questo avanza da solo, quindi il calendario si apre sul
+    // mese corrente e mostra la sua immagine senza interventi manuali.
+    function monthIndexForToday() {
+        const now = new Date();
+        const globalMonth = (now.getFullYear() - 2026) * 12 + (now.getMonth() + 1);
+        return globalMonth - 3;
+    }
+
+    // Primo mese visibile / navigabile: il mese corrente, ma mai prima di
+    // settembre 2026 né dopo dicembre 2027 (il calendario copre solo quel range).
+    const FIRST_MONTH_INDEX = Math.min(
+        Math.max(monthIndexForToday(), ARCHIVE_UNTIL_INDEX),
+        LAST_MONTH_INDEX
+    );
+    let currentMonthIndex = FIRST_MONTH_INDEX;
     let donations = {}; // { "2026-1-15": { donor: "Mario", status: "completed" } }
 
     // Elementi DOM
@@ -365,7 +383,7 @@ const Calendar = (function() {
      * Naviga al mese precedente
      */
     function prevMonth() {
-        if (currentMonthIndex > 2) {
+        if (currentMonthIndex > FIRST_MONTH_INDEX) {
             currentMonthIndex--;
             render();
             updateNavigationButtons();
@@ -376,7 +394,7 @@ const Calendar = (function() {
      * Naviga al mese successivo
      */
     function nextMonth() {
-        if (currentMonthIndex < 21) {
+        if (currentMonthIndex < LAST_MONTH_INDEX) {
             currentMonthIndex++;
             render();
             updateNavigationButtons();
@@ -391,12 +409,12 @@ const Calendar = (function() {
         const nextBtn = document.getElementById('nextMonth');
         
         if (prevBtn) {
-            prevBtn.disabled = currentMonthIndex === 2;
-            prevBtn.style.opacity = currentMonthIndex === 2 ? '0.4' : '1';
+            prevBtn.disabled = currentMonthIndex === FIRST_MONTH_INDEX;
+            prevBtn.style.opacity = currentMonthIndex === FIRST_MONTH_INDEX ? '0.4' : '1';
         }
         if (nextBtn) {
-            nextBtn.disabled = currentMonthIndex === 21;
-            nextBtn.style.opacity = currentMonthIndex === 21 ? '0.4' : '1';
+            nextBtn.disabled = currentMonthIndex === LAST_MONTH_INDEX;
+            nextBtn.style.opacity = currentMonthIndex === LAST_MONTH_INDEX ? '0.4' : '1';
         }
     }
 
