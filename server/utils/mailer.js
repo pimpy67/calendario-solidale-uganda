@@ -432,6 +432,77 @@ async function deliverGiftCard({ donation, to, subject, label }) {
 }
 
 /**
+ * Avvisa l'associazione che una gift card è stata inviata con successo.
+ * Non lancia errori: la gift card è già partita, la notifica è solo informativa.
+ * @param {Object} donation - Dati della donazione dal database
+ * @param {string} kind - Tipo di invio, es. "Gift card schedulata inviata"
+ * @param {string} to - Indirizzo a cui è stata inviata la gift card
+ */
+async function notifyAssociationSent(donation, kind, to) {
+    const notifyEmail = process.env.ASSOCIATION_EMAIL || process.env.GMAIL_USER;
+    if (!notifyEmail) return;
+
+    try {
+        const provider = getProvider();
+        const dateStr = `${donation.day} ${MONTHS[donation.month - 1]} ${donation.year}`;
+        const donorName = donation.is_anonymous ? 'Anonimo' : (donation.donor_name || 'N/D');
+        const html = `
+<!DOCTYPE html>
+<html lang="it">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0; padding:0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color:#f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding: 20px 0;">
+        <tr><td align="center">
+            <table width="550" cellpadding="0" cellspacing="0" style="background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.1);">
+                <tr>
+                    <td style="background:linear-gradient(135deg,#2e7d32,#4caf50); padding:25px; text-align:center;">
+                        <h2 style="color:#fff; margin:0; font-size:22px;">${kind}</h2>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:30px;">
+                        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px; width:140px;">Giorno adottato</td>
+                                <td style="color:#333; font-size:15px; font-weight:600;">${dateStr}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Inviata a</td>
+                                <td style="color:#333; font-size:15px;">${to}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Destinatario</td>
+                                <td style="color:#333; font-size:15px;">${donation.gift_recipient_name || 'N/D'}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="color:#888; font-size:13px;">Donatore</td>
+                                <td style="color:#333; font-size:15px;">${donorName}</td>
+                            </tr>
+                        </table>
+                        <p style="color:#999; font-size:12px; margin-top:20px; text-align:center;">
+                            Donazione #${donation.id} &bull; Gift card inviata
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td></tr>
+    </table>
+</body>
+</html>`;
+
+        await sendEmail(provider, {
+            from: getFromAddress(provider, 'Calendario Solidale'),
+            to: notifyEmail,
+            subject: `✅ ${kind} — donazione #${donation.id}`,
+            html
+        }, null);
+        console.log(`Notifica invio gift card #${donation.id} inviata a ${notifyEmail}`);
+    } catch (error) {
+        console.error('Errore notifica invio gift card:', error);
+    }
+}
+
+/**
  * Invia la gift card via email in anteprima al DONANTE (che decide come consegnarla al destinatario)
  * @param {Object} donation - Dati della donazione dal database
  */
@@ -448,27 +519,32 @@ function sendGiftCard(donation) {
  * Invia la gift card schedulata il giorno del compleanno al DONANTE, con bottone WhatsApp
  * @param {Object} donation - Dati della donazione dal database
  */
-function sendScheduledGiftCard(donation) {
-    return deliverGiftCard({
+async function sendScheduledGiftCard(donation) {
+    const to = donation.donor_email || donation.email;
+    const result = await deliverGiftCard({
         donation,
-        to: donation.donor_email || donation.email,
+        to,
         subject: `🎉 Oggi è il compleanno di ${donation.gift_recipient_name || 'qualcuno'}! Manda gli auguri 💬`,
         label: 'Gift card schedulata'
     });
+    await notifyAssociationSent(donation, 'Gift card schedulata inviata', to);
+    return result;
 }
 
 /**
  * Invia la gift card per email direttamente al destinatario del regalo
  * (chiamato dalla pagina gift-card view quando il donante clicca "Invia per Email")
  */
-function sendGiftCardToRecipient(donation) {
+async function sendGiftCardToRecipient(donation) {
     const recipientName = donation.gift_recipient_name || 'Amico/a';
-    return deliverGiftCard({
+    const result = await deliverGiftCard({
         donation,
         to: donation.email,
         subject: `🎁 Hai ricevuto un regalo speciale per il tuo compleanno, ${recipientName}!`,
         label: 'Gift card destinatario'
     });
+    await notifyAssociationSent(donation, 'Gift card inviata al destinatario', donation.email);
+    return result;
 }
 
 /**
