@@ -1,9 +1,11 @@
 /**
  * Mailer.js - Invio email gift card e notifiche
- * Provider: Brevo (API HTTP) se è impostata BREVO_API_KEY, altrimenti Gmail SMTP
- * (GMAIL_USER + GMAIL_APP_PASSWORD). Se nessun provider è configurato o manca
- * l'indirizzo del destinatario la funzione lancia un errore, così il chiamante
- * sa che l'email non è partita.
+ * Provider, in ordine di priorità:
+ *   1. Brevo (API HTTP) se è impostata BREVO_API_KEY
+ *   2. SMTP generico se sono impostate SMTP_HOST, SMTP_USER, SMTP_PASS (es. Hostinger)
+ *   3. Gmail SMTP se sono impostate GMAIL_USER e GMAIL_APP_PASSWORD
+ * Se nessun provider è configurato o manca l'indirizzo del destinatario la
+ * funzione lancia un errore, così il chiamante sa che l'email non è partita.
  */
 
 const nodemailer = require('nodemailer');
@@ -34,8 +36,9 @@ const DEFAULT_AMOUNT = 50;
  */
 function getProvider() {
     if (process.env.BREVO_API_KEY) return 'brevo';
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) return 'smtp';
     if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) return 'gmail';
-    throw new Error('Nessun servizio email configurato (BREVO_API_KEY oppure GMAIL_USER e GMAIL_APP_PASSWORD)');
+    throw new Error('Nessun servizio email configurato (BREVO_API_KEY, SMTP_HOST/SMTP_USER/SMTP_PASS oppure GMAIL_USER/GMAIL_APP_PASSWORD)');
 }
 
 /**
@@ -45,7 +48,29 @@ function getFromAddress(provider, displayName = 'Calendario Solidale - Effatà')
     if (provider === 'brevo') {
         return `${displayName} <${process.env.GMAIL_USER || 'effataitalia@gmail.com'}>`;
     }
+    if (provider === 'smtp') {
+        return `"${displayName}" <${process.env.SMTP_USER}>`;
+    }
     return `"${displayName}" <${process.env.GMAIL_USER}>`;
+}
+
+/**
+ * Crea il transporter Nodemailer per un server SMTP generico (es. Hostinger)
+ */
+function createSmtpTransporter() {
+    const port = Number(process.env.SMTP_PORT || 465);
+    return nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port,
+        secure: port === 465,
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+        }
+    });
 }
 
 /**
@@ -346,11 +371,9 @@ async function sendViaBrevo(mailOptions, imagePath) {
 }
 
 /**
- * Invia email tramite Gmail SMTP
+ * Invia con un transporter SMTP, allegando l'immagine con cid: "giftcard"
  */
-async function sendViaGmail(mailOptions, imagePath) {
-    const transporter = await createTransporter();
-
+async function sendWithTransporter(transporter, mailOptions, imagePath) {
     if (imagePath) {
         mailOptions.attachments = [{
             filename: path.basename(imagePath),
@@ -363,12 +386,26 @@ async function sendViaGmail(mailOptions, imagePath) {
 }
 
 /**
+ * Invia email tramite Gmail SMTP
+ */
+async function sendViaGmail(mailOptions, imagePath) {
+    return sendWithTransporter(await createTransporter(), mailOptions, imagePath);
+}
+
+/**
+ * Invia email tramite SMTP generico (es. Hostinger)
+ */
+async function sendViaSmtp(mailOptions, imagePath) {
+    return sendWithTransporter(createSmtpTransporter(), mailOptions, imagePath);
+}
+
+/**
  * Invia con il provider scelto
  */
 function sendEmail(provider, mailOptions, imagePath) {
-    return provider === 'brevo'
-        ? sendViaBrevo(mailOptions, imagePath)
-        : sendViaGmail(mailOptions, imagePath);
+    if (provider === 'brevo') return sendViaBrevo(mailOptions, imagePath);
+    if (provider === 'smtp') return sendViaSmtp(mailOptions, imagePath);
+    return sendViaGmail(mailOptions, imagePath);
 }
 
 /**
