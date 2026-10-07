@@ -70,6 +70,19 @@ function init() {
         db.exec(`ALTER TABLE donations ADD COLUMN stripe_session_id VARCHAR(200)`);
     } catch (e) { /* colonna gia esistente */ }
 
+    // Registro invii email (esito di ogni invio, per verifica e recupero)
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS email_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            donation_id INTEGER,
+            tipo VARCHAR(100) NOT NULL,
+            destinatario VARCHAR(255),
+            esito VARCHAR(10) NOT NULL,
+            errore TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
     // Crea indici per performance
     db.exec(`
         CREATE INDEX IF NOT EXISTS idx_donations_date ON donations(year, month, day);
@@ -329,6 +342,71 @@ function getPersonalDonationsForToday() {
 }
 
 /**
+ * Registra l'esito di un invio email
+ */
+function logEmail({ donation_id, tipo, destinatario, esito, errore }) {
+    db.prepare(`
+        INSERT INTO email_log (donation_id, tipo, destinatario, esito, errore)
+        VALUES (?, ?, ?, ?, ?)
+    `).run(donation_id ?? null, tipo, destinatario ?? null, esito, errore ?? null);
+}
+
+/**
+ * Invii falliti negli ultimi giorni
+ */
+function getEmailFailures(sinceDays = 7) {
+    return db.prepare(`
+        SELECT * FROM email_log
+        WHERE esito = 'errore' AND created_at >= datetime('now', ?)
+        ORDER BY created_at DESC
+    `).all(`-${sinceDays} days`);
+}
+
+/**
+ * Invii falliti di un certo tipo negli ultimi giorni che non sono mai andati a buon fine
+ * per la stessa donazione e destinatario
+ */
+function getRetryableFailures(tipi, sinceDays = 3) {
+    const placeholders = tipi.map(() => '?').join(', ');
+    return db.prepare(`
+        SELECT f.* FROM email_log f
+        WHERE f.esito = 'errore'
+        AND f.tipo IN (${placeholders})
+        AND f.created_at >= datetime('now', ?)
+        AND NOT EXISTS (
+            SELECT 1 FROM email_log ok
+            WHERE ok.donation_id IS f.donation_id
+            AND ok.tipo = f.tipo
+            AND ok.destinatario IS f.destinatario
+            AND ok.esito = 'ok'
+            AND ok.created_at >= f.created_at
+        )
+        ORDER BY f.created_at
+    `).all(...tipi, `-${sinceDays} days`);
+}
+
+/**
+ * Donazioni con data adottata negli ultimi N giorni per cui il promemoria non risulta inviato
+ */
+function getMissedReminders(sinceDays = 3) {
+    const today = getRomeDate();
+    const base = Date.UTC(today.year, today.month - 1, today.day);
+    const missed = [];
+    for (let i = 1; i <= sinceDays; i++) {
+        const d = new Date(base - i * 86400000);
+        const rows = db.prepare(`
+            SELECT * FROM donations
+            WHERE payment_status = 'completed'
+            AND year = ? AND month = ? AND day = ?
+            AND gift_card_scheduled_sent_at IS NULL
+            AND (is_gift = 1 OR (is_anonymous = 0 AND donor_email IS NOT NULL AND donor_email <> ''))
+        `).all(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+        missed.push(...rows);
+    }
+    return missed;
+}
+
+/**
  * Segna la gift card schedulata come inviata
  */
 function markGiftCardScheduledSent(id) {
@@ -440,6 +518,11 @@ module.exports = {
     clearAllDonations,
     getGiftDonationsForToday,
     getPersonalDonationsForToday,
+    logEmail,
+    getEmailFailures,
+    getRetryableFailures,
+    getMissedReminders,
+    getRomeDate,
     markGiftCardScheduledSent,
     getDonationByPaymentId,
     cancelStalePendingDonations,

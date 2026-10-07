@@ -216,6 +216,19 @@ router.delete('/donations/:id', authMiddleware, (req, res) => {
  * POST /api/admin/trigger-scheduler
  * Triggerare manualmente l'invio delle gift card schedulate (per test o recupero)
  */
+/**
+ * GET /api/admin/email-failures
+ * Invii email falliti negli ultimi 14 giorni (protetto da password)
+ */
+router.get('/email-failures', authMiddleware, (req, res) => {
+    try {
+        res.json({ success: true, failures: db.getEmailFailures(14) });
+    } catch (error) {
+        console.error('Errore GET email-failures:', error);
+        res.status(500).json({ error: true, message: 'Errore nel recupero degli invii falliti' });
+    }
+});
+
 router.post('/trigger-scheduler', authMiddleware, async (req, res) => {
     try {
         const db = require('../database/db');

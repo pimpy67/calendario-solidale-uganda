@@ -14,6 +14,7 @@ const fs = require('fs');
 const dns = require('dns');
 const { promisify } = require('util');
 const resolve4 = promisify(dns.resolve4);
+const db = require('../database/db');
 
 const MONTHS = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -409,10 +410,70 @@ function sendEmail(provider, mailOptions, imagePath) {
 }
 
 /**
+ * Registra l'esito di un invio nel database. Non lancia errori.
+ */
+function logSend(donation, tipo, to, esito, error) {
+    try {
+        db.logEmail({
+            donation_id: donation && donation.id,
+            tipo,
+            destinatario: to,
+            esito,
+            errore: error ? String(error.message || error) : null
+        });
+    } catch (e) {
+        console.error('Errore registrazione email:', e.message);
+    }
+}
+
+/**
+ * Avvisa l'associazione che un invio è fallito. Non lancia errori.
+ * Usa sendEmail direttamente, senza tracciamento, per non creare cicli.
+ */
+async function alertFailure(donation, tipo, to, error) {
+    const notifyEmail = process.env.ASSOCIATION_EMAIL || process.env.GMAIL_USER;
+    if (!notifyEmail) return;
+    try {
+        const provider = getProvider();
+        const html = `<p><strong>Invio email fallito</strong></p>
+<p>Tipo: ${tipo}<br>Donazione: #${donation && donation.id}<br>Destinatario: ${to || 'non indicato'}</p>
+<p>Errore: ${String((error && error.message) || error)}</p>
+<p>Controlla il pannello admin o il registro email per riprovare.</p>`;
+        await sendEmail(provider, {
+            from: getFromAddress(provider, 'Calendario Solidale'),
+            to: notifyEmail,
+            subject: `⚠️ Invio email fallito: ${tipo} (donazione #${donation && donation.id})`,
+            html
+        }, null);
+    } catch (e) {
+        console.error('Errore invio avviso fallimento:', e.message);
+    }
+}
+
+/**
+ * Esegue un invio registrando l'esito; in caso di errore avvisa e rilancia.
+ */
+async function trackedSend(donation, tipo, to, fn) {
+    try {
+        const result = await fn();
+        logSend(donation, tipo, to, 'ok');
+        return result;
+    } catch (error) {
+        logSend(donation, tipo, to, 'errore', error);
+        await alertFailure(donation, tipo, to, error);
+        throw error;
+    }
+}
+
+/**
  * Costruisce e invia una gift card a un indirizzo.
  * Ritorna il risultato del provider; lancia un errore se non può inviare.
  */
-async function deliverGiftCard({ donation, to, subject, label }) {
+async function deliverGiftCard(args) {
+    return trackedSend(args.donation, args.label, args.to, () => sendGiftCardEmail(args));
+}
+
+async function sendGiftCardEmail({ donation, to, subject, label }) {
     const provider = getProvider();
     if (!to) {
         throw new Error(`Email destinatario mancante per donazione ${donation.id}`);
@@ -651,7 +712,7 @@ async function sendDonationNotification(donation) {
     };
 
     try {
-        await sendEmail(provider, mailOptions, null);
+        await trackedSend(donation, 'Notifica associazione', notifyEmail, () => sendEmail(provider, mailOptions, null));
         console.log(`Notifica donazione #${donation.id} inviata a ${notifyEmail}`);
     } catch (error) {
         console.error('Errore invio notifica associazione:', error);
@@ -768,7 +829,7 @@ async function sendDonorGiftCard(donation) {
     };
 
     try {
-        await sendEmail(provider, mailOptions, imagePath);
+        await trackedSend(donation, 'Conferma donante', donorEmail, () => sendEmail(provider, mailOptions, imagePath));
         console.log(`Conferma + gift card inviata via ${provider} a ${donorEmail} per donazione ${donation.id}`);
     } catch (error) {
         console.error('Errore invio conferma donante:', error);
@@ -776,8 +837,24 @@ async function sendDonorGiftCard(donation) {
     }
 }
 
+/**
+ * Invia un rapporto operativo (es. promemoria mancati) all'associazione
+ */
+async function sendAssociationReport(subject, html) {
+    const notifyEmail = process.env.ASSOCIATION_EMAIL || process.env.GMAIL_USER;
+    if (!notifyEmail) return;
+    const provider = getProvider();
+    await sendEmail(provider, {
+        from: getFromAddress(provider, 'Calendario Solidale'),
+        to: notifyEmail,
+        subject,
+        html
+    }, null);
+}
+
 module.exports = {
     sendGiftCard,
+    sendAssociationReport,
     sendScheduledGiftCard,
     sendPersonalReminder,
     sendGiftCardToRecipient,
