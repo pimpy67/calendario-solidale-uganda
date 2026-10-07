@@ -342,6 +342,13 @@ function getPersonalDonationsForToday() {
 }
 
 /**
+ * Copia consistente del database in un file (sicura anche mentre l'app scrive)
+ */
+function backupDatabase(destPath) {
+    return db.backup(destPath);
+}
+
+/**
  * Registra l'esito di un invio email
  */
 function logEmail({ donation_id, tipo, destinatario, esito, errore }) {
@@ -523,6 +530,7 @@ module.exports = {
     getRetryableFailures,
     getMissedReminders,
     getRomeDate,
+    backupDatabase,
     markGiftCardScheduledSent,
     getDonationByPaymentId,
     cancelStalePendingDonations,

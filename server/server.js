@@ -22,6 +22,12 @@ db.init();
 const { startGiftCardScheduler } = require('./jobs/giftCardScheduler');
 startGiftCardScheduler();
 
+// Backup giornaliero e controllo pagamenti Stripe
+const { startBackup } = require('./jobs/backup');
+startBackup();
+const { startStripeReconciliation } = require('./jobs/stripeReconciliation');
+startStripeReconciliation();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
