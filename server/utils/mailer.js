@@ -1,6 +1,9 @@
 /**
- * Mailer.js - Invio email gift card
- * Usa Brevo API (HTTP) su Railway, Gmail SMTP in locale
+ * Mailer.js - Invio email gift card e notifiche
+ * Provider: Brevo (API HTTP) se è impostata BREVO_API_KEY, altrimenti Gmail SMTP
+ * (GMAIL_USER + GMAIL_APP_PASSWORD). Se nessun provider è configurato o manca
+ * l'indirizzo del destinatario la funzione lancia un errore, così il chiamante
+ * sa che l'email non è partita.
  */
 
 const nodemailer = require('nodemailer');
@@ -14,6 +17,36 @@ const MONTHS = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
     'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
 ];
+
+const IMAGE_MIME = {
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.webp': 'image/webp',
+    '.gif': 'image/gif',
+    '.svg': 'image/svg+xml'
+};
+
+const DEFAULT_AMOUNT = 50;
+
+/**
+ * Restituisce il provider email da usare oppure lancia un errore se non ce n'è nessuno
+ */
+function getProvider() {
+    if (process.env.BREVO_API_KEY) return 'brevo';
+    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) return 'gmail';
+    throw new Error('Nessun servizio email configurato (BREVO_API_KEY oppure GMAIL_USER e GMAIL_APP_PASSWORD)');
+}
+
+/**
+ * Indirizzo mittente per il provider scelto
+ */
+function getFromAddress(provider, displayName = 'Calendario Solidale - Effatà') {
+    if (provider === 'brevo') {
+        return `${displayName} <${process.env.GMAIL_USER || 'effataitalia@gmail.com'}>`;
+    }
+    return `"${displayName}" <${process.env.GMAIL_USER}>`;
+}
 
 /**
  * Crea il transporter Nodemailer con Gmail (per uso locale)
@@ -53,7 +86,7 @@ async function createTransporter() {
 function getGiftCardImagePath(cardName) {
     const giftcardsDir = path.join(__dirname, '../../public/images/gift_card');
     const cardNumber = cardName.replace('card', '');
-    const extensions = ['.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp'];
+    const extensions = Object.keys(IMAGE_MIME);
 
     for (const ext of extensions) {
         const filePath = path.join(giftcardsDir, cardNumber + ext);
@@ -62,6 +95,32 @@ function getGiftCardImagePath(cardName) {
         }
     }
     return null;
+}
+
+/**
+ * Prepara l'immagine della gift card per il provider scelto.
+ * Con Brevo viene incorporata in base64 nell'HTML, con Gmail resta un file da allegare.
+ */
+function loadCardImage(donation, provider) {
+    const imagePath = getGiftCardImagePath(donation.gift_card_design || 'card1');
+    if (!imagePath) {
+        return { imagePath: null, imageBase64: null, imageMime: null };
+    }
+    if (provider !== 'brevo') {
+        return { imagePath, imageBase64: null, imageMime: null };
+    }
+    return {
+        imagePath,
+        imageBase64: fs.readFileSync(imagePath).toString('base64'),
+        imageMime: IMAGE_MIME[path.extname(imagePath).toLowerCase()] || 'image/png'
+    };
+}
+
+/**
+ * Importo della donazione formattato all'italiana, es. "50,00"
+ */
+function formatAmount(donation) {
+    return Number(donation.amount || DEFAULT_AMOUNT).toFixed(2).replace('.', ',');
 }
 
 /**
@@ -74,14 +133,14 @@ function generateGiftCardHTML(donation, hasImage, imageBase64, imageMime) {
     const recipientName = isGift ? (donation.gift_recipient_name || 'Amico/a') : donorName;
     const personalMessage = donation.message || '';
     const dateStr = `${donation.day} ${monthName} ${donation.year}`;
-    const recipientEmail = donation.email || null;
+    const amountStr = formatAmount(donation);
     const baseUrl = process.env.BASE_URL || 'https://calendario.effataitalia.it';
     const giftCardViewUrl = `${baseUrl}/gift-card/${donation.payment_id}`;
 
     let whatsappText, mailtoUrl, introText, shareText;
     if (isGift) {
-        whatsappText = `🎉 Ciao ${recipientName}! Oggi è il tuo giorno speciale!\n${donorName} ti ha regalato il ${dateStr} del Calendario Solidale della Casa Famiglia Effata in Uganda ❤\n\nQuesta donazione aiuta a garantire cibo, istruzione e cure ai bambini della Casa Famiglia Effata in Uganda.\nOgni giorno adottato fa la differenza!\nGrazie di Cuore da parte dei nostri bambini\n\nEcco la tua gift card:\n${giftCardViewUrl}\n\nGRAZIE!\n\nhttps://www.effatacharityorganisation.org/`;
-        mailtoUrl = recipientEmail ? giftCardViewUrl : null;
+        whatsappText = `🎉 Ciao ${recipientName}! Oggi è il tuo giorno speciale!\n${donorName} ti ha regalato il ${dateStr} del Calendario Solidale della Casa Famiglia Effatà in Uganda ❤\n\nQuesta donazione aiuta a garantire cibo, istruzione e cure ai bambini della Casa Famiglia Effatà in Uganda.\nOgni giorno adottato fa la differenza!\nGrazie di Cuore da parte dei nostri bambini\n\nEcco la tua gift card:\n${giftCardViewUrl}\n\nGRAZIE!\n\nhttps://www.effatacharityorganisation.org/`;
+        mailtoUrl = donation.email ? giftCardViewUrl : null;
         introText = `Hai ricevuto un regalo speciale! <strong>${donorName}</strong> ha adottato un giorno del Calendario Solidale in tuo nome.`;
         shareText = `Manda gli auguri a <strong>${recipientName}</strong> — il messaggio è già pronto, puoi modificarlo come vuoi! 💝`;
     } else {
@@ -91,7 +150,7 @@ function generateGiftCardHTML(donation, hasImage, imageBase64, imageMime) {
         shareText = `Condividi la tua adozione — l'amore non si divide, si moltiplica! 💚`;
     }
 
-    // Per Resend usiamo immagine base64 inline, per SMTP usiamo cid:
+    // Con Brevo l'immagine è inline in base64, con Gmail usiamo cid: (allegato)
     let imageTag = '';
     if (hasImage && imageBase64) {
         imageTag = `<img src="data:${imageMime};base64,${imageBase64}" alt="Gift Card" style="width: 100%; height: auto; border-radius: 12px; display: block;">`;
@@ -158,7 +217,7 @@ function generateGiftCardHTML(donation, hasImage, imageBase64, imageMime) {
                                             ${dateStr}
                                         </p>
                                         <p style="color: #2e7d32; font-size: 14px; margin: 0;">
-                                            Donazione di 50,00 &euro;
+                                            Donazione di ${amountStr} &euro;
                                         </p>
                                     </td>
                                 </tr>
@@ -239,8 +298,8 @@ function generateGiftCardHTML(donation, hasImage, imageBase64, imageMime) {
 }
 
 /**
- * Invia email tramite Brevo (Sendinblue) API (HTTP - funziona su Railway)
- * Non richiede dominio verificato, solo mittente verificato via email
+ * Invia email tramite Brevo (Sendinblue) API (HTTP)
+ * Il mittente deve essere verificato su Brevo.
  */
 async function sendViaBrevo(mailOptions, imagePath) {
     const apiKey = process.env.BREVO_API_KEY;
@@ -263,10 +322,9 @@ async function sendViaBrevo(mailOptions, imagePath) {
     // Aggiungi immagine come allegato se presente
     if (imagePath) {
         const imageBuffer = fs.readFileSync(imagePath);
-        const base64Content = imageBuffer.toString('base64');
         body.attachment = [{
             name: path.basename(imagePath),
-            content: base64Content
+            content: imageBuffer.toString('base64')
         }];
     }
 
@@ -284,12 +342,11 @@ async function sendViaBrevo(mailOptions, imagePath) {
         throw new Error(`Brevo API error ${response.status}: ${errorData}`);
     }
 
-    const result = await response.json();
-    return result;
+    return await response.json();
 }
 
 /**
- * Invia email tramite Gmail SMTP (per uso locale)
+ * Invia email tramite Gmail SMTP
  */
 async function sendViaGmail(mailOptions, imagePath) {
     const transporter = await createTransporter();
@@ -306,190 +363,90 @@ async function sendViaGmail(mailOptions, imagePath) {
 }
 
 /**
- * Invia la gift card via email
- * @param {Object} donation - Dati della donazione dal database
+ * Invia con il provider scelto
  */
-async function sendGiftCard(donation) {
-    const useBrevo = !!process.env.BREVO_API_KEY;
-    const useGmail = process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD;
-
-    if (!useBrevo && !useGmail) {
-        console.warn('Nessun servizio email configurato (BREVO_API_KEY o GMAIL). Gift card non inviata.');
-        return;
-    }
-
-    // Email anteprima va al DONANTE (che decide come consegnarla al destinatario)
-    const donorEmailTo = donation.donor_email || donation.email;
-    if (!donorEmailTo) {
-        console.warn('Email donante mancante. Gift card non inviata.');
-        return;
-    }
-
-    // Cerca immagine gift card
-    const cardName = donation.gift_card_design || 'card1';
-    const imagePath = getGiftCardImagePath(cardName);
-    const hasImage = imagePath !== null;
-
-    // Per Brevo, prepara immagine base64 per embed nell'HTML
-    let imageBase64 = null;
-    let imageMime = 'image/png';
-    if (hasImage && useBrevo) {
-        const imageBuffer = fs.readFileSync(imagePath);
-        imageBase64 = imageBuffer.toString('base64');
-        const ext = path.extname(imagePath).toLowerCase();
-        if (ext === '.jpg' || ext === '.jpeg') imageMime = 'image/jpeg';
-        else if (ext === '.webp') imageMime = 'image/webp';
-        else if (ext === '.gif') imageMime = 'image/gif';
-        else if (ext === '.svg') imageMime = 'image/svg+xml';
-    }
-
-    // Scegli il from address
-    const fromAddress = useBrevo
-        ? `Calendario Solidale - Effata <${process.env.GMAIL_USER || 'effataitalia@gmail.com'}>`
-        : `"Calendario Solidale - Effatà" <${process.env.GMAIL_USER}>`;
-
-    const mailOptions = {
-        from: fromAddress,
-        to: donorEmailTo,
-        subject: `🎁 Hai adottato il ${donation.day} ${MONTHS[donation.month - 1]} per ${donation.gift_recipient_name || 'qualcuno'}! Ecco la tua gift card`,
-        html: generateGiftCardHTML(donation, hasImage, imageBase64, imageMime)
-    };
-
-    if (useBrevo) {
-        console.log('Invio email tramite Brevo API...');
-        const result = await sendViaBrevo(mailOptions, hasImage ? imagePath : null);
-        console.log('Gift card email inviata via Brevo:', result.messageId);
-        return result;
-    } else {
-        console.log('Invio email tramite Gmail SMTP...');
-        const info = await sendViaGmail(mailOptions, hasImage ? imagePath : null);
-        console.log('Gift card email inviata via Gmail:', info.messageId);
-        return info;
-    }
+function sendEmail(provider, mailOptions, imagePath) {
+    return provider === 'brevo'
+        ? sendViaBrevo(mailOptions, imagePath)
+        : sendViaGmail(mailOptions, imagePath);
 }
 
 /**
- * Invia la gift card schedulata il giorno del compleanno
- * @param {Object} donation - Dati della donazione dal database
+ * Costruisce e invia una gift card a un indirizzo.
+ * Ritorna il risultato del provider; lancia un errore se non può inviare.
  */
-async function sendScheduledGiftCard(donation) {
-    const useBrevo = !!process.env.BREVO_API_KEY;
-    const useGmail = process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD;
-
-    if (!useBrevo && !useGmail) return;
-    // Email compleanno va al DONANTE con bottone WhatsApp
-    const donorEmailTo = donation.donor_email || donation.email;
-    if (!donorEmailTo) return;
-
-    const cardName = donation.gift_card_design || 'card1';
-    const imagePath = getGiftCardImagePath(cardName);
-    const hasImage = imagePath !== null;
-
-    let imageBase64 = null;
-    let imageMime = 'image/png';
-    if (hasImage && useBrevo) {
-        const imageBuffer = fs.readFileSync(imagePath);
-        imageBase64 = imageBuffer.toString('base64');
-        const ext = path.extname(imagePath).toLowerCase();
-        if (ext === '.jpg' || ext === '.jpeg') imageMime = 'image/jpeg';
-        else if (ext === '.webp') imageMime = 'image/webp';
-        else if (ext === '.gif') imageMime = 'image/gif';
-        else if (ext === '.svg') imageMime = 'image/svg+xml';
+async function deliverGiftCard({ donation, to, subject, label }) {
+    const provider = getProvider();
+    if (!to) {
+        throw new Error(`Email destinatario mancante per donazione ${donation.id}`);
     }
 
-    const fromAddress = useBrevo
-        ? `Calendario Solidale - Effata <${process.env.GMAIL_USER || 'effataitalia@gmail.com'}>`
-        : `"Calendario Solidale - Effatà" <${process.env.GMAIL_USER}>`;
-
+    const { imagePath, imageBase64, imageMime } = loadCardImage(donation, provider);
     const mailOptions = {
-        from: fromAddress,
-        to: donorEmailTo,
-        subject: `🎉 Oggi è il compleanno di ${donation.gift_recipient_name || 'qualcuno'}! Manda gli auguri 💬`,
-        html: generateGiftCardHTML(donation, hasImage, imageBase64, imageMime)
+        from: getFromAddress(provider),
+        to,
+        subject,
+        html: generateGiftCardHTML(donation, !!imagePath, imageBase64, imageMime)
     };
 
-    if (useBrevo) {
-        const result = await sendViaBrevo(mailOptions, hasImage ? imagePath : null);
-        console.log(`Gift card schedulata inviata via Brevo per donazione ${donation.id}`);
-        return result;
-    } else {
-        const info = await sendViaGmail(mailOptions, hasImage ? imagePath : null);
-        console.log(`Gift card schedulata inviata via Gmail per donazione ${donation.id}`);
-        return info;
-    }
+    const result = await sendEmail(provider, mailOptions, imagePath);
+    console.log(`${label} inviata via ${provider} a ${to} per donazione ${donation.id}`);
+    return result;
+}
+
+/**
+ * Invia la gift card via email in anteprima al DONANTE (che decide come consegnarla al destinatario)
+ * @param {Object} donation - Dati della donazione dal database
+ */
+function sendGiftCard(donation) {
+    return deliverGiftCard({
+        donation,
+        to: donation.donor_email || donation.email,
+        subject: `🎁 Hai adottato il ${donation.day} ${MONTHS[donation.month - 1]} per ${donation.gift_recipient_name || 'qualcuno'}! Ecco la tua gift card`,
+        label: 'Gift card'
+    });
+}
+
+/**
+ * Invia la gift card schedulata il giorno del compleanno al DONANTE, con bottone WhatsApp
+ * @param {Object} donation - Dati della donazione dal database
+ */
+function sendScheduledGiftCard(donation) {
+    return deliverGiftCard({
+        donation,
+        to: donation.donor_email || donation.email,
+        subject: `🎉 Oggi è il compleanno di ${donation.gift_recipient_name || 'qualcuno'}! Manda gli auguri 💬`,
+        label: 'Gift card schedulata'
+    });
 }
 
 /**
  * Invia la gift card per email direttamente al destinatario del regalo
  * (chiamato dalla pagina gift-card view quando il donante clicca "Invia per Email")
  */
-async function sendGiftCardToRecipient(donation) {
-    const useBrevo = !!process.env.BREVO_API_KEY;
-    const useGmail = process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD;
-
-    if (!useBrevo && !useGmail) return;
-
-    const recipientEmail = donation.email;
-    if (!recipientEmail) return;
-
-    const cardName = donation.gift_card_design || 'card1';
-    const imagePath = getGiftCardImagePath(cardName);
-    const hasImage = imagePath !== null;
-
-    let imageBase64 = null;
-    let imageMime = 'image/png';
-    if (hasImage && useBrevo) {
-        const imageBuffer = fs.readFileSync(imagePath);
-        imageBase64 = imageBuffer.toString('base64');
-        const ext = path.extname(imagePath).toLowerCase();
-        if (ext === '.jpg' || ext === '.jpeg') imageMime = 'image/jpeg';
-        else if (ext === '.webp') imageMime = 'image/webp';
-        else if (ext === '.gif') imageMime = 'image/gif';
-        else if (ext === '.svg') imageMime = 'image/svg+xml';
-    }
-
-    const fromAddress = useBrevo
-        ? `Calendario Solidale - Effata <${process.env.GMAIL_USER || 'effataitalia@gmail.com'}>`
-        : `"Calendario Solidale - Effatà" <${process.env.GMAIL_USER}>`;
-
+function sendGiftCardToRecipient(donation) {
     const recipientName = donation.gift_recipient_name || 'Amico/a';
-
-    const mailOptions = {
-        from: fromAddress,
-        to: recipientEmail,
+    return deliverGiftCard({
+        donation,
+        to: donation.email,
         subject: `🎁 Hai ricevuto un regalo speciale per il tuo compleanno, ${recipientName}!`,
-        html: generateGiftCardHTML(donation, hasImage, imageBase64, imageMime)
-    };
-
-    if (useBrevo) {
-        const result = await sendViaBrevo(mailOptions, hasImage ? imagePath : null);
-        console.log(`Gift card inviata al destinatario ${recipientEmail} per donazione ${donation.id}`);
-        return result;
-    } else {
-        const info = await sendViaGmail(mailOptions, hasImage ? imagePath : null);
-        console.log(`Gift card inviata al destinatario ${recipientEmail} per donazione ${donation.id}`);
-        return info;
-    }
+        label: 'Gift card destinatario'
+    });
 }
 
 /**
- * Invia notifica di avvenuta donazione all'associazione
+ * Invia notifica di avvenuta donazione all'associazione.
+ * Lancia un errore se manca la configurazione; gli errori di invio vengono loggati.
+ * I chiamanti hanno un .catch: la donazione è già confermata e non va annullata.
  * @param {Object} donation - Dati della donazione dal database
  */
 async function sendDonationNotification(donation) {
     const notifyEmail = process.env.ASSOCIATION_EMAIL || process.env.GMAIL_USER;
     if (!notifyEmail) {
-        console.warn('Nessuna email associazione configurata (ASSOCIATION_EMAIL o GMAIL_USER). Notifica non inviata.');
-        return;
+        throw new Error('Nessuna email associazione configurata (ASSOCIATION_EMAIL o GMAIL_USER)');
     }
 
-    const useBrevo = !!process.env.BREVO_API_KEY;
-    const useGmail = process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD;
-
-    if (!useBrevo && !useGmail) {
-        console.warn('Nessun servizio email configurato. Notifica non inviata.');
-        return;
-    }
+    const provider = getProvider();
 
     const monthName = MONTHS[donation.month - 1];
     const dateStr = `${donation.day} ${monthName} ${donation.year}`;
@@ -497,11 +454,7 @@ async function sendDonationNotification(donation) {
     const donorSurname = donation.donor_surname || '';
     const donorCF = donation.donor_cf || 'Non fornito';
     const donorEmail = donation.donor_email || 'Non fornita';
-    const amount = donation.amount || 50;
-
-    const fromAddress = useBrevo
-        ? `Calendario Solidale <${process.env.GMAIL_USER || 'effataitalia@gmail.com'}>`
-        : `"Calendario Solidale" <${process.env.GMAIL_USER}>`;
+    const amount = Number(donation.amount || DEFAULT_AMOUNT);
 
     const html = `
 <!DOCTYPE html>
@@ -561,18 +514,14 @@ async function sendDonationNotification(donation) {
 </html>`;
 
     const mailOptions = {
-        from: fromAddress,
+        from: getFromAddress(provider, 'Calendario Solidale'),
         to: notifyEmail,
         subject: `Donazione confermata: ${donorName} ${donorSurname} - ${dateStr} (${amount.toFixed(2)}€)`,
         html
     };
 
     try {
-        if (useBrevo) {
-            await sendViaBrevo(mailOptions, null);
-        } else {
-            await sendViaGmail(mailOptions, null);
-        }
+        await sendEmail(provider, mailOptions, null);
         console.log(`Notifica donazione #${donation.id} inviata a ${notifyEmail}`);
     } catch (error) {
         console.error('Errore invio notifica associazione:', error);
@@ -585,15 +534,11 @@ async function sendDonationNotification(donation) {
  * @param {Object} donation - Dati della donazione dal database
  */
 async function sendDonorGiftCard(donation) {
-    const useBrevo = !!process.env.BREVO_API_KEY;
-    const useGmail = process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD;
-
-    if (!useBrevo && !useGmail) return;
+    const provider = getProvider();
 
     const donorEmail = donation.donor_email;
     if (!donorEmail) {
-        console.warn('Email donante mancante. Conferma non inviata.');
-        return;
+        throw new Error(`Email donante mancante per donazione ${donation.id}`);
     }
 
     const monthName = MONTHS[donation.month - 1];
@@ -601,15 +546,10 @@ async function sendDonorGiftCard(donation) {
     const donorName = donation.donor_name || 'Donatore';
     const donorSurname = donation.donor_surname || '';
     const donorCF = donation.donor_cf || 'Non fornito';
-    const amount = donation.amount || 50;
+    const amount = Number(donation.amount || DEFAULT_AMOUNT);
 
     // Gift card come allegato (immagine)
-    const cardName = donation.gift_card_design || 'card1';
-    const imagePath = getGiftCardImagePath(cardName);
-
-    const fromAddress = useBrevo
-        ? `Calendario Solidale - Effata <${process.env.GMAIL_USER || 'effataitalia@gmail.com'}>`
-        : `"Calendario Solidale - Effatà" <${process.env.GMAIL_USER}>`;
+    const imagePath = getGiftCardImagePath(donation.gift_card_design || 'card1');
 
     const html = `
 <!DOCTYPE html>
@@ -691,20 +631,15 @@ async function sendDonorGiftCard(donation) {
 </html>`;
 
     const mailOptions = {
-        from: fromAddress,
+        from: getFromAddress(provider),
         to: donorEmail,
         subject: `🎉 Grazie ${donorName}! Hai adottato il ${dateStr} — ecco la tua gift card`,
         html
     };
 
     try {
-        if (useBrevo) {
-            await sendViaBrevo(mailOptions, imagePath);
-            console.log(`Conferma + gift card inviata via Brevo a ${donorEmail} per donazione ${donation.id}`);
-        } else {
-            await sendViaGmail(mailOptions, imagePath);
-            console.log(`Conferma + gift card inviata via Gmail a ${donorEmail} per donazione ${donation.id}`);
-        }
+        await sendEmail(provider, mailOptions, imagePath);
+        console.log(`Conferma + gift card inviata via ${provider} a ${donorEmail} per donazione ${donation.id}`);
     } catch (error) {
         console.error('Errore invio conferma donante:', error);
         throw error;

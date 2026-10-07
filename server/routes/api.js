@@ -355,10 +355,10 @@ router.post('/webhook/satispay', async (req, res) => {
 
         if (status === 'ACCEPTED') {
             // Trova donazione con questo payment_id
-            const donations = db.getDonationsByYear(2026); // Cerca nell'anno corrente
-            const donation = donations.find(d => d.payment_id === payment_id);
+            const donation = db.getDonationByPaymentId(payment_id);
 
-            if (donation) {
+            // Ignora webhook duplicati: Satispay può inviare la stessa notifica più volte
+            if (donation && donation.payment_status !== 'completed') {
                 db.confirmPayment(donation.id);
                 console.log(`Donazione ${donation.id} confermata via Satispay`);
 

@@ -276,9 +276,14 @@ function exportDonations(year = null) {
  * Ottieni donazioni regalo da inviare oggi (giorno e mese coincidono con oggi)
  */
 function getGiftDonationsForToday() {
-    const now = new Date();
-    const today_day = now.getDate();
-    const today_month = now.getMonth() + 1;
+    // Data di oggi nel fuso del calendario, come il cron (Europe/Rome)
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Europe/Rome',
+        day: 'numeric',
+        month: 'numeric'
+    }).formatToParts(new Date());
+    const today_day = Number(parts.find(p => p.type === 'day').value);
+    const today_month = Number(parts.find(p => p.type === 'month').value);
     const stmt = db.prepare(`
         SELECT * FROM donations
         WHERE is_gift = 1
