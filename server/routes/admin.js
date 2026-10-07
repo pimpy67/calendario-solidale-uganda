@@ -219,11 +219,14 @@ router.delete('/donations/:id', authMiddleware, (req, res) => {
 router.post('/trigger-scheduler', authMiddleware, async (req, res) => {
     try {
         const db = require('../database/db');
-        const { sendScheduledGiftCard } = require('../utils/mailer');
+        const { sendScheduledGiftCard, sendPersonalReminder } = require('../utils/mailer');
 
-        const donations = db.getGiftDonationsForToday();
+        const jobs = [
+            ...db.getGiftDonationsForToday().map(d => ({ donation: d, send: sendScheduledGiftCard })),
+            ...db.getPersonalDonationsForToday().map(d => ({ donation: d, send: sendPersonalReminder }))
+        ];
 
-        if (donations.length === 0) {
+        if (jobs.length === 0) {
             return res.json({
                 success: true,
                 message: 'Nessuna gift card da inviare oggi',
@@ -232,9 +235,9 @@ router.post('/trigger-scheduler', authMiddleware, async (req, res) => {
         }
 
         const results = [];
-        for (const donation of donations) {
+        for (const { donation, send } of jobs) {
             try {
-                await sendScheduledGiftCard(donation);
+                await send(donation);
                 db.markGiftCardScheduledSent(donation.id);
                 results.push({ id: donation.id, status: 'inviata' });
             } catch (err) {
@@ -244,7 +247,7 @@ router.post('/trigger-scheduler', authMiddleware, async (req, res) => {
 
         res.json({
             success: true,
-            message: `Gift card inviate: ${results.filter(r => r.status === 'inviata').length}/${donations.length}`,
+            message: `Gift card inviate: ${results.filter(r => r.status === 'inviata').length}/${jobs.length}`,
             results
         });
 

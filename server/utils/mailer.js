@@ -532,6 +532,23 @@ async function sendScheduledGiftCard(donation) {
 }
 
 /**
+ * Invia al DONANTE, il giorno adottato, la gift card della donazione personale (non regalo)
+ * @param {Object} donation - Dati della donazione dal database
+ */
+async function sendPersonalReminder(donation) {
+    const to = donation.donor_email;
+    const dateStr = `${donation.day} ${MONTHS[donation.month - 1]}`;
+    const result = await deliverGiftCard({
+        donation,
+        to,
+        subject: `🎉 Oggi è il giorno che hai adottato (${dateStr})! Ecco la tua gift card`,
+        label: 'Gift card del giorno adottato'
+    });
+    await notifyAssociationSent(donation, 'Gift card del giorno adottato inviata', to);
+    return result;
+}
+
+/**
  * Invia la gift card per email direttamente al destinatario del regalo
  * (chiamato dalla pagina gift-card view quando il donante clicca "Invia per Email")
  */
@@ -762,6 +779,7 @@ async function sendDonorGiftCard(donation) {
 module.exports = {
     sendGiftCard,
     sendScheduledGiftCard,
+    sendPersonalReminder,
     sendGiftCardToRecipient,
     sendDonationNotification,
     sendDonorGiftCard

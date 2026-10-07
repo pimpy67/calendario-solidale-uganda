@@ -275,24 +275,57 @@ function exportDonations(year = null) {
 /**
  * Ottieni donazioni regalo da inviare oggi (giorno e mese coincidono con oggi)
  */
-function getGiftDonationsForToday() {
+function getRomeDate() {
     // Data di oggi nel fuso del calendario, come il cron (Europe/Rome)
     const parts = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Europe/Rome',
+        year: 'numeric',
         day: 'numeric',
         month: 'numeric'
     }).formatToParts(new Date());
-    const today_day = Number(parts.find(p => p.type === 'day').value);
-    const today_month = Number(parts.find(p => p.type === 'month').value);
+    return {
+        year: Number(parts.find(p => p.type === 'year').value),
+        month: Number(parts.find(p => p.type === 'month').value),
+        day: Number(parts.find(p => p.type === 'day').value)
+    };
+}
+
+/**
+ * Ottieni donazioni regalo da inviare oggi (giorno e mese coincidono con oggi, anno corrente)
+ */
+function getGiftDonationsForToday() {
+    const today = getRomeDate();
     const stmt = db.prepare(`
         SELECT * FROM donations
         WHERE is_gift = 1
         AND payment_status = 'completed'
+        AND year = ?
         AND day = ?
         AND month = ?
         AND gift_card_scheduled_sent_at IS NULL
     `);
-    return stmt.all(today_day, today_month);
+    return stmt.all(today.year, today.day, today.month);
+}
+
+/**
+ * Ottieni donazioni personali (non regalo) il cui giorno adottato è oggi, anno corrente.
+ * Il donante deve avere un'email e non essere anonimo.
+ */
+function getPersonalDonationsForToday() {
+    const today = getRomeDate();
+    const stmt = db.prepare(`
+        SELECT * FROM donations
+        WHERE is_gift = 0
+        AND payment_status = 'completed'
+        AND is_anonymous = 0
+        AND donor_email IS NOT NULL
+        AND donor_email <> ''
+        AND year = ?
+        AND day = ?
+        AND month = ?
+        AND gift_card_scheduled_sent_at IS NULL
+    `);
+    return stmt.all(today.year, today.day, today.month);
 }
 
 /**
@@ -406,6 +439,7 @@ module.exports = {
     exportDonations,
     clearAllDonations,
     getGiftDonationsForToday,
+    getPersonalDonationsForToday,
     markGiftCardScheduledSent,
     getDonationByPaymentId,
     cancelStalePendingDonations,

@@ -7,31 +7,37 @@
 
 const cron = require('node-cron');
 const db = require('../database/db');
-const { sendScheduledGiftCard } = require('../utils/mailer');
+const { sendScheduledGiftCard, sendPersonalReminder } = require('../utils/mailer');
+
+async function sendAll(donations, sendFn) {
+    for (const donation of donations) {
+        try {
+            await sendFn(donation);
+            db.markGiftCardScheduledSent(donation.id);
+            console.log(`[GiftCardScheduler] Gift card inviata per donazione #${donation.id} (${donation.gift_recipient_name || 'donazione personale'})`);
+        } catch (error) {
+            console.error(`[GiftCardScheduler] Errore invio gift card per donazione #${donation.id}:`, error.message);
+        }
+    }
+}
 
 function startGiftCardScheduler() {
     // Esegui ogni giorno alle 08:00
     cron.schedule('0 8 * * *', async () => {
         console.log('[GiftCardScheduler] Controllo gift card da inviare oggi...');
 
-        const donations = db.getGiftDonationsForToday();
+        const gifts = db.getGiftDonationsForToday();
+        const personal = db.getPersonalDonationsForToday();
 
-        if (donations.length === 0) {
+        if (gifts.length === 0 && personal.length === 0) {
             console.log('[GiftCardScheduler] Nessuna gift card da inviare oggi.');
             return;
         }
 
-        console.log(`[GiftCardScheduler] Gift card da inviare: ${donations.length}`);
+        console.log(`[GiftCardScheduler] Regali: ${gifts.length}, donazioni personali: ${personal.length}`);
 
-        for (const donation of donations) {
-            try {
-                await sendScheduledGiftCard(donation);
-                db.markGiftCardScheduledSent(donation.id);
-                console.log(`[GiftCardScheduler] Gift card inviata per donazione #${donation.id} (${donation.gift_recipient_name})`);
-            } catch (error) {
-                console.error(`[GiftCardScheduler] Errore invio gift card per donazione #${donation.id}:`, error.message);
-            }
-        }
+        await sendAll(gifts, sendScheduledGiftCard);
+        await sendAll(personal, sendPersonalReminder);
     }, {
         timezone: 'Europe/Rome'
     });
