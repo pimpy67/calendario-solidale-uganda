@@ -1862,3 +1862,10 @@ body {
     font-size: 1.3rem;
     cursor: pointer;
 }
+
+/* Telefono: la barra di navigazione (Chi Siamo, Gift Card) si nasconde per lasciare spazio al calendario */
+@media (max-width: 900px) {
+    .sidebar-nav {
+        display: none;
+    }
+}
