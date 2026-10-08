@@ -75,7 +75,7 @@ const Payment = (function() {
                 donorCFInput.value = '';
                 donorEmailInput.value = '';
                 // Rimuovi eventuali stati di errore
-                donorFieldsSection.querySelectorAll('.form-error').forEach(el => el.classList.remove('form-error'));
+                clearFieldErrors(donorFieldsSection);
             }
         });
 
@@ -198,10 +198,9 @@ const Payment = (function() {
         donorFieldsSection.style.display = 'block';
         isAnonymousCheckbox.checked = false;
         // Rimuovi stati di errore
-        modal.querySelectorAll('.form-error').forEach(el => el.classList.remove('form-error'));
+        clearFieldErrors(modal);
         // Rimuovi popup validazione se presente
-        const existingPopup = modal.querySelector('.validation-popup');
-        if (existingPopup) existingPopup.remove();
+        document.querySelectorAll('.validation-popup').forEach(p => p.remove());
         isGiftCheckbox.checked = false;
         giftSection.classList.remove('active');
         giftRecipientNameInput.value = '';
@@ -263,6 +262,46 @@ const Payment = (function() {
     }
 
     /**
+     * Segna un campo come errato: bordo rosso e messaggio sotto il campo.
+     * L'errore sparisce appena l'utente modifica il campo (watchEl).
+     */
+    function setFieldError(el, message, watchEl = el) {
+        el.classList.add('form-error');
+        const group = el.closest('.form-group') || el.parentElement;
+        const msg = document.createElement('small');
+        msg.className = 'field-error-msg';
+        msg.textContent = message;
+        group.appendChild(msg);
+        const clear = () => {
+            el.classList.remove('form-error');
+            msg.remove();
+        };
+        watchEl.addEventListener('input', clear, { once: true });
+        watchEl.addEventListener('change', clear, { once: true });
+    }
+
+    /**
+     * Rimuove errori e messaggi dentro un contenitore
+     */
+    function clearFieldErrors(root) {
+        root.querySelectorAll('.form-error').forEach(el => el.classList.remove('form-error'));
+        root.querySelectorAll('.field-error-msg').forEach(el => el.remove());
+    }
+
+    /**
+     * Porta il campo in vista, lo mette a fuoco e lo fa lampeggiare due volte
+     */
+    function focusField(el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const input = el.matches('input, textarea') ? el : el.querySelector('input');
+        if (input) input.focus({ preventScroll: true });
+        el.classList.remove('field-attention');
+        void el.offsetWidth; // riavvia l'animazione
+        el.classList.add('field-attention');
+        el.addEventListener('animationend', () => el.classList.remove('field-attention'), { once: true });
+    }
+
+    /**
      * Gestisce il pagamento (Stripe o Satispay)
      */
     async function handlePayment(method) {
@@ -277,58 +316,55 @@ const Payment = (function() {
         const isGift = isGiftCheckbox.checked;
 
         // Rimuovi errori precedenti
-        modal.querySelectorAll('.form-error').forEach(el => el.classList.remove('form-error'));
-        const existingPopup = modal.querySelector('.validation-popup');
-        if (existingPopup) existingPopup.remove();
+        clearFieldErrors(modal);
+        document.querySelectorAll('.validation-popup').forEach(p => p.remove());
+
+        // Raccoglie tutti gli errori: {label, el} nell'ordine del modulo
+        const errors = [];
 
         if (!isAnonymous) {
-            const missingFields = [];
-            if (!donorName) { missingFields.push('Nome'); donorNameInput.classList.add('form-error'); }
-            if (!donorSurname) { missingFields.push('Cognome'); donorSurnameInput.classList.add('form-error'); }
-            if (!donorCF) { missingFields.push('Codice Fiscale'); donorCFInput.classList.add('form-error'); }
-            if (!donorEmail) { missingFields.push('Email'); donorEmailInput.classList.add('form-error'); }
-
-            // Validazione Codice Fiscale (formato + carattere di controllo)
-            if (donorCF && !isValidCodiceFiscale(donorCF)) {
-                missingFields.push('Codice Fiscale non valido');
-                donorCFInput.classList.add('form-error');
+            if (!donorName) { setFieldError(donorNameInput, 'Campo obbligatorio'); errors.push({ label: 'Nome', el: donorNameInput }); }
+            if (!donorSurname) { setFieldError(donorSurnameInput, 'Campo obbligatorio'); errors.push({ label: 'Cognome', el: donorSurnameInput }); }
+            if (!donorCF) {
+                setFieldError(donorCFInput, 'Campo obbligatorio');
+                errors.push({ label: 'Codice Fiscale', el: donorCFInput });
+            } else if (!isValidCodiceFiscale(donorCF)) {
+                setFieldError(donorCFInput, 'Codice fiscale non valido');
+                errors.push({ label: 'Codice Fiscale non valido', el: donorCFInput });
             }
-
-            // Validazione formato email (nome@dominio.xx con TLD di almeno 2 caratteri)
-            if (donorEmail && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(donorEmail)) {
-                missingFields.push('Email non valida');
-                donorEmailInput.classList.add('form-error');
-            }
-
-            if (missingFields.length > 0) {
-                showValidationPopup(missingFields);
-                return;
+            if (!donorEmail) {
+                setFieldError(donorEmailInput, 'Campo obbligatorio');
+                errors.push({ label: 'Email', el: donorEmailInput });
+            } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(donorEmail)) {
+                setFieldError(donorEmailInput, 'Email non valida');
+                errors.push({ label: 'Email non valida', el: donorEmailInput });
             }
         }
 
-        // Valida consenso privacy
+        // Consenso privacy
         if (!privacyConsentCheckbox.checked) {
             const privacyGroup = privacyConsentCheckbox.closest('.privacy-checkbox-group');
-            privacyGroup.classList.add('form-error');
-            privacyGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            showValidationPopup(['Consenso alla privacy obbligatorio']);
-            return;
+            setFieldError(privacyGroup, "Devi accettare l'informativa privacy per continuare", privacyConsentCheckbox);
+            errors.push({ label: 'Accettazione informativa privacy', el: privacyGroup });
         }
 
-        // Valida campi regalo
+        // Campi regalo
         if (isGift) {
             const giftEmail = giftEmailInput.value.trim();
             const giftRecipientName = giftRecipientNameInput.value.trim();
-            if (!giftEmail) {
-                alert('Inserisci l\'email del destinatario del regalo');
-                giftEmailInput.focus();
-                return;
-            }
             if (!giftRecipientName) {
-                alert('Inserisci il nome del destinatario del regalo');
-                giftRecipientNameInput.focus();
-                return;
+                setFieldError(giftRecipientNameInput, 'Campo obbligatorio');
+                errors.push({ label: 'Nome del destinatario', el: giftRecipientNameInput });
             }
+            if (!giftEmail) {
+                setFieldError(giftEmailInput, 'Campo obbligatorio');
+                errors.push({ label: 'Email del destinatario', el: giftEmailInput });
+            }
+        }
+
+        if (errors.length > 0) {
+            showValidationPopup(errors);
+            return;
         }
 
         // Inizia processing
@@ -455,12 +491,11 @@ const Payment = (function() {
     }
 
     /**
-     * Mostra popup di validazione con i campi mancanti
+     * Mostra il popup con i campi mancanti: ogni voce porta al campo corrispondente
+     * @param {Array<{label: string, el: HTMLElement}>} errors
      */
-    function showValidationPopup(missingFields) {
-        // Rimuovi popup precedente
-        const existing = document.querySelector('.validation-popup');
-        if (existing) existing.remove();
+    function showValidationPopup(errors) {
+        document.querySelectorAll('.validation-popup').forEach(p => p.remove());
 
         const popup = document.createElement('div');
         popup.className = 'validation-popup';
@@ -468,20 +503,37 @@ const Payment = (function() {
             <div class="validation-popup-content">
                 <button class="validation-popup-close">&times;</button>
                 <div class="validation-popup-icon">&#9888;</div>
-                <p>Inserisci il tuo nome, codice fiscale e mail (per poter fruire della deducibilita) oppure seleziona <strong>"Preferisco restare anonimo"</strong></p>
-                <ul>${missingFields.map(f => `<li>${f}</li>`).join('')}</ul>
+                <p>Completa questi campi per continuare:</p>
+                <ul class="validation-popup-list"></ul>
+                <p class="validation-popup-hint">Per restare anonimo seleziona "Preferisco restare anonimo"</p>
             </div>
         `;
 
-        // Montato su body: il popup fixed dentro .modal (transform + scroll) finirebbe fuori vista
+        const list = popup.querySelector('.validation-popup-list');
+        errors.forEach(({ label, el }) => {
+            const li = document.createElement('li');
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'validation-popup-item';
+            btn.textContent = label;
+            btn.addEventListener('click', () => {
+                popup.remove();
+                focusField(el);
+            });
+            li.appendChild(btn);
+            list.appendChild(li);
+        });
+
+        // Chiusura: porta comunque al primo campo mancante
+        const close = () => {
+            popup.remove();
+            focusField(errors[0].el);
+        };
+        popup.querySelector('.validation-popup-close').addEventListener('click', close);
+        popup.addEventListener('click', (e) => { if (e.target === popup) close(); });
+
         document.body.appendChild(popup);
-
-        // Chiudi popup
-        popup.querySelector('.validation-popup-close').addEventListener('click', () => popup.remove());
-        popup.addEventListener('click', (e) => { if (e.target === popup) popup.remove(); });
-
-        // Auto-chiudi dopo 10 secondi
-        setTimeout(() => { if (popup.parentNode) popup.remove(); }, 10000);
+        focusField(errors[0].el);
     }
 
     /**
