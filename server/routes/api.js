@@ -317,7 +317,7 @@ router.post('/donations/:id/confirm', async (req, res) => {
 
         // Invia gift card via email in background (non blocca la risposta)
         console.log(`Donazione ${id} confermata. is_gift=${donation.is_gift}, email=${donation.email}`);
-        if (donation.is_gift) {
+        if (donation.is_gift && !donation.is_anonymous) {
             console.log(`Invio gift card a ${donation.email}...`);
             sendGiftCard(donation)
                 .then(() => console.log(`Gift card inviata a ${donation.email} per donazione ${id}`))
@@ -367,7 +367,7 @@ router.post('/webhook/satispay', async (req, res) => {
                     .catch(err => console.error('Errore notifica associazione:', err));
 
                 // Invia gift card al destinatario (regalo) o conferma al donante (donazione normale)
-                if (donation.is_gift) {
+                if (donation.is_gift && !donation.is_anonymous) {
                     try {
                         await sendGiftCard(donation);
                         console.log(`Gift card inviata a ${donation.email}`);
@@ -481,7 +481,7 @@ router.post('/webhook/stripe', async (req, res) => {
         sendDonationNotification(donation)
             .catch(err => console.error('Errore notifica associazione:', err));
 
-        if (donation.is_gift) {
+        if (donation.is_gift && !donation.is_anonymous) {
             sendGiftCard(donation)
                 .then(() => console.log(`Gift card inviata a ${donation.email}`))
                 .catch(err => console.error('Errore invio gift card:', err));

@@ -354,8 +354,8 @@ const Payment = (function() {
                 donationData.gift_email = giftEmailInput.value.trim();
                 donationData.gift_recipient_name = giftRecipientNameInput.value.trim();
                 donationData.gift_message = giftMessageInput.value.trim();
-                donationData.gift_card_design = selectedCard;
             }
+            donationData.gift_card_design = selectedCard;
 
             // Crea donazione sul server
             const response = await fetch('/api/donations', {
