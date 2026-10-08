@@ -1862,3 +1862,29 @@ body {
     font-size: 1.3rem;
     cursor: pointer;
 }
+
+/* Telefono: niente pulsanti Chi Siamo / Gift Card; ordine: frase, pulsante ACCEDI, foto, statistiche */
+@media (max-width: 900px) {
+    .sidebar-nav,
+    .sidebar-preview {
+        display: contents;
+    }
+
+    .sidebar-link {
+        display: none;
+    }
+
+    .sidebar-nav-text { order: 2; }
+    .btn-accedi { order: 3; }
+    .sidebar-preview h4 { order: 4; }
+    .preview-image {
+        order: 5;
+        align-self: center;
+        width: 240px;
+        max-width: 100%;
+        max-height: none;
+    }
+    .sidebar-stats { order: 6; }
+    .sidebar-share-bar { order: 7; }
+    .sidebar-footer { order: 8; }
+}
