@@ -308,7 +308,9 @@ const Payment = (function() {
 
         // Valida consenso privacy
         if (!privacyConsentCheckbox.checked) {
-            privacyConsentCheckbox.closest('.privacy-checkbox-group').classList.add('form-error');
+            const privacyGroup = privacyConsentCheckbox.closest('.privacy-checkbox-group');
+            privacyGroup.classList.add('form-error');
+            privacyGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
             showValidationPopup(['Consenso alla privacy obbligatorio']);
             return;
         }
@@ -457,7 +459,7 @@ const Payment = (function() {
      */
     function showValidationPopup(missingFields) {
         // Rimuovi popup precedente
-        const existing = modal.querySelector('.validation-popup');
+        const existing = document.querySelector('.validation-popup');
         if (existing) existing.remove();
 
         const popup = document.createElement('div');
@@ -471,14 +473,15 @@ const Payment = (function() {
             </div>
         `;
 
-        modal.querySelector('.modal-body').appendChild(popup);
+        // Montato su body: il popup fixed dentro .modal (transform + scroll) finirebbe fuori vista
+        document.body.appendChild(popup);
 
         // Chiudi popup
         popup.querySelector('.validation-popup-close').addEventListener('click', () => popup.remove());
         popup.addEventListener('click', (e) => { if (e.target === popup) popup.remove(); });
 
-        // Auto-chiudi dopo 6 secondi
-        setTimeout(() => { if (popup.parentNode) popup.remove(); }, 6000);
+        // Auto-chiudi dopo 10 secondi
+        setTimeout(() => { if (popup.parentNode) popup.remove(); }, 10000);
     }
 
     /**
