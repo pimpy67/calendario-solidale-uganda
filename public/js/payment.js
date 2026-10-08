@@ -200,7 +200,7 @@ const Payment = (function() {
         // Rimuovi stati di errore
         clearFieldErrors(modal);
         // Rimuovi popup validazione se presente
-        document.querySelectorAll('.validation-popup').forEach(p => p.remove());
+        document.querySelectorAll('.validation-popup, .validation-bar').forEach(p => p.remove());
         isGiftCheckbox.checked = false;
         giftSection.classList.remove('active');
         giftRecipientNameInput.value = '';
@@ -272,8 +272,11 @@ const Payment = (function() {
         msg.className = 'field-error-msg';
         msg.textContent = message;
         group.appendChild(msg);
+        const label = group.querySelector('label');
+        if (label) label.classList.add('label-error');
         const clear = () => {
             el.classList.remove('form-error');
+            if (label) label.classList.remove('label-error');
             msg.remove();
         };
         watchEl.addEventListener('input', clear, { once: true });
@@ -286,6 +289,7 @@ const Payment = (function() {
     function clearFieldErrors(root) {
         root.querySelectorAll('.form-error').forEach(el => el.classList.remove('form-error'));
         root.querySelectorAll('.field-error-msg').forEach(el => el.remove());
+        root.querySelectorAll('.label-error').forEach(el => el.classList.remove('label-error'));
     }
 
     /**
@@ -317,7 +321,7 @@ const Payment = (function() {
 
         // Rimuovi errori precedenti
         clearFieldErrors(modal);
-        document.querySelectorAll('.validation-popup').forEach(p => p.remove());
+        document.querySelectorAll('.validation-popup, .validation-bar').forEach(p => p.remove());
 
         // Raccoglie tutti gli errori: {label, el} nell'ordine del modulo
         const errors = [];
@@ -363,6 +367,8 @@ const Payment = (function() {
         }
 
         if (errors.length > 0) {
+            // Ordine del modulo: dall'alto in basso
+            errors.sort((a, b) => (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
             showValidationPopup(errors);
             return;
         }
@@ -491,49 +497,42 @@ const Payment = (function() {
     }
 
     /**
-     * Mostra il popup con i campi mancanti: ogni voce porta al campo corrispondente
-     * @param {Array<{label: string, el: HTMLElement}>} errors
+     * Mostra un avviso in basso con i campi mancanti, poi porta l'utente su ciascun campo
+     * dall'alto in basso, fino alla privacy. Il passaggio si ferma appena l'utente interagisce.
+     * @param {Array<{label: string, el: HTMLElement}>} errors - già in ordine di pagina
      */
     function showValidationPopup(errors) {
-        document.querySelectorAll('.validation-popup').forEach(p => p.remove());
+        document.querySelectorAll('.validation-bar').forEach(b => b.remove());
 
-        const popup = document.createElement('div');
-        popup.className = 'validation-popup';
-        popup.innerHTML = `
-            <div class="validation-popup-content">
-                <button class="validation-popup-close">&times;</button>
-                <div class="validation-popup-icon">&#9888;</div>
-                <p>Completa questi campi per continuare:</p>
-                <ul class="validation-popup-list"></ul>
-                <p class="validation-popup-hint">Per restare anonimo seleziona "Preferisco restare anonimo"</p>
-            </div>
-        `;
+        const bar = document.createElement('div');
+        bar.className = 'validation-bar';
+        bar.innerHTML = '<span class="validation-bar-text">Completa i campi in rosso: <strong></strong></span>' +
+                        '<button type="button" class="validation-bar-close" aria-label="Chiudi">&times;</button>';
+        bar.querySelector('strong').textContent = errors.map(e => e.label).join(', ');
+        document.body.appendChild(bar);
 
-        const list = popup.querySelector('.validation-popup-list');
-        errors.forEach(({ label, el }) => {
-            const li = document.createElement('li');
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'validation-popup-item';
-            btn.textContent = label;
-            btn.addEventListener('click', () => {
-                popup.remove();
-                focusField(el);
-            });
-            li.appendChild(btn);
-            list.appendChild(li);
-        });
-
-        // Chiusura: porta comunque al primo campo mancante
-        const close = () => {
-            popup.remove();
-            focusField(errors[0].el);
+        let stopped = false;
+        const stop = () => {
+            stopped = true;
+            document.removeEventListener('pointerdown', stop, true);
+            document.removeEventListener('keydown', stop, true);
         };
-        popup.querySelector('.validation-popup-close').addEventListener('click', close);
-        popup.addEventListener('click', (e) => { if (e.target === popup) close(); });
+        document.addEventListener('pointerdown', stop, true);
+        document.addEventListener('keydown', stop, true);
+        bar.querySelector('.validation-bar-close').addEventListener('click', () => bar.remove());
 
-        document.body.appendChild(popup);
-        focusField(errors[0].el);
+        // Un campo alla volta, dall'alto in basso
+        let index = 0;
+        const next = () => {
+            if (stopped || index >= errors.length) {
+                stop();
+                return;
+            }
+            focusField(errors[index].el);
+            index++;
+            setTimeout(next, 1600);
+        };
+        next();
     }
 
     /**
