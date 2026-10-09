@@ -504,8 +504,8 @@ router.post('/natale/checkout', async (req, res) => {
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${baseUrl}/natale.html?ok=1`,
-            cancel_url: `${baseUrl}/natale.html`,
+            success_url: `${baseUrl}/natale-avvento.html?ok=1`,
+            cancel_url: `${baseUrl}/natale-avvento.html`,
             metadata: {
                 type: 'natale_gift_card',
                 natale_id: String(cardId),
