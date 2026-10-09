@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Solidale - Casa Famiglia Uganda</title>
+
+    <!-- Meta tags per social sharing -->
+    <meta property="og:title" content="Regala un Domani — Calendario Solidale Effatà 2026">
+    <meta property="og:description" content="Adotta un giorno del calendario con 50€ e garantisci cibo, scuola e cure ai bambini della Casa Famiglia Effatà in Uganda. Donazione detraibile al 35% — ti costa davvero solo 32,50€.">
+    <meta property="og:image" content="https://calendario.effataitalia.it/images/bambini_casafamiglia.jpeg">
+    <meta property="og:image:alt" content="Calendario Solidale Effatà 2026 - Adotta un giorno per i bambini in Uganda">
+    <meta property="og:url" content="https://calendario.effataitalia.it">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:site_name" content="Calendario Solidale Effatà">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Regala un Domani — Calendario Solidale Effatà 2026">
+    <meta name="twitter:description" content="Adotta un giorno del calendario con 50€ e garantisci cibo, scuola e cure ai bambini della Casa Famiglia Effatà in Uganda. Donazione detraibile al 35%.">
+    <meta name="twitter:image" content="https://calendario.effataitalia.it/images/bambini_casafamiglia.jpeg">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="description" content="Adotta un giorno del calendario 2026-2027 con una donazione di 50 euro per sostenere la Casa Famiglia Effatà in Uganda.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Calendario Solidale">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/natale.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <!-- Logo -->
+            <div class="sidebar-logo">
+                <img src="/images/logo.png" alt="Effatà" class="logo-img">
+                <div class="logo-titles">
+                    <span class="logo-text-top">Calendario Solidale 2026/2027</span>
+                    <span class="logo-text-bottom">Effatà Children's Home</span>
+                </div>
+            </div>
+
+            <!-- Descrizione progetto -->
+            <div class="sidebar-description">
+                <p>Regala un giorno del calendario con una donazione di <strong>50 euro</strong> per sostenere la Casa Famiglia Effatà in Uganda.</p>
+                <p class="sidebar-subtitle">Ogni giorno adottato aiuta a garantire cibo, istruzione e cure ai bambini della casa famiglia.</p>
+            </div>
+
+            <!-- Navigazione -->
+            <nav class="sidebar-nav">
+                <a href="#" class="sidebar-link" id="openAbout">
+                    <span class="link-icon">&#9825;</span>
+                    Chi Siamo
+                </a>
+                <p class="sidebar-nav-text">Vuoi fare un regalo indimenticabile?</p>
+                <a href="#" class="sidebar-link sidebar-link-primary" id="openAboutPrimary">
+                    <span class="link-icon">&#127873;</span>
+                    Scegli la tua Gift Card Solidale
+                </a>
+                <a href="/natale-avvento.html" class="sidebar-link sidebar-link-primary">
+                    <span class="link-icon">&#127876;</span>
+                    Gift card di Natale · 20 €
+                </a>
+            </nav>
+
+            <!-- Stats -->
+            <div class="sidebar-stats">
+                <div class="sidebar-stat">
+                    <span class="stat-number" id="adoptedCount">0</span>
+                    <span class="stat-label">giorni adottati</span>
+                </div>
+                <div class="sidebar-stat">
+                    <span class="stat-number" id="totalRaised">0</span>
+                    <span class="stat-label">euro raccolti</span>
+                </div>
+            </div>
+
+            <!-- Legenda -->
+            <!-- (Legenda rimossa dalla sidebar; verrà mostrata sotto il calendario) -->
+
+            <!-- Preview Calendario -->
+            <div class="sidebar-preview">
+                <h4 id="previewTitle">Febbraio 2026</h4>
+                <img src="" alt="Anteprima Calendario" class="preview-image" id="previewImage">
+                <button class="btn-accedi" id="accessBtn" aria-label="Accedi al calendario">
+                    ACCEDI AL CALENDARIO
+                </button>
+            </div>
+
+            <!-- Condividi: 4 icone orizzontali -->
+            <div class="sidebar-share-bar">
+                <span>Condividi:</span>
+                <div class="share-buttons">
+                    <a href="#" id="shareWhatsapp" class="social-btn whatsapp" aria-label="Condividi su WhatsApp">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    </a>
+                    <a href="#" id="shareFacebook" class="social-btn facebook" aria-label="Condividi su Facebook">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    </a>
+                    <a href="#" id="shareInstagram" class="social-btn instagram" aria-label="Condividi su Instagram">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                    </a>
+                    <button class="social-btn qr-btn" id="showQrBtn" aria-label="Mostra QR Code">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M3 11h8V3H3v8zm2-6h4v4H5V5zm8-2v8h8V3h-8zm6 6h-4V5h4v4zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm13-2h-2v2h2v-2zm-4 0h-2v4h2v2h2v-2h2v2h2v-2h-2v-2h2v-2h-4v2h-2v-2zm2 6h2v-2h-2v2zm-4 0h2v-2h-2v2z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- QR Code Popup (nascosto) -->
+            <div class="qr-popup-overlay" id="qrPopup" style="display:none;">
+                <div class="qr-popup">
+                    <button class="qr-popup-close" id="closeQrPopup">&times;</button>
+                    <h4>Scansiona per condividere</h4>
+                    <canvas id="qrcodeCanvas"></canvas>
+                    <p>Inquadra il QR code con la fotocamera</p>
+                </div>
+            </div>
+
+            <!-- Footer sidebar -->
+            <div class="sidebar-footer">
+                <p>&copy; 2026 Casa Famiglia Uganda</p>
+                <a href="#" class="privacy-link" id="openPrivacy">Privacy Policy</a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Toggle sidebar mobile -->
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Main: Hero con Calendario -->
+    <main class="main">
+        <section id="calendar" class="calendar-section">
+            <!-- Background image (cambia per mese) -->
+            <div class="calendar-background" id="calendarBackground"></div>
+            <button class="exit-fullscreen-btn" id="exitFullscreenBtn" aria-label="Esci modalità schermo intero">&times;</button>
+
+            <!-- Calendario -->
+            <div class="calendar-container">
+                <!-- Navigazione mesi -->
+                <div class="month-navigation">
+                    <button class="nav-btn prev-btn" id="prevMonth" aria-label="Mese precedente">
+                        &#8249;
+                    </button>
+                    <h2 class="month-title" id="monthTitle">Gennaio 2026</h2>
+                    <button class="nav-btn next-btn" id="nextMonth" aria-label="Mese successivo">
+                        &#8250;
+                    </button>
+                </div>
+
+                <!-- Griglia Calendario -->
+                <div class="calendar-grid">
+                    <!-- Header giorni settimana -->
+                    <div class="weekday-header">
+                        <span>LUN</span>
+                        <span>MAR</span>
+                        <span>MER</span>
+                        <span>GIO</span>
+                        <span>VEN</span>
+                        <span>SAB</span>
+                        <span>DOM</span>
+                    </div>
+
+                    <!-- Griglia giorni -->
+                    <div class="days-grid" id="daysGrid">
+                        <!-- I giorni verranno generati da JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Info donazione + legenda sotto il calendario -->
+                <div class="donation-info">
+                    <p class="donation-text-desktop">Adotta un giorno con <strong>50&euro;</strong>: grazie alla detrazione del 35%, a te ne costa realmente solo <strong>32,50&euro;</strong>.<br>Un piccolo gesto che vale il doppio.</p>
+                    <p class="donation-text-mobile">Adotta un giorno con <strong>50&euro;</strong><br>Ti costa solo <strong>32,50&euro;</strong> <small style="white-space:nowrap">(detrazione&nbsp;35%)</small></p>
+                    <div class="calendar-legend">
+                        <div class="legend-item">
+                            <span class="legend-color available"></span>
+                            <span>Disponibile</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color adopted"></span>
+                            <span>Adottato</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color pending"></span>
+                            <span>In attesa</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Pagamento -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal">
+            <button class="modal-close" id="closeModal" aria-label="Chiudi">
+                &times;
+            </button>
+
+            <div class="modal-header" style="padding-bottom: 0.5rem;">
+                <h3>Adotta questo giorno</h3>
+            </div>
+
+            <div class="modal-body">
+                <div class="selected-date">
+                    <span class="date-label">Data selezionata:</span>
+                    <span class="date-value" id="selectedDate">15 Gennaio 2026</span>
+                </div>
+
+                <div class="donation-amount">
+                    <span class="amount-label">Importo donazione:</span>
+                    <span class="amount-value">50,00 euro</span>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="isAnonymous">
+                    <label for="isAnonymous">Preferisco restare anonimo</label>
+                </div>
+
+                <div id="donorFieldsSection">
+                    <div class="form-row">
+                        <div class="form-group form-group-half">
+                            <label for="donorName">Nome *</label>
+                            <input type="text" id="donorName" placeholder="es. Mario" maxlength="50">
+                        </div>
+                        <div class="form-group form-group-half">
+                            <label for="donorSurname">Cognome *</label>
+                            <input type="text" id="donorSurname" placeholder="es. Rossi" maxlength="50">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="donorCF">Codice Fiscale *</label>
+                        <input type="text" id="donorCF" placeholder="es. RSSMRA85M01H501Z" maxlength="16" style="text-transform: uppercase;">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="donorEmail">Email *</label>
+                        <input type="email" id="donorEmail" placeholder="es. mario.rossi@email.com">
+                    </div>
+
+                    <p class="donor-fields-note">* Dati necessari per poter fruire della deducibilita della donazione.</p>
+                    <p class="donor-fields-note donor-fields-warning">&#9888;&#65039; Attenzione: per beneficiare della detrazione fiscale, i dati del donatore devono coincidere con quelli del titolare della carta/conto corrente usato per il pagamento.</p>
+                </div>
+
+                <!-- Selettore Gift Card (sempre visibile) -->
+                <div class="form-group">
+                    <label>Scegli la tua gift card</label>
+                    <div class="giftcard-selector" id="giftcardSelector">
+                        <div class="giftcard-option selected" data-card="card1">
+                            <img src="/images/gift_card/1.webp" alt="Gift Card 1">
+                            <span class="giftcard-check">&#10003;</span>
+                            <button type="button" class="giftcard-zoom-btn" title="Ingrandisci">&#128269;</button>
+                        </div>
+                        <div class="giftcard-option" data-card="card2">
+                            <img src="/images/gift_card/2.webp" alt="Gift Card 2">
+                            <span class="giftcard-check">&#10003;</span>
+                            <button type="button" class="giftcard-zoom-btn" title="Ingrandisci">&#128269;</button>
+                        </div>
+                        <div class="giftcard-option" data-card="card3">
+                            <img src="/images/gift_card/3.webp" alt="Gift Card 3">
+                            <span class="giftcard-check">&#10003;</span>
+                            <button type="button" class="giftcard-zoom-btn" title="Ingrandisci">&#128269;</button>
+                        </div>
+                        <div class="giftcard-option" data-card="card4">
+                            <img src="/images/gift_card/4.webp" alt="Gift Card 4">
+                            <span class="giftcard-check">&#10003;</span>
+                            <button type="button" class="giftcard-zoom-btn" title="Ingrandisci">&#128269;</button>
+                        </div>
+                        <div class="giftcard-option" data-card="card5">
+                            <img src="/images/gift_card/5.webp" alt="Gift Card 5">
+                            <span class="giftcard-check">&#10003;</span>
+                            <button type="button" class="giftcard-zoom-btn" title="Ingrandisci">&#128269;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="isGift">
+                    <label for="isGift">Regala a un amico</label>
+                </div>
+
+                <div class="gift-section" id="giftSection">
+                    <div class="form-group">
+                        <label for="giftRecipientName">Nome del destinatario</label>
+                        <input type="text" id="giftRecipientName" placeholder="es. Anna Bianchi" maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="giftEmail">Email del destinatario</label>
+                        <input type="email" id="giftEmail" placeholder="es. anna@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="giftMessage">Messaggio personale</label>
+                        <textarea id="giftMessage" placeholder="Scrivi un messaggio per il tuo amico..." maxlength="500" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group checkbox-group privacy-checkbox-group">
+                    <input type="checkbox" id="privacyConsent">
+                    <label for="privacyConsent">Ho letto e accetto l'<a href="#" id="openPrivacyFromForm">informativa sulla privacy</a> *</label>
+                </div>
+
+                <div class="payment-methods">
+                    <h4>Metodo di pagamento</h4>
+                    <button class="payment-btn stripe-btn" id="payWithStripe">
+                        <svg class="payment-logo-svg" viewBox="0 0 60 25" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.96-.37 4.05-.95v3.32a10.6 10.6 0 01-4.56.95c-4.01 0-6.83-2.5-6.83-7.14 0-4.07 2.49-7.04 6.2-7.04 3.65 0 6.01 2.56 6.01 6.76 0 .5-.01 1.06-.01 1.55zm-4.14-5.24c0-.78-.56-2.73-2.38-2.73-1.72 0-2.51 1.58-2.65 2.73h5.03zM40.95 20.3c-1.44 0-2.32-.67-2.9-1.14l-.02 5.02-4.15.88V6.35h3.62l.19 1.14c.64-.82 1.87-1.49 3.38-1.49 3.22 0 5.46 3.18 5.46 7.12 0 4.69-2.64 7.18-5.58 7.18zm-.78-10.96c-1.01 0-1.64.38-2.06.86l.04 5.62c.4.44 1 .86 2.02.86 1.55 0 2.62-1.72 2.62-3.72 0-1.94-1.05-3.62-2.62-3.62zM28.24 5.57h4.17v14.44h-4.17V5.57zm0-5.19L32.41 0v3.45l-4.17.88V.38zm-4.7 7.09L23.4 6.35h-3.55v13.66h4.15v-9.24c.98-1.28 2.64-1.05 3.16-.87V6.35c-.54-.19-2.57-.55-3.62 1.12zM15.43 1.57l-4.06.86-.02 12.48c0 2.31 1.73 4.01 4.04 4.01 1.28 0 2.21-.23 2.73-.51v-3.37c-.5.2-2.97.92-2.97-1.39V9.73h2.97V6.35h-2.97l.02-4.78h.26zM5.3 10.3c0-.67.56-.93 1.48-.93 1.32 0 2.98.4 4.3 1.11V6.74a11.44 11.44 0 00-4.3-.79C2.73 5.95 0 7.92 0 11.21c0 5.14 7.08 4.32 7.08 6.53 0 .8-.69 1.06-1.65 1.06-1.43 0-3.26-.59-4.71-1.39v3.83A12 12 0 005.43 22c4.07 0 6.86-1.68 6.86-5.02 0-5.54-7.1-4.56-7.1-6.68h.1z"/></svg>
+                        <span>Paga con Carta</span>
+                    </button>
+                    <div class="payment-separator">
+                        <span>oppure</span>
+                    </div>
+                    <button class="payment-btn satispay-btn" id="payWithSatispay">
+                        <img src="/images/satispay-logo.svg" alt="Satispay" class="payment-logo">
+                        <span>Paga con Satispay</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <p class="secure-text">
+                    <span class="lock-icon">&#128274;</span>
+                    Pagamento sicuro
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Chi Siamo (immagine + testo combinati) -->
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal about-modal">
+            <button class="modal-close" id="closeAbout" aria-label="Chiudi">
+                &times;
+            </button>
+            <img src="/images/chi-siamo.jpg" alt="Chi Siamo - Effatà Children's Home" class="about-image">
+
+            <div class="about-text-section">
+                <img src="/images/logo.png" alt="Effatà" class="about-logo">
+                <h3>Effatà Children's Home</h3>
+                <p class="about-text">
+                    Effatà Children's Home è un progetto di <strong>Effatà Charity Org.</strong>, ONG fondata da <strong>Silvia Marcolin</strong> in Uganda.
+                </p>
+                <p class="about-text">
+                    Una casa per donare affetto, cure, attenzioni a molti bambini dai 0 ai 17 anni, che sono stati abbandonati dalla loro famiglia, orfani, che hanno subito violenze o maltrattamenti, bambini con bisogni speciali.
+                </p>
+            </div>
+
+            <div class="modal-footer">
+                <button class="about-close-btn" id="closeAboutBtn">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Carosello Gift Card -->
+    <div class="modal-overlay" id="giftCardCarousel">
+        <div class="modal carousel-modal">
+            <button class="modal-close" id="closeCarousel" aria-label="Chiudi">&times;</button>
+            <h3 class="carousel-title">Gift Card Solidali</h3>
+            <div class="carousel-container">
+                <button class="carousel-btn carousel-prev" id="carouselPrev" aria-label="Precedente">&#8249;</button>
+                <div class="carousel-slide">
+                    <img src="/images/gift_card/1.webp" alt="Gift Card 1" class="carousel-img active" data-index="0">
+                    <img src="/images/gift_card/2.webp" alt="Gift Card 2" class="carousel-img" data-index="1">
+                    <img src="/images/gift_card/3.webp" alt="Gift Card 3" class="carousel-img" data-index="2">
+                    <img src="/images/gift_card/4.webp" alt="Gift Card 4" class="carousel-img" data-index="3">
+                    <img src="/images/gift_card/5.webp" alt="Gift Card 5" class="carousel-img" data-index="4">
+                </div>
+                <button class="carousel-btn carousel-next" id="carouselNext" aria-label="Successiva">&#8250;</button>
+            </div>
+            <div class="carousel-dots" id="carouselDots">
+                <span class="carousel-dot active" data-index="0"></span>
+                <span class="carousel-dot" data-index="1"></span>
+                <span class="carousel-dot" data-index="2"></span>
+                <span class="carousel-dot" data-index="3"></span>
+                <span class="carousel-dot" data-index="4"></span>
+            </div>
+            <p class="carousel-hint">Scorri per vedere tutte le gift card</p>
+        </div>
+    </div>
+
+    <!-- Preview fullscreen gift card -->
+    <div class="giftcard-preview-overlay" id="giftcardPreview">
+        <button class="giftcard-preview-close" aria-label="Chiudi">&times;</button>
+        <img src="" alt="" id="giftcardPreviewImg">
+    </div>
+
+    <!-- Modal Privacy Policy -->
+    <div class="modal-overlay" id="privacyModal">
+        <div class="modal privacy-modal">
+            <button class="modal-close" id="closePrivacy" aria-label="Chiudi">&times;</button>
+            <div class="privacy-content">
+                <h3>Informativa sulla Privacy</h3>
+                <p class="privacy-subtitle">ai sensi dell'art. 13 del Regolamento UE 2016/679 (GDPR)</p>
+
+                <h4>Titolare del trattamento</h4>
+                <p><strong>Effat&agrave; Italia Charity Organisation ODV</strong><br>
+                Sede: Via Brustolon 1, 31044 Montebelluna (TV)<br>
+                Email: effataitalia@gmail.com<br>
+                Telefono segreteria: 370 142 1570</p>
+
+                <h4>Dati raccolti</h4>
+                <p>Attraverso il form di donazione raccogliamo i seguenti dati personali:</p>
+                <ul>
+                    <li>Nome e cognome</li>
+                    <li>Codice fiscale</li>
+                    <li>Indirizzo email</li>
+                    <li>Dati di pagamento (gestiti direttamente da Stripe/Satispay)</li>
+                </ul>
+
+                <h4>Finalit&agrave; del trattamento</h4>
+                <p>I dati personali sono trattati per le seguenti finalit&agrave;:</p>
+                <ul>
+                    <li>Gestione della donazione e del relativo pagamento</li>
+                    <li>Emissione della documentazione necessaria per la deducibilit&agrave;/detraibilit&agrave; fiscale della donazione</li>
+                    <li>Invio della conferma di donazione e della eventuale gift card</li>
+                    <li>Adempimenti di legge e obblighi fiscali</li>
+                </ul>
+
+                <h4>Base giuridica</h4>
+                <p>Il trattamento dei dati &egrave; basato su:</p>
+                <ul>
+                    <li>Il consenso dell'interessato (art. 6.1.a GDPR)</li>
+                    <li>L'esecuzione della donazione (art. 6.1.b GDPR)</li>
+                    <li>Obblighi di legge in materia fiscale (art. 6.1.c GDPR)</li>
+                </ul>
+
+                <h4>Conservazione dei dati</h4>
+                <p>I dati saranno conservati per il tempo necessario al perseguimento delle finalit&agrave; sopra indicate e comunque per un periodo non superiore a quanto previsto dalla normativa fiscale vigente (10 anni).</p>
+
+                <h4>Condivisione dei dati</h4>
+                <p>I dati non saranno ceduti a terzi, ad eccezione di:</p>
+                <ul>
+                    <li>Fornitori di servizi di pagamento (Stripe, Satispay) per l'elaborazione delle transazioni</li>
+                    <li>Autorit&agrave; competenti, quando richiesto dalla legge</li>
+                </ul>
+
+                <h4>Diritti dell'interessato</h4>
+                <p>In qualsiasi momento puoi esercitare i seguenti diritti:</p>
+                <ul>
+                    <li>Accesso ai tuoi dati personali</li>
+                    <li>Rettifica dei dati inesatti</li>
+                    <li>Cancellazione dei dati (diritto all'oblio)</li>
+                    <li>Limitazione del trattamento</li>
+                    <li>Portabilit&agrave; dei dati</li>
+                    <li>Opposizione al trattamento</li>
+                </ul>
+                <p>Per esercitare i tuoi diritti, contattaci a: <strong>effataitalia@gmail.com</strong></p>
+
+                <h4>Reclami</h4>
+                <p>Hai il diritto di proporre reclamo al Garante per la Protezione dei Dati Personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">www.garanteprivacy.it</a>).</p>
+
+                <p class="privacy-update">Ultima modifica: febbraio 2026</p>
+            </div>
+            <div class="modal-footer">
+                <button class="about-close-btn" id="closePrivacyBtn">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/natale-calendar.js"></script>
+    <script src="/js/natale-payment.js"></script>
+    <script src="/js/natale-app.js"></script>
+
+    <!-- Service Worker Registration (PWA) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered:', registration);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

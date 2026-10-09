@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Il tuo regalo di Natale</title>
+    <style>
+        :root {
+            --bg-top: #1a1a2e;
+            --bg-bottom: #2c1620;
+            --gold: #f5d27a;
+            --red: #c0392b;
+            --white: #ffffff;
+            --font: 'Poppins', system-ui, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; }
+        body {
+            font-family: var(--font);
+            color: var(--white);
+            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+            background-color: var(--bg-top);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Fiocchi di neve: elementi decorativi che cadono */
+        .snow { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+        .flake {
+            position: absolute;
+            top: -10px;
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            animation: fall linear infinite;
+            user-select: none;
+        }
+        @keyframes fall {
+            to { transform: translateY(110vh) translateX(20px); }
+        }
+
+        main {
+            position: relative;
+            z-index: 1;
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 32px 16px 56px;
+            text-align: center;
+        }
+        h1 { font-size: 1.5rem; margin: 8px 0 6px; }
+        .lead { opacity: 0.9; margin: 0 0 24px; line-height: 1.5; }
+
+        /* Busta */
+        .envelope-wrap { perspective: 900px; margin: 24px auto; }
+        .envelope {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            aspect-ratio: 1.6 / 1;
+            margin: 0 auto;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+            border-radius: 12px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .envelope:focus-visible { outline: 3px solid var(--gold); outline-offset: 6px; }
+        .envelope-body {
+            position: absolute; inset: 0;
+            background: linear-gradient(160deg, #e74c3c, var(--red));
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+        }
+        .envelope-flap {
+            position: absolute; top: 0; left: 0; right: 0; height: 55%;
+            background: #a93226;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            border-radius: 12px 12px 0 0;
+            transform-origin: top center;
+            transition: transform 0.9s ease;
+        }
+        .envelope-seal {
+            position: absolute; top: 40%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 56px; height: 56px; border-radius: 50%;
+            background: var(--gold); color: var(--red);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: opacity 0.4s ease;
+        }
+        .envelope.open .envelope-flap { transform: rotateX(180deg); }
+        .envelope.open .envelope-seal { opacity: 0; }
+        .envelope.pulse .envelope-seal { animation: pulse 1.6s ease-in-out infinite; }
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.12); }
+        }
+        .hint { font-size: 0.9rem; opacity: 0.8; margin-top: 8px; }
+
+        /* Biglietto che esce dalla busta */
+        .card-reveal {
+            opacity: 0;
+            transform: translateY(40px) scale(0.96);
+            transition: opacity 0.9s ease, transform 0.9s ease;
+            margin-top: 8px;
+        }
+        .card-reveal.show { opacity: 1; transform: none; }
+        .card-image {
+            width: 100%;
+            max-width: 420px;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+            display: block;
+            margin: 0 auto 20px;
+        }
+        .message {
+            background: rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 18px;
+            line-height: 1.6;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+        .from { color: var(--gold); margin-top: 16px; font-weight: 600; }
+        .thanks { font-size: 0.85rem; opacity: 0.75; margin-top: 24px; line-height: 1.5; }
+
+        .state { display: none; }
+        .state.active { display: block; }
+        .countdown-date { color: var(--gold); font-weight: 600; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .flake { animation: none; opacity: 0.4; }
+            .envelope-flap, .card-reveal { transition: none; }
+            .envelope.pulse .envelope-seal { animation: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="snow" id="snow" aria-hidden="true"></div>
+
+    <main>
+        <!-- Stato: gift card non trovata -->
+        <section class="state" id="state-missing">
+            <h1>Regalo non trovato</h1>
+            <p class="lead">Il link non è valido. Controlla di aver copiato l'indirizzo completo dall'email ricevuta.</p>
+        </section>
+
+        <!-- Stato: non ancora disponibile -->
+        <section class="state" id="state-wait">
+            <h1>Il tuo regalo ti aspetta</h1>
+            <p class="lead">Si apre il <span class="countdown-date" id="delivery-date"></span>.<br>Torna a leggere questo link da quel momento.</p>
+        </section>
+
+        <!-- Stato: busta da aprire -->
+        <section class="state" id="state-open">
+            <h1 id="greeting">Buon Natale!</h1>
+            <p class="lead" id="intro">Qualcuno ha pensato a te e ha regalato un Natale solidale. Tocca la busta per aprirla.</p>
+
+            <div class="envelope-wrap">
+                <button type="button" class="envelope pulse" id="envelope" aria-label="Apri la busta del regalo">
+                    <span class="envelope-body"></span>
+                    <span class="envelope-flap"></span>
+                    <span class="envelope-seal">🎄</span>
+                </button>
+            </div>
+            <p class="hint" id="hint">Tocca la busta</p>
+
+            <div class="card-reveal" id="reveal">
+                <img class="card-image" id="card-image" alt="La tua gift card di Natale">
+                <div class="message" id="message"></div>
+                <p class="from" id="from"></p>
+                <p class="thanks">Questa gift card sostiene i bambini della Casa Famiglia Effatà in Uganda: cibo, istruzione e cure. Grazie di cuore.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/natale-card.js"></script>
+</body>
+</html>
