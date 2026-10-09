@@ -230,6 +230,27 @@ const Calendar = (function() {
     /**
      * Renderizza il calendario per il mese corrente
      */
+    // Mostra la griglia delle adozioni oppure la vista dell'Avvento
+    function setCalendarView(view) {
+        const grid = document.querySelector('.calendar-grid');
+        const info = document.querySelector('.donation-info');
+        const adventView = document.getElementById('adventView');
+        const advent = view === 'avvento';
+
+        if (grid) grid.hidden = advent;
+        if (info) info.hidden = advent;
+        if (adventView) adventView.hidden = !advent;
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.view === view);
+        });
+        if (advent && window.AdventView) window.AdventView.show();
+    }
+
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.view-btn');
+        if (btn) setCalendarView(btn.dataset.view);
+    });
+
     function render() {
         const { year, month } = getYearMonth(currentMonthIndex);
         const monthName = MONTHS[month - 1];
@@ -238,10 +259,16 @@ const Calendar = (function() {
         monthTitle.textContent = `${monthName} ${year}`;
 
         // Riquadro Natale: solo a novembre e dicembre 2026
+        const inAdvent = year === 2026 && (month === 11 || month === 12);
         const nataleBanner = document.getElementById('nataleBanner');
         if (nataleBanner) {
-            nataleBanner.hidden = !(year === 2026 && (month === 11 || month === 12));
+            nataleBanner.hidden = !inAdvent;
         }
+
+        // Interruttore Adozioni / Avvento: solo a novembre e dicembre; altrove torna la griglia
+        const viewSwitch = document.getElementById('viewSwitch');
+        if (viewSwitch) viewSwitch.hidden = !inAdvent;
+        if (!inAdvent) setCalendarView('adozioni');
 
         // Aggiorna immagine di sfondo
         updateBackground();
