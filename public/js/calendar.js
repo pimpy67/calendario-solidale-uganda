@@ -237,6 +237,12 @@ const Calendar = (function() {
         // Aggiorna titolo
         monthTitle.textContent = `${monthName} ${year}`;
 
+        // Riquadro Natale: solo a novembre e dicembre 2026
+        const nataleBanner = document.getElementById('nataleBanner');
+        if (nataleBanner) {
+            nataleBanner.hidden = !(year === 2026 && (month === 11 || month === 12));
+        }
+
         // Aggiorna immagine di sfondo
         updateBackground();
 
