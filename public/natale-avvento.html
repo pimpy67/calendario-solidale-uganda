@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Il calendario dell'Avvento di Effatà: ogni giorno dal 1 al 25 dicembre una porta con un disegno dei bambini della Casa Famiglia in Uganda. Scegli un disegno per regalare un Natale solidale.">
+    <title>Natale a Effatà · Calendario dell'Avvento</title>
+    <link rel="stylesheet" href="/css/natale-avvento.css">
+</head>
+<body>
+    <div class="snow" id="snow" aria-hidden="true"></div>
+
+    <header class="hero">
+        <p class="kicker">Casa Famiglia Effatà · Uganda</p>
+        <h1>Natale a Effatà</h1>
+        <p class="lead">Un calendario dell'Avvento con 25 porte: ogni giorno si apre una porta, fino al giorno di Natale.</p>
+        <p class="today-line" id="today-line"></p>
+    </header>
+
+    <main class="wrap">
+        <section aria-labelledby="advent-title">
+            <h2 id="advent-title">Calendario dell'Avvento</h2>
+            <div class="doors" id="doors" role="list"></div>
+            <p class="note">Ogni porta si apre il giorno indicato, in ora di Roma.</p>
+        </section>
+
+        <section aria-labelledby="choose-title" class="choose" id="choose-section">
+            <h2 id="choose-title">Scegli il disegno del tuo regalo</h2>
+            <p class="choose-lead">Tutti i 25 disegni sono disponibili per il regalo, anche quelli dei giorni che devono ancora arrivare. Il testo di ogni porta si scopre il giorno giusto.</p>
+
+            <div class="carousel" id="carousel">
+                <button type="button" class="carousel-btn prev" id="carousel-prev" aria-label="Disegno precedente">‹</button>
+                <div class="carousel-track" id="carousel-track" tabindex="0" aria-label="Disegni del calendario"></div>
+                <button type="button" class="carousel-btn next" id="carousel-next" aria-label="Disegno successivo">›</button>
+            </div>
+            <p class="selected-line">Disegno scelto: <strong id="selected-label">Porta 1</strong></p>
+        </section>
+
+        <section aria-labelledby="gift-title" class="gift-form-section" id="gift-section">
+            <h2 id="gift-title">Regala questo disegno · 20 €</h2>
+            <p class="gift-lead">La gift card arriva per email al destinatario il 25 dicembre alle 9:00.</p>
+
+            <div class="gift-banner" id="gift-banner" hidden>Grazie! Il pagamento è andato a buon fine. Riceverai la conferma per email.</div>
+
+            <form id="gift-form" class="gift-form" novalidate>
+                <img class="gift-preview" id="gift-preview" alt="Disegno scelto">
+
+                <label for="gift-donor-name">Il tuo nome</label>
+                <input type="text" id="gift-donor-name" maxlength="100" required placeholder="es. Mario Rossi">
+
+                <label for="gift-donor-email">La tua email (facoltativa, per la conferma)</label>
+                <input type="email" id="gift-donor-email" maxlength="255" placeholder="es. mario@email.com">
+
+                <label for="gift-recipient-name">Nome di chi riceve</label>
+                <input type="text" id="gift-recipient-name" maxlength="100" required placeholder="es. Anna Bianchi">
+
+                <label for="gift-recipient-email">Email di chi riceve</label>
+                <input type="email" id="gift-recipient-email" maxlength="255" required placeholder="es. anna@email.com">
+
+                <label for="gift-message">Messaggio di auguri (facoltativo)</label>
+                <textarea id="gift-message" maxlength="490" rows="3" placeholder="Buon Natale!"></textarea>
+
+                <p id="gift-error" class="gift-error" hidden></p>
+                <button type="submit" id="gift-submit" class="gift-submit">Regala questo disegno · 20 €</button>
+            </form>
+        </section>
+
+        <section class="cta" aria-labelledby="cta-title">
+            <h2 id="cta-title">Torna alla home</h2>
+            <a class="btn btn-ghost" href="/">Torna al calendario solidale</a>
+        </section>
+    </main>
+
+    <div class="modal" id="modal" hidden>
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <button type="button" class="modal-close" id="modal-close" aria-label="Chiudi">×</button>
+            <img id="modal-img" alt="">
+            <h3 id="modal-title"></h3>
+            <p id="modal-text"></p>
+        </div>
+    </div>
+
+    <script src="/js/natale-avvento.js"></script>
+</body>
+</html>

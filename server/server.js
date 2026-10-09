@@ -28,6 +28,10 @@ startBackup();
 const { startStripeReconciliation } = require('./jobs/stripeReconciliation');
 startStripeReconciliation();
 
+// Consegna gift card di Natale alle 09:00 del 25 dicembre
+const { startNataleDelivery } = require('./jobs/natale');
+startNataleDelivery();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 

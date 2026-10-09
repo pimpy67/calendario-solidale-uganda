@@ -15,6 +15,7 @@ const dns = require('dns');
 const { promisify } = require('util');
 const resolve4 = promisify(dns.resolve4);
 const db = require('../database/db');
+const avvento = require('./avvento');
 
 const MONTHS = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -110,6 +111,8 @@ async function createTransporter() {
  * Trova il file immagine della gift card scelta
  */
 function getGiftCardImagePath(cardName) {
+    // Disegni del calendario dell'Avvento (porta1..porta25)
+    if (cardName.startsWith('porta')) return avvento.designImageFile(cardName);
     const giftcardsDir = path.join(__dirname, '../../public/images/gift_card');
     const cardNumber = cardName.replace('card', '');
     const extensions = Object.keys(IMAGE_MIME);
@@ -852,7 +855,93 @@ async function sendAssociationReport(subject, html) {
     }, null);
 }
 
+/**
+ * Invia al destinatario la gift card di Natale (20 €), acquistata a parte dal calendario.
+ * Non usa il flusso delle adozioni: il testo non parla di giorni adottati.
+ * @param {Object} card - Riga della tabella natale_gift_cards
+ */
+async function sendNataleGiftCard(card) {
+    const provider = getProvider();
+    if (!card.recipient_email) {
+        throw new Error(`Email destinatario mancante per gift card di Natale ${card.id}`);
+    }
+
+    const { imagePath, imageBase64, imageMime } = loadCardImage({ gift_card_design: card.card_design }, provider);
+    const donorName = card.donor_name || 'Un amico generoso';
+    const giftCardUrl = nataleCardUrl(card);
+    const messageHtml = card.message
+        ? `<p style="font-style: italic;">"${card.message.replace(/</g, '&lt;')}"</p>`
+        : '';
+    let imageTag = '';
+    if (imagePath && imageBase64) {
+        imageTag = `<img src="data:${imageMime};base64,${imageBase64}" alt="Gift Card di Natale" style="width: 100%; height: auto; border-radius: 12px; display: block;">`;
+    } else if (imagePath) {
+        imageTag = `<img src="cid:giftcard" alt="Gift Card di Natale" style="width: 100%; height: auto; border-radius: 12px; display: block;">`;
+    }
+
+    const html = `<div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
+<h2 style="color: #b22222;">🎄 Buon Natale, ${card.recipient_name.replace(/</g, '&lt;')}!</h2>
+<p><strong>${donorName.replace(/</g, '&lt;')}</strong> ti ha regalato una gift card di Natale del Calendario Solidale Effatà.</p>
+${messageHtml}
+${imageTag}
+<p style="text-align: center; margin: 24px 0;"><a href="${giftCardUrl}" style="background: #c0392b; color: #fff; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">🎁 Apri il tuo regalo</a></p>
+<p>Questa gift card sostiene i bambini della Casa Famiglia Effatà in Uganda: cibo, istruzione e cure.</p>
+<p style="color: #777; font-size: 12px;">Grazie di cuore da parte dei nostri bambini.</p>
+</div>`;
+
+    const mailOptions = {
+        from: getFromAddress(provider),
+        to: card.recipient_email,
+        subject: `🎄 Una gift card di Natale per te da ${donorName}`,
+        html
+    };
+
+    const result = await sendEmail(provider, mailOptions, imagePath);
+    console.log(`Gift card di Natale ${card.id} inviata via ${provider} a ${card.recipient_email}`);
+    return result;
+}
+
+/**
+ * Link alla pagina di apertura della gift card di Natale (si apre dal 25 dicembre alle 9:00)
+ */
+function nataleCardUrl(card) {
+    const baseUrl = process.env.BASE_URL || 'https://calendario.effataitalia.it';
+    return `${baseUrl}/natale-card.html?id=${encodeURIComponent(card.payment_id)}`;
+}
+
+/**
+ * Conferma a chi ha pagato la gift card di Natale, con il link da condividere su WhatsApp.
+ * Non parte se chi paga non ha lasciato un'email.
+ * @param {Object} card - Riga della tabella natale_gift_cards
+ */
+async function sendNataleDonorConfirmation(card) {
+    const provider = getProvider();
+    if (!card.donor_email) return null;
+
+    const link = nataleCardUrl(card);
+    const whatsappText = `🎄 Ti ho regalato una gift card di Natale per la Casa Famiglia Effatà in Uganda. Apri qui il tuo regalo: ${link}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+    const html = `<div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
+<h2 style="color: #b22222;">Grazie, ${(card.donor_name || '').replace(/</g, '&lt;')}!</h2>
+<p>La tua gift card di Natale per <strong>${card.recipient_name.replace(/</g, '&lt;')}</strong> è stata pagata.</p>
+<p>Arriverà per email al destinatario il <strong>25 dicembre alle 9:00</strong>. Se vuoi, puoi anche inoltrargli subito il link di apertura:</p>
+<p style="text-align: center; margin: 24px 0;"><a href="${whatsappUrl}" style="background: #25D366; color: #fff; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">Condividi su WhatsApp</a></p>
+<p style="font-size: 12px; color: #777;">Link diretto: ${link}</p>
+</div>`;
+
+    const result = await sendEmail(provider, {
+        from: getFromAddress(provider),
+        to: card.donor_email,
+        subject: `🎄 Gift card di Natale pagata per ${card.recipient_name}`,
+        html
+    }, null);
+    console.log(`Conferma gift card di Natale ${card.id} inviata via ${provider} a ${card.donor_email}`);
+    return result;
+}
+
 module.exports = {
+    sendNataleDonorConfirmation,
+    sendNataleGiftCard,
     sendGiftCard,
     sendAssociationReport,
     sendScheduledGiftCard,

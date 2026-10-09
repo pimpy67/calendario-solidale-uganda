@@ -6,7 +6,15 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../database/db');
-const { sendGiftCard, sendDonationNotification, sendDonorGiftCard } = require('../utils/mailer');
+const { sendGiftCard, sendDonationNotification, sendDonorGiftCard, sendNataleDonorConfirmation } = require('../utils/mailer');
+const { deliverNataleCardIfDue } = require('../jobs/natale');
+
+// Gift card di Natale: prezzo e design ammessi decisi dal server, non dal browser
+const NATALE_PRICE_CENTS = 2000; // 20,00 €
+// Orario di consegna al destinatario: 25 dicembre 2026 alle 09:00 di Roma (UTC+1)
+const NATALE_DELIVERY_AT = process.env.NATALE_DELIVERY_AT || '2026-12-25T08:00:00.000Z';
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const { isNataleDesign, designImageUrl } = require('../utils/avvento');
 
 // Configurazione Satispay
 const SATISPAY_ENABLED = process.env.SATISPAY_API_KEY ? true : false;
@@ -413,6 +421,107 @@ router.get('/stats', (req, res) => {
 });
 
 /**
+ * GET /api/natale/count
+ * Numero di gift card di Natale pagate (per il contatore della pagina)
+ */
+router.get('/natale/count', (req, res) => {
+    res.json({ count: db.countNataleGiftCards() });
+});
+
+/**
+ * GET /api/natale/card/:paymentId
+ * Dati per la pagina di apertura. Non espone le email e non rivela nulla prima dell'orario di consegna.
+ */
+router.get('/natale/card/:paymentId', (req, res) => {
+    const card = db.getNataleGiftCardByPaymentId(req.params.paymentId);
+    if (!card) {
+        return res.status(404).json({ error: true, message: 'Gift card non trovata' });
+    }
+    const now = new Date().toISOString();
+    if (card.delivery_at > now) {
+        return res.json({ available: false, delivery_at: card.delivery_at });
+    }
+    res.json({
+        available: true,
+        recipient_name: card.recipient_name,
+        donor_name: card.donor_name || 'Un amico generoso',
+        message: card.message || '',
+        card_design: card.card_design,
+        image: designImageUrl(card.card_design)
+    });
+});
+
+/**
+ * POST /api/natale/checkout
+ * Crea una gift card di Natale da 20 € e la sessione Stripe per pagarla.
+ * Non occupa nessun giorno del calendario.
+ */
+router.post('/natale/checkout', async (req, res) => {
+    // Vendita spenta finché non si attiva esplicitamente NATALE_VENDITA_ATTIVA=true
+    if (process.env.NATALE_VENDITA_ATTIVA !== 'true') {
+        return res.status(403).json({ error: true, message: 'Le gift card di Natale non sono ancora in vendita' });
+    }
+    if (!STRIPE_ENABLED) {
+        return res.status(503).json({ error: true, message: 'Pagamenti non disponibili al momento' });
+    }
+
+    const { donor_name, donor_email, recipient_name, recipient_email, message, card_design } = req.body;
+    if (!donor_name || !recipient_name || !recipient_email || !EMAIL_RE.test(recipient_email)) {
+        return res.status(400).json({ error: true, message: 'Compila nome di chi regala, nome di chi riceve ed email valida del destinatario' });
+    }
+    if (donor_email && !EMAIL_RE.test(donor_email)) {
+        return res.status(400).json({ error: true, message: 'Email di chi regala non valida' });
+    }
+    const design = isNataleDesign(card_design) ? card_design : 'card1';
+    const cleanMessage = (message || '').toString().substring(0, 490);
+
+    try {
+        const paymentId = uuidv4();
+        const cardId = db.createNataleGiftCard({
+            payment_id: paymentId,
+            amount: NATALE_PRICE_CENTS / 100,
+            donor_name: donor_name.toString().substring(0, 100),
+            donor_email: donor_email || null,
+            recipient_name: recipient_name.toString().substring(0, 100),
+            recipient_email,
+            message: cleanMessage || null,
+            card_design: design,
+            delivery_at: NATALE_DELIVERY_AT
+        });
+
+        const baseUrl = process.env.BASE_URL || 'https://calendario.effataitalia.it';
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: 'eur',
+                    product_data: {
+                        name: 'Gift card di Natale - Calendario Solidale',
+                        description: 'Gift card di Natale a sostegno della Casa Famiglia Effatà in Uganda',
+                    },
+                    unit_amount: NATALE_PRICE_CENTS,
+                },
+                quantity: 1,
+            }],
+            mode: 'payment',
+            success_url: `${baseUrl}/natale.html?ok=1`,
+            cancel_url: `${baseUrl}/natale.html`,
+            metadata: {
+                type: 'natale_gift_card',
+                natale_id: String(cardId),
+                payment_id: paymentId,
+            },
+        });
+
+        db.setNataleGiftCardSession(cardId, session.id);
+        res.status(201).json({ stripe_url: session.url });
+    } catch (error) {
+        console.error('Errore checkout gift card di Natale:', error);
+        res.status(500).json({ error: true, message: 'Errore nella creazione del pagamento' });
+    }
+});
+
+/**
  * POST /api/webhook/stripe
  * Webhook per conferma pagamento Stripe
  */
@@ -440,6 +549,22 @@ router.post('/webhook/stripe', async (req, res) => {
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
         const meta = session.metadata;
+
+        // Gift card di Natale: flusso separato, non occupa nessun giorno del calendario
+        if (meta.type === 'natale_gift_card') {
+            const card = db.completeNataleGiftCardBySession(session.id);
+            if (card) {
+                console.log(`Gift card di Natale ${card.id} pagata`);
+                sendNataleDonorConfirmation(card)
+                    .catch(err => console.error('Errore conferma gift card di Natale:', err));
+                // Se l'orario di consegna è già passato la card parte subito, altrimenti la invia il job
+                deliverNataleCardIfDue(card)
+                    .catch(err => console.error('Errore invio gift card di Natale:', err));
+            } else {
+                console.log(`Webhook Natale duplicato ignorato per sessione ${session.id}`);
+            }
+            return res.json({ received: true });
+        }
 
         // Evita duplicati (webhook può arrivare più volte)
         const existing = db.getDonationBySessionId(session.id);

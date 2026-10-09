@@ -83,6 +83,27 @@ function init() {
         )
     `);
 
+    // Gift card di Natale (20 €): tabella separata dalle adozioni, nessun vincolo sul giorno
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS natale_gift_cards (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            payment_id VARCHAR(100) UNIQUE NOT NULL,
+            stripe_session_id VARCHAR(200),
+            amount INTEGER NOT NULL,
+            donor_name VARCHAR(100),
+            donor_email VARCHAR(255),
+            recipient_name VARCHAR(100) NOT NULL,
+            recipient_email VARCHAR(255) NOT NULL,
+            message TEXT,
+            card_design VARCHAR(20) DEFAULT 'card1',
+            payment_status VARCHAR(20) DEFAULT 'pending',
+            delivery_at VARCHAR(30) NOT NULL,
+            email_sent_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            paid_at DATETIME
+        )
+    `);
+
     // Crea indici per performance
     db.exec(`
         CREATE INDEX IF NOT EXISTS idx_donations_date ON donations(year, month, day);
@@ -508,7 +529,95 @@ function close() {
     }
 }
 
+/**
+ * Crea una gift card di Natale in attesa di pagamento
+ */
+function createNataleGiftCard(data) {
+    const stmt = db.prepare(`
+        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, recipient_name, recipient_email, message, card_design, delivery_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const info = stmt.run(
+        data.payment_id, data.amount, data.donor_name, data.donor_email,
+        data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at
+    );
+    return info.lastInsertRowid;
+}
+
+/**
+ * Associa la sessione Stripe alla gift card di Natale
+ */
+function setNataleGiftCardSession(id, sessionId) {
+    db.prepare('UPDATE natale_gift_cards SET stripe_session_id = ? WHERE id = ?').run(sessionId, id);
+}
+
+/**
+ * Segna come pagata la gift card di Natale della sessione Stripe.
+ * Ritorna la riga aggiornata, oppure null se già pagata o inesistente (webhook duplicato).
+ */
+function completeNataleGiftCardBySession(sessionId) {
+    const info = db.prepare(`
+        UPDATE natale_gift_cards
+        SET payment_status = 'completed', paid_at = CURRENT_TIMESTAMP
+        WHERE stripe_session_id = ? AND payment_status = 'pending'
+    `).run(sessionId);
+    if (info.changes === 0) return null;
+    return db.prepare('SELECT * FROM natale_gift_cards WHERE stripe_session_id = ?').get(sessionId);
+}
+
+/**
+ * Conta le gift card di Natale pagate
+ */
+function countNataleGiftCards() {
+    return db.prepare("SELECT COUNT(*) AS n FROM natale_gift_cards WHERE payment_status = 'completed'").get().n;
+}
+
+/**
+ * Gift card di Natale pagate, il cui invio al destinatario è scaduto e non ancora partito.
+ * delivery_at è in ISO UTC: il confronto come stringa è corretto perché il formato è fisso.
+ */
+function getDueNataleGiftCards(nowIso) {
+    return db.prepare(`
+        SELECT * FROM natale_gift_cards
+        WHERE payment_status = 'completed' AND email_sent_at IS NULL AND delivery_at <= ?
+        ORDER BY delivery_at
+    `).all(nowIso);
+}
+
+/**
+ * Prenota l'invio di una gift card: ritorna false se è già stata presa da un'altra esecuzione.
+ */
+function claimNataleGiftCard(id) {
+    const info = db.prepare(`
+        UPDATE natale_gift_cards SET email_sent_at = CURRENT_TIMESTAMP
+        WHERE id = ? AND email_sent_at IS NULL
+    `).run(id);
+    return info.changes === 1;
+}
+
+/**
+ * Annulla la prenotazione se l'invio fallisce, così il giro successivo riprova.
+ */
+function releaseNataleGiftCard(id) {
+    db.prepare('UPDATE natale_gift_cards SET email_sent_at = NULL WHERE id = ?').run(id);
+}
+
+/**
+ * Ritorna una gift card di Natale pagata tramite il suo identificativo pubblico (payment_id)
+ */
+function getNataleGiftCardByPaymentId(paymentId) {
+    return db.prepare("SELECT * FROM natale_gift_cards WHERE payment_id = ? AND payment_status = 'completed'").get(paymentId);
+}
+
 module.exports = {
+    getDueNataleGiftCards,
+    claimNataleGiftCard,
+    releaseNataleGiftCard,
+    getNataleGiftCardByPaymentId,
+    createNataleGiftCard,
+    setNataleGiftCardSession,
+    completeNataleGiftCardBySession,
+    countNataleGiftCards,
     init,
     getDonationsByYear,
     getDonationsByMonth,
