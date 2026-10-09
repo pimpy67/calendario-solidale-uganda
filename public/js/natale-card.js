@@ -69,6 +69,23 @@
         const id = new URLSearchParams(window.location.search).get('id');
         if (!id) return show('state-missing');
 
+        // Anteprima (?id=anteprima): busta con un messaggio di esempio, senza dati reali
+        if (id === 'anteprima') {
+            const sample = {
+                available: true,
+                recipient_name: 'Anna',
+                donor_name: 'Mario',
+                message: 'Buon Natale! Ti ho regalato un Natale solidale, con il disegno che preferisci.',
+                card_design: 'card1',
+                image: CARD_IMAGES.card1
+            };
+            fillCard(sample);
+            show('state-open');
+            startSnow();
+            document.getElementById('envelope').addEventListener('click', () => openEnvelope(sample));
+            return;
+        }
+
         let data;
         try {
             const response = await fetch(`/api/natale/card/${encodeURIComponent(id)}`);
