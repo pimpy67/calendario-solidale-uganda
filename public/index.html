@@ -165,27 +165,6 @@
                     </button>
                 </div>
 
-                <!-- Riquadro Natale: visibile solo a novembre e dicembre 2026 -->
-                <a href="/natale-avvento.html" class="natale-month-banner" id="nataleBanner" hidden>
-                    <span class="natale-month-icon">&#127876;</span>
-                    <span class="natale-month-text">
-                        <strong>Natale a Effatà</strong>
-                        <span>Calendario dell'Avvento con 25 porte · apri la pagina</span>
-                    </span>
-                </a>
-
-                <!-- Interruttore Adozioni / Avvento: solo novembre e dicembre 2026 -->
-                <div class="view-switch" id="viewSwitch" hidden>
-                    <button type="button" class="view-btn active" data-view="adozioni">Adozioni</button>
-                    <button type="button" class="view-btn" data-view="avvento">Avvento</button>
-                </div>
-
-                <!-- Vista Avvento: 25 porte, al posto della griglia -->
-                <div class="advent-view" id="adventView" hidden>
-                    <div class="advent-doors" id="adventDoors" role="list"></div>
-                    <p class="advent-note">Ogni porta si apre il giorno indicato, in ora di Roma.</p>
-                </div>
-
                 <!-- Griglia Calendario -->
                 <div class="calendar-grid">
                     <!-- Header giorni settimana -->
@@ -495,18 +474,7 @@
     </div>
 
     <!-- Scripts -->
-    <!-- Finestra della porta dell'Avvento -->
-    <div class="advent-modal" id="adventModal" hidden>
-        <div class="advent-modal-box" role="dialog" aria-modal="true" aria-labelledby="adventModalTitle">
-            <button type="button" class="advent-modal-close" id="adventModalClose" aria-label="Chiudi">×</button>
-            <img id="adventModalImg" alt="" hidden>
-            <h3 id="adventModalTitle"></h3>
-            <p id="adventModalText"></p>
-        </div>
-    </div>
-
     <script src="/js/calendar.js"></script>
-    <script src="/js/avvento-view.js"></script>
     <script src="/js/payment.js"></script>
     <script src="/js/app.js"></script>
 
