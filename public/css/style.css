@@ -1890,3 +1890,23 @@ body {
         display: none;
     }
 }
+
+/* ===== Fascia Natale in cima alla home ===== */
+.natale-band {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #c0392b, #8e2a1f);
+    color: #ffffff;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.natale-band:hover { filter: brightness(1.08); }
+.natale-band:focus-visible { outline: 3px solid #f5d27a; outline-offset: 3px; }
+.natale-band-icon { font-size: 26px; flex: 0 0 auto; }
+.natale-band-text { display: flex; flex-direction: column; line-height: 1.3; }
+.natale-band-text strong { font-size: 1rem; color: #f5d27a; }
+.natale-band-text span { font-size: 0.8rem; opacity: 0.9; }
