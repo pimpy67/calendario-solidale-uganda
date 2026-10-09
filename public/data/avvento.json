@@ -8,175 +8,200 @@
       "title": "Porta 1",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/1.webp"
     },
     {
       "day": 2,
       "title": "Porta 2",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/2.webp"
     },
     {
       "day": 3,
       "title": "Porta 3",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/3.webp"
     },
     {
       "day": 4,
       "title": "Porta 4",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/4.webp"
     },
     {
       "day": 5,
       "title": "Porta 5",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/5.webp"
     },
     {
       "day": 6,
       "title": "Porta 6",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/1.webp"
     },
     {
       "day": 7,
       "title": "Porta 7",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/2.webp"
     },
     {
       "day": 8,
       "title": "Porta 8",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/3.webp"
     },
     {
       "day": 9,
       "title": "Porta 9",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/4.webp"
     },
     {
       "day": 10,
       "title": "Porta 10",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/5.webp"
     },
     {
       "day": 11,
       "title": "Porta 11",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/1.webp"
     },
     {
       "day": 12,
       "title": "Porta 12",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/2.webp"
     },
     {
       "day": 13,
       "title": "Porta 13",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/3.webp"
     },
     {
       "day": 14,
       "title": "Porta 14",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/4.webp"
     },
     {
       "day": 15,
       "title": "Porta 15",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/5.webp"
     },
     {
       "day": 16,
       "title": "Porta 16",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/1.webp"
     },
     {
       "day": 17,
       "title": "Porta 17",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/2.webp"
     },
     {
       "day": 18,
       "title": "Porta 18",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/3.webp"
     },
     {
       "day": 19,
       "title": "Porta 19",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/4.webp"
     },
     {
       "day": 20,
       "title": "Porta 20",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/5.webp"
     },
     {
       "day": 21,
       "title": "Porta 21",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/1.webp"
     },
     {
       "day": 22,
       "title": "Porta 22",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/2.webp"
     },
     {
       "day": 23,
       "title": "Porta 23",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/3.webp"
     },
     {
       "day": 24,
       "title": "Porta 24",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/4.webp"
     },
     {
       "day": 25,
       "title": "Porta 25",
       "image": null,
       "text": "",
-      "placeholder": true
+      "placeholder": true,
+      "disegno": "/images/gift_card/5.webp"
     }
   ]
 }

@@ -154,7 +154,7 @@
     // Carosello: tutti i 25 disegni, solo immagine (il testo resta nel calendario)
     function renderCarousel() {
         const track = document.getElementById('carousel-track');
-        doors.filter(d => d.image).forEach(door => {
+        doors.filter(d => d.disegno).forEach(door => {
             const slide = document.createElement('button');
             slide.type = 'button';
             slide.className = 'slide';
@@ -162,7 +162,7 @@
             slide.setAttribute('aria-label', `Scegli il disegno della porta ${door.day}`);
 
             const img = document.createElement('img');
-            img.src = door.image;
+            img.src = door.disegno;
             img.alt = `Disegno della porta ${door.day}`;
             img.loading = 'lazy';
             slide.appendChild(img);
@@ -194,7 +194,7 @@
         const door = doors.find(d => d.day === day);
         document.getElementById('selected-label').textContent = `Porta ${day}`;
         const preview = document.getElementById('gift-preview');
-        preview.src = door ? door.image : '';
+        preview.src = door ? door.disegno : '';
         document.querySelectorAll('.slide').forEach(s => {
             s.classList.toggle('selected', Number(s.dataset.day) === day);
         });
@@ -276,7 +276,9 @@
             doors = data.doors;
             renderDoors(today);
             // Con la vendita spenta (contenuti non ancora pronti) si nascondono carosello e modulo
-            if (data.vendita_attiva !== true) {
+            // Anteprima (?anteprima=1): mostra carosello e modulo; il pagamento resta bloccato dal server
+            const anteprima = new URLSearchParams(window.location.search).get('anteprima') === '1';
+            if (data.vendita_attiva !== true && !anteprima) {
                 document.getElementById('choose-section').hidden = true;
                 document.getElementById('gift-section').hidden = true;
             } else {

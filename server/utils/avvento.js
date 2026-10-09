@@ -38,7 +38,7 @@ function designImageUrl(design) {
     const match = /^porta(\d{1,2})$/.exec(design || '');
     if (match) {
         const door = loadDoors().find(d => d.day === Number(match[1]));
-        return door && door.image ? door.image : null;
+        return door && door.disegno ? door.disegno : null;
     }
     const legacy = /^card(\d)$/.exec(design || '');
     return legacy ? `/images/gift_card/${legacy[1]}.webp` : null;
