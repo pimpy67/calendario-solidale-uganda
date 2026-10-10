@@ -71,14 +71,14 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
         position: relative;
         align-items: center;
         gap: 12px;
-        padding: 6px 7% 14px;
+        padding: 6px 10% 14px;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         scrollbar-width: none;
     }
     .doors::-webkit-scrollbar { display: none; }
     .doors .door {
-        flex: 0 0 86%;
+        flex: 0 0 80%;
         scroll-snap-align: center;
         font-size: 3rem;
     }
