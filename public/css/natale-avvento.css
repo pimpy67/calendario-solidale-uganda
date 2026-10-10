@@ -70,15 +70,15 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
         display: flex;
         position: relative;
         align-items: center;
-        gap: 14px;
-        padding: 6px 14% 14px;
+        gap: 12px;
+        padding: 6px 7% 14px;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         scrollbar-width: none;
     }
     .doors::-webkit-scrollbar { display: none; }
     .doors .door {
-        flex: 0 0 72%;
+        flex: 0 0 86%;
         scroll-snap-align: center;
         font-size: 3rem;
     }
