@@ -489,7 +489,7 @@ router.post('/natale/checkout', async (req, res) => {
             delivery_at: NATALE_DELIVERY_AT
         });
 
-        const baseUrl = process.env.BASE_URL || 'https://calendario.effataitalia.it';
+        const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [{
