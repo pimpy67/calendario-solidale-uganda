@@ -138,6 +138,25 @@
         });
     }
 
+    // Telefono: porta il carosello sulla porta di oggi (prima di dicembre la 1, dopo Natale la 25)
+    function scrollToDoor(index, behavior) {
+        const container = document.getElementById('doors');
+        const door = container.children[index];
+        if (!door) return;
+        container.scrollTo({
+            left: door.offsetLeft - (container.clientWidth - door.offsetWidth) / 2,
+            behavior: reducedMotion ? 'auto' : behavior
+        });
+    }
+
+    function scrollToToday(today, behavior) {
+        if (!window.matchMedia('(max-width: 639px)').matches) return;
+        const inDecember = today.year === YEAR && today.month === MONTH;
+        const afterDecember = today.year > YEAR || (today.year === YEAR && today.month > MONTH);
+        const index = inDecember ? Math.min(today.day, 25) - 1 : (afterDecember ? 24 : 0);
+        scrollToDoor(index, behavior);
+    }
+
     function renderTodayLine(today) {
         const line = document.getElementById('today-line');
         if (today.year === YEAR && today.month === MONTH) {
@@ -275,6 +294,8 @@
             const data = await response.json();
             doors = data.doors;
             renderDoors(today);
+            scrollToToday(today, 'auto');
+            document.getElementById('go-today').addEventListener('click', () => scrollToToday(today, 'smooth'));
             // Con la vendita spenta (contenuti non ancora pronti) si nascondono carosello e modulo
             // Anteprima (?anteprima=1): mostra carosello e modulo; il pagamento resta bloccato dal server
             const anteprima = new URLSearchParams(window.location.search).get('anteprima') === '1';

@@ -905,7 +905,7 @@ ${imageTag}
  * Link alla pagina di apertura della gift card di Natale (si apre dal 25 dicembre alle 9:00)
  */
 function nataleCardUrl(card) {
-    const baseUrl = process.env.BASE_URL || 'https://calendario.effataitalia.it';
+    const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
     return `${baseUrl}/natale-card.html?id=${encodeURIComponent(card.payment_id)}`;
 }
 

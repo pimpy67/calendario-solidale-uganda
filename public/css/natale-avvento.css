@@ -58,14 +58,45 @@ body {
 }
 h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 
-/* Calendario: 25 porte */
+/* Calendario: 25 porte. PC e tablet: griglia 5×5 */
 .doors {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
+    gap: 14px;
 }
-@media (min-width: 640px) {
-    .doors { grid-template-columns: repeat(5, 1fr); gap: 14px; }
+/* Telefono: una porta alla volta, a scorrimento con il dito */
+@media (max-width: 639px) {
+    .doors {
+        display: flex;
+        position: relative;
+        align-items: center;
+        gap: 14px;
+        padding: 6px 14% 14px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+    .doors::-webkit-scrollbar { display: none; }
+    .doors .door {
+        flex: 0 0 72%;
+        scroll-snap-align: center;
+        font-size: 3rem;
+    }
+}
+.today-btn { display: none; }
+@media (max-width: 639px) {
+    .today-btn {
+        display: block;
+        margin: 6px auto 0;
+        padding: 8px 18px;
+        border: 1px solid var(--gold);
+        border-radius: 999px;
+        background: transparent;
+        color: var(--gold);
+        font-family: var(--font);
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
 }
 .door {
     position: relative;
