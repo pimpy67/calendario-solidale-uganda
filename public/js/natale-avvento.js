@@ -70,12 +70,26 @@
     }
 
     function openModal(door) {
+        const modal = document.getElementById('modal');
+        // Porta con il disegno: la card a tutto schermo
+        if (door.disegno) {
+            const img = document.getElementById('modal-img');
+            img.src = door.disegno;
+            img.alt = `Disegno della porta ${door.day}`;
+            img.hidden = false;
+            document.getElementById('modal-title').textContent = '';
+            document.getElementById('modal-text').textContent = '';
+            modal.classList.add('cardview');
+            modal.hidden = false;
+            document.getElementById('modal-close').focus();
+            return;
+        }
         // Porta senza contenuto ancora pronto: nessuna finestra vuota
         if (!door.text && !door.image) {
             document.getElementById('today-line').textContent = `La porta ${door.day} arriverà presto.`;
             return;
         }
-        const modal = document.getElementById('modal');
+        modal.classList.remove('cardview');
         document.getElementById('modal-title').textContent = door.title;
         document.getElementById('modal-text').textContent = door.text;
         const img = document.getElementById('modal-img');
@@ -97,6 +111,7 @@
     function renderDoors(today) {
         const container = document.getElementById('doors');
         const opened = readOpened();
+        const anteprima = new URLSearchParams(window.location.search).get('anteprima') === '1';
 
         doors.forEach(door => {
             const state = doorState(door.day, today);
@@ -127,7 +142,8 @@
             if (opened.has(door.day)) btn.classList.add('open');
 
             btn.addEventListener('click', () => {
-                if (state === 'locked') {
+                // In anteprima si possono vedere tutte le card, anche prima del giorno
+                if (state === 'locked' && !anteprima) {
                     document.getElementById('today-line').textContent = `La porta ${door.day} si apre il ${door.day} dicembre.`;
                     return;
                 }

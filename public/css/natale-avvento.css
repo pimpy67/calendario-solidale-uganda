@@ -212,6 +212,15 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .modal-box img { width: 100%; height: auto; border-radius: 12px; display: block; margin-bottom: 14px; }
 .modal-box h3 { margin: 0 0 8px; color: var(--gold); }
 .modal-box p { margin: 0; line-height: 1.5; color: var(--muted); }
+/* Card a tutto schermo: il disegno occupa tutta la finestra */
+.modal.cardview { padding: 0; background: #000; }
+.modal.cardview .modal-box {
+    max-width: none; width: 100%; height: 100%; max-height: none;
+    background: #000; border-radius: 0; padding: 0; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+}
+.modal.cardview .modal-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 0; margin: 0; }
+.modal.cardview .modal-box h3, .modal.cardview .modal-box p { display: none; }
 .modal-close {
     position: absolute; top: 10px; right: 10px; z-index: 1;
     width: 36px; height: 36px; border-radius: 50%;
