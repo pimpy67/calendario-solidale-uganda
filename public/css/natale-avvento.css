@@ -125,6 +125,17 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .door.locked { opacity: 0.55; cursor: default; }
 .door.locked:hover { transform: none; }
 .door.open .num::after { content: ' ✨'; }
+.door .child-name {
+    display: block;
+    max-width: 90%;
+    margin: 4px auto 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--gold);
+}
 @keyframes pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.06); }

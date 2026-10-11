@@ -9,7 +9,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/1.webp"
+      "disegno": "/images/gift_card/avvento-01.webp",
+      "child_name": "Winnie"
     },
     {
       "day": 2,
@@ -17,7 +18,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/2.webp"
+      "disegno": "/images/gift_card/avvento-02.webp",
+      "child_name": "Justine"
     },
     {
       "day": 3,
@@ -25,7 +27,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/3.webp"
+      "disegno": "/images/gift_card/avvento-03.webp",
+      "child_name": "Mercy"
     },
     {
       "day": 4,
@@ -33,7 +36,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/4.webp"
+      "disegno": "/images/gift_card/avvento-04.webp",
+      "child_name": "Daphne"
     },
     {
       "day": 5,
@@ -41,7 +45,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/5.webp"
+      "disegno": "/images/gift_card/avvento-05.webp",
+      "child_name": "Jane"
     },
     {
       "day": 6,
@@ -49,7 +54,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/1.webp"
+      "disegno": "/images/gift_card/avvento-06.webp",
+      "child_name": "Teresa"
     },
     {
       "day": 7,
@@ -57,7 +63,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/2.webp"
+      "disegno": "/images/gift_card/avvento-07.webp",
+      "child_name": null
     },
     {
       "day": 8,
@@ -65,7 +72,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/3.webp"
+      "disegno": "/images/gift_card/avvento-08.webp",
+      "child_name": "Mike"
     },
     {
       "day": 9,
@@ -73,7 +81,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/4.webp"
+      "disegno": "/images/gift_card/avvento-09.webp",
+      "child_name": "Scovia"
     },
     {
       "day": 10,
@@ -81,7 +90,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/5.webp"
+      "disegno": "/images/gift_card/avvento-10.webp",
+      "child_name": "Prossy"
     },
     {
       "day": 11,
