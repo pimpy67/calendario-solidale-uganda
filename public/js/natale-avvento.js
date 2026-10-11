@@ -111,6 +111,14 @@
             num.textContent = door.day;
             btn.appendChild(num);
 
+            // Nome del bambino sul davanti della porta, finché la porta è chiusa
+            if (door.child_name && !opened.has(door.day)) {
+                const name = document.createElement('span');
+                name.className = 'child-name';
+                name.textContent = door.child_name;
+                btn.appendChild(name);
+            }
+
             if (state === 'locked') {
                 btn.classList.add('locked');
                 btn.setAttribute('aria-disabled', 'true');
