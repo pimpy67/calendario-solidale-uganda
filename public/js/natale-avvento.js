@@ -111,7 +111,6 @@
     function renderDoors(today) {
         const container = document.getElementById('doors');
         const opened = readOpened();
-        const anteprima = new URLSearchParams(window.location.search).get('anteprima') === '1';
 
         doors.forEach(door => {
             const state = doorState(door.day, today);
@@ -142,11 +141,6 @@
             if (opened.has(door.day)) btn.classList.add('open');
 
             btn.addEventListener('click', () => {
-                // In anteprima si possono vedere tutte le card, anche prima del giorno
-                if (state === 'locked' && !anteprima) {
-                    document.getElementById('today-line').textContent = `La porta ${door.day} si apre il ${door.day} dicembre.`;
-                    return;
-                }
                 const wasOpen = opened.has(door.day);
                 opened.add(door.day);
                 saveOpened(opened);
