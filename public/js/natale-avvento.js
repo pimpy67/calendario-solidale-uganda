@@ -218,7 +218,7 @@
             label.textContent = `Porta ${door.day}`;
             slide.appendChild(label);
 
-            slide.addEventListener('click', () => selectDay(door.day));
+            slide.addEventListener('click', () => openZoom(door));
             track.appendChild(slide);
         });
 
@@ -232,6 +232,20 @@
         document.getElementById('carousel-next').addEventListener('click', () => {
             track.scrollBy({ left: step(), behavior: reducedMotion ? 'auto' : 'smooth' });
         });
+    }
+
+    // Ingrandimento del disegno dal carosello: si sceglie con il tasto dentro la finestra
+    let zoomDay = null;
+    function openZoom(door) {
+        zoomDay = door.day;
+        document.getElementById('zoom-img').src = door.disegno;
+        document.getElementById('zoom-img').alt = `Disegno della porta ${door.day}`;
+        document.getElementById('zoom-label').textContent = `Porta ${door.day}`;
+        document.getElementById('zoom').hidden = false;
+        document.getElementById('zoom-choose').focus();
+    }
+    function closeZoom() {
+        document.getElementById('zoom').hidden = true;
     }
 
     // Sceglie un disegno: aggiorna la scritta e l'anteprima nel modulo
@@ -307,6 +321,14 @@
         renderTodayLine(today);
 
         document.getElementById('modal-close').addEventListener('click', closeModal);
+        document.getElementById('zoom-close').addEventListener('click', closeZoom);
+        document.getElementById('zoom').addEventListener('click', (e) => {
+            if (e.target.id === 'zoom') closeZoom();
+        });
+        document.getElementById('zoom-choose').addEventListener('click', () => {
+            selectDay(zoomDay);
+            closeZoom();
+        });
         document.getElementById('flip-toggle').addEventListener('click', (e) => {
             const flipped = document.getElementById('flip-card').classList.toggle('flipped');
             e.currentTarget.textContent = flipped ? 'Torna al disegno' : 'Leggi la filastrocca';
@@ -316,7 +338,7 @@
             if (e.target.id === 'modal') closeModal();
         });
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
+            if (e.key === 'Escape') { closeModal(); closeZoom(); }
         });
 
         setupGiftForm();

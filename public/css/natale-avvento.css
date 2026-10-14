@@ -390,3 +390,19 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     cursor: pointer;
 }
 .gift-submit:disabled { opacity: 0.6; cursor: wait; }
+
+/* Ingrandimento del disegno dal carosello */
+.zoom {
+    position: fixed; inset: 0; z-index: 20;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px;
+}
+.zoom[hidden] { display: none; }
+.zoom-box { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 100%; }
+.zoom-box img { display: block; max-width: 96vw; max-height: 84vh; width: auto; height: auto; object-fit: contain; border-radius: 8px; }
+.zoom-label { margin: 0; color: var(--white); font-weight: 600; }
+.zoom-choose {
+    padding: 10px 20px; border-radius: 999px; border: none; cursor: pointer;
+    background: var(--gold); color: #1f1f38; font-weight: 600;
+}
