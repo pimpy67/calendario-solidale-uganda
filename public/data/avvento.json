@@ -9,8 +9,9 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/2_Filastrocca per l_Uganda.jpg",
-      "child_name": "Winnie"
+      "disegno": "/images/gift_card/1_Filastrocca per l_Uganda.jpg",
+      "child_name": "Winnie",
+      "filastrocca": "L'Uganda è un paese assai lontano che ha bisogno di una nostra generosa mano"
     },
     {
       "day": 2,
@@ -27,7 +28,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/6_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/2_Filastrocca per l_Uganda.jpg",
       "child_name": "Mercy"
     },
     {
@@ -45,7 +46,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/9_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/3_Filastrocca per l_Uganda.jpg",
       "child_name": "Jane"
     },
     {
@@ -63,7 +64,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/15_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/4_Filastrocca per l_Uganda.jpg",
       "child_name": null
     },
     {
@@ -72,7 +73,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/8_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/5_Filastrocca per l_Uganda.jpg",
       "child_name": "Mike"
     },
     {
@@ -90,7 +91,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/10_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/6_Filastrocca per l_Uganda.jpg",
       "child_name": "Prossy"
     },
     {
@@ -99,7 +100,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/11_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/7_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 12,
@@ -115,7 +116,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/12a_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/8_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 14,
@@ -131,8 +132,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/1_Filastrocca per l_Uganda.jpg",
-      "filastrocca": "L'Uganda è un paese assai lontano che ha bisogno di una nostra generosa mano"
+      "disegno": "/images/gift_card/9_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 16,
@@ -148,7 +148,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/7_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/10_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 18,
@@ -156,7 +156,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/4_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/11_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 19,
@@ -164,7 +164,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/3_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/12a_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 20,
@@ -172,7 +172,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/5_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/13_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 21,
@@ -196,7 +196,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/13_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/15_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 24,

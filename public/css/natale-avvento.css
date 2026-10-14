@@ -115,6 +115,9 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 .door:hover { transform: translateY(-2px); }
 .door:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.door.no-art {
+    background: linear-gradient(160deg, #2e7d32, #1b4d1f);
+}
 .door.open {
     background: linear-gradient(160deg, #e74c3c, var(--red));
 }
