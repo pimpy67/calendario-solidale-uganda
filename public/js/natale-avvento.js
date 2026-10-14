@@ -126,6 +126,8 @@
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'door';
+            // Porta senza disegno: colore diverso dalle altre
+            if (!door.disegno) btn.classList.add('no-art');
             btn.setAttribute('role', 'listitem');
             btn.setAttribute('aria-label', `Porta ${door.day}`);
 
