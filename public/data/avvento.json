@@ -5,12 +5,11 @@
   "doors": [
     {
       "day": 1,
-      "filastrocca": "L'Uganda è un paese assai lontano che ha bisogno di una nostra generosa mano",
       "title": "Porta 1",
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/1_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/2_Filastrocca per l_Uganda.jpg",
       "child_name": "Winnie"
     },
     {
@@ -19,7 +18,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/2_Filastrocca per l_Uganda.jpg",
+      "disegno": null,
       "child_name": "Justine"
     },
     {
@@ -28,7 +27,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/3_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/6_Filastrocca per l_Uganda.jpg",
       "child_name": "Mercy"
     },
     {
@@ -37,7 +36,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/4_Filastrocca per l_Uganda.jpg",
+      "disegno": null,
       "child_name": "Daphne"
     },
     {
@@ -46,7 +45,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/5_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/9_Filastrocca per l_Uganda.jpg",
       "child_name": "Jane"
     },
     {
@@ -55,7 +54,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/6_Filastrocca per l_Uganda.jpg",
+      "disegno": null,
       "child_name": "Teresa"
     },
     {
@@ -64,7 +63,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/7_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/15_Filastrocca per l_Uganda.jpg",
       "child_name": null
     },
     {
@@ -82,7 +81,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/9_Filastrocca per l_Uganda.jpg",
+      "disegno": null,
       "child_name": "Scovia"
     },
     {
@@ -108,7 +107,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/12a_Filastrocca per l_Uganda.jpg"
+      "disegno": null
     },
     {
       "day": 13,
@@ -116,7 +115,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/13_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/12a_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 14,
@@ -124,7 +123,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/14_Filastrocca per l_Uganda.jpg"
+      "disegno": null
     },
     {
       "day": 15,
@@ -132,7 +131,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/15_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/1_Filastrocca per l_Uganda.jpg",
+      "filastrocca": "L'Uganda è un paese assai lontano che ha bisogno di una nostra generosa mano"
     },
     {
       "day": 16,
@@ -140,7 +140,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/16-Disegno colorato di Winnie babysitter.webp"
+      "disegno": null
     },
     {
       "day": 17,
@@ -148,7 +148,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/17-Disegno infantile natalizio colorato.webp"
+      "disegno": "/images/gift_card/7_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 18,
@@ -156,7 +156,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/18-Disegno natalizio a cera con bambino.webp"
+      "disegno": "/images/gift_card/4_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 19,
@@ -164,7 +164,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/19-Disegno natalizio colorato a cera.webp"
+      "disegno": "/images/gift_card/3_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 20,
@@ -172,7 +172,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/20-Disegno natalizio con bimba e albero decorato.webp"
+      "disegno": "/images/gift_card/5_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 21,
@@ -180,7 +180,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/21-Disegno Natalizio con Figura Capovolta.webp"
+      "disegno": "/images/gift_card/14_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 22,
@@ -188,7 +188,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/22-Disegno natalizio di Francesca con fiori.webp"
+      "disegno": null
     },
     {
       "day": 23,
@@ -196,7 +196,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/23-Disegno natalizio di Manwuna JANE.webp"
+      "disegno": "/images/gift_card/13_Filastrocca per l_Uganda.jpg"
     },
     {
       "day": 24,
@@ -204,7 +204,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/24-Disegno natalizio di Mike tra colori e sorrisi.webp"
+      "disegno": null
     },
     {
       "day": 25,

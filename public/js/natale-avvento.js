@@ -92,7 +92,7 @@
             return;
         }
         // Porta senza contenuto ancora pronto: nessuna finestra vuota
-        if (!door.text && !door.image) {
+        if (!door.text && !door.image && !door.filastrocca) {
             document.getElementById('today-line').textContent = `La porta ${door.day} arriverà presto.`;
             return;
         }
@@ -100,7 +100,7 @@
         document.getElementById('flip-card').classList.remove('flipped');
         document.getElementById('flip-toggle').hidden = true;
         document.getElementById('modal-title').textContent = door.title;
-        document.getElementById('modal-text').textContent = door.text;
+        document.getElementById('modal-text').textContent = door.text || door.filastrocca || '';
         const img = document.getElementById('modal-img');
         if (door.image) {
             img.src = door.image;
