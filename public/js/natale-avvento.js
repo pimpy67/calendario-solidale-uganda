@@ -79,6 +79,13 @@
             img.hidden = false;
             document.getElementById('modal-title').textContent = '';
             document.getElementById('modal-text').textContent = '';
+            // Filastrocca sul retro della card, se la porta ne ha una
+            const toggle = document.getElementById('flip-toggle');
+            document.getElementById('flip-text').textContent = door.filastrocca || '';
+            document.getElementById('flip-card').classList.remove('flipped');
+            toggle.textContent = 'Leggi la filastrocca';
+            toggle.setAttribute('aria-pressed', 'false');
+            toggle.hidden = !door.filastrocca;
             modal.classList.add('cardview');
             modal.hidden = false;
             document.getElementById('modal-close').focus();
@@ -90,6 +97,8 @@
             return;
         }
         modal.classList.remove('cardview');
+        document.getElementById('flip-card').classList.remove('flipped');
+        document.getElementById('flip-toggle').hidden = true;
         document.getElementById('modal-title').textContent = door.title;
         document.getElementById('modal-text').textContent = door.text;
         const img = document.getElementById('modal-img');
@@ -298,6 +307,11 @@
         renderTodayLine(today);
 
         document.getElementById('modal-close').addEventListener('click', closeModal);
+        document.getElementById('flip-toggle').addEventListener('click', (e) => {
+            const flipped = document.getElementById('flip-card').classList.toggle('flipped');
+            e.currentTarget.textContent = flipped ? 'Torna al disegno' : 'Leggi la filastrocca';
+            e.currentTarget.setAttribute('aria-pressed', String(flipped));
+        });
         document.getElementById('modal').addEventListener('click', (e) => {
             if (e.target.id === 'modal') closeModal();
         });

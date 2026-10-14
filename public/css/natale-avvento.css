@@ -221,6 +221,30 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 .modal.cardview .modal-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 0; margin: 0; }
 .modal.cardview .modal-box h3, .modal.cardview .modal-box p { display: none; }
+/* Porta girabile: davanti il disegno, dietro la filastrocca */
+.flip-card { position: relative; transform-style: preserve-3d; transition: transform 0.6s ease; }
+.flip-card.flipped { transform: rotateY(180deg); }
+.flip-card img { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.flip-back {
+    display: none; position: absolute; inset: 0;
+    align-items: center; justify-content: center; padding: 24px;
+    background: #fffaf0; color: #3a2a1a; border-radius: 12px;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    transform: rotateY(180deg);
+}
+.flip-back p { margin: 0; font-size: 1.15rem; line-height: 1.6; white-space: pre-line; color: inherit; }
+.modal.cardview .flip-card { width: 100%; height: 100%; }
+.modal.cardview .flip-back { display: flex; border-radius: 0; }
+.flip-toggle {
+    margin-top: 14px; padding: 10px 18px; border-radius: 999px;
+    background: var(--gold); color: #1f1f38; border: none;
+    font-weight: 600; cursor: pointer;
+}
+.flip-toggle[hidden] { display: none; }
+.modal.cardview .flip-toggle {
+    position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+    margin: 0; z-index: 1; box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
 .modal-close {
     position: absolute; top: 10px; right: 10px; z-index: 1;
     width: 36px; height: 36px; border-radius: 50%;
@@ -230,7 +254,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 
 @media (prefers-reduced-motion: reduce) {
     .flake, .hero h1, .door.today:not(.open), .door.just-opened, .modal-box { animation: none; }
-    .door { transition: none; }
+    .door, .flip-card { transition: none; }
 }
 
 /* Scelta del disegno: carosello */
