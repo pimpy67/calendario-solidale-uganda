@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Il calendario dell'Avvento di Effatà: ogni giorno dal 1 al 25 dicembre una porta con un disegno dei bambini della Casa Famiglia in Uganda. Scegli un disegno per regalare un Natale solidale.">
     <title>Natale a Effatà · Calendario dell'Avvento</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
     <link rel="stylesheet" href="/css/natale-avvento.css">
 </head>
 <body>
@@ -78,7 +79,12 @@
             <div class="flip-card" id="flip-card">
                 <img id="modal-img" alt="">
                 <div class="flip-back" aria-live="polite">
-                    <p id="flip-text"></p>
+                    <div class="card-back">
+                        <img class="back-logo" src="/images/gift_card/logo-effata.png" alt="Effatà Italia Charity Organisation ODV">
+                        <p class="back-poem" id="flip-text"></p>
+                        <p class="back-thanks">Un Grazie e un augurio di Buon Natale dai bambini di Effatà Children's Home</p>
+                        <p class="back-site">www.effataitalia.it</p>
+                    </div>
                 </div>
             </div>
             <button type="button" class="flip-toggle" id="flip-toggle" hidden>Leggi la filastrocca</button>
