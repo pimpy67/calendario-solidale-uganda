@@ -75,7 +75,13 @@
     <div class="modal" id="modal" hidden>
         <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
             <button type="button" class="modal-close" id="modal-close" aria-label="Chiudi">×</button>
-            <img id="modal-img" alt="">
+            <div class="flip-card" id="flip-card">
+                <img id="modal-img" alt="">
+                <div class="flip-back" aria-live="polite">
+                    <p id="flip-text"></p>
+                </div>
+            </div>
+            <button type="button" class="flip-toggle" id="flip-toggle" hidden>Leggi la filastrocca</button>
             <h3 id="modal-title"></h3>
             <p id="modal-text"></p>
         </div>
