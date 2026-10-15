@@ -9,7 +9,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/01_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/01_Filastrocca per l_Uganda.jpg",
       "filastrocca": "L'Uganda è un paese assai lontano che ha bisogno di una nostra generosa mano",
       "miniatura": "/images/gift_card/miniature/porta-01.webp"
     },
@@ -27,7 +27,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/003_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/003_Filastrocca per l_Uganda.jpg",
       "miniatura": "/images/gift_card/miniature/porta-03.webp"
     },
     {
@@ -46,7 +46,7 @@
       "placeholder": true,
       "disegno": "/images/gift_card/03_Filastrocca per l_Uganda.jpg",
       "miniatura": "/images/gift_card/miniature/porta-05.webp",
-      "disegno_retro": "/images/gift_card/05_Filastrocca per l_Uganda.jpg",
+      "disegno_retro": "/images/gift_card/web/05_Filastrocca per l_Uganda.jpg",
       "miniatura_retro": "/images/gift_card/miniature/retro-05.webp"
     },
     {
@@ -63,7 +63,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/07_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/07_Filastrocca per l_Uganda.jpg",
       "miniatura": "/images/gift_card/miniature/porta-07.webp"
     },
     {
@@ -80,7 +80,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/08_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/08_Filastrocca per l_Uganda.jpg",
       "miniatura": "/images/gift_card/miniature/porta-08.webp"
     },
     {
@@ -97,7 +97,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/011_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/011_Filastrocca per l_Uganda.jpg",
       "miniatura": "/images/gift_card/miniature/porta-11.webp"
     },
     {
@@ -114,7 +114,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/013_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/013_Filastrocca per l_Uganda.jpg",
       "miniatura": "/images/gift_card/miniature/porta-13.webp"
     },
     {
@@ -131,8 +131,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/015a_Filastrocca per l_Uganda.jpg",
-      "disegno_retro": "/images/gift_card/015b_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/015a_Filastrocca per l_Uganda.jpg",
+      "disegno_retro": "/images/gift_card/web/015b_Filastrocca per l_Uganda.jpg",
       "miniatura": "/images/gift_card/miniature/porta-15.webp",
       "miniatura_retro": "/images/gift_card/miniature/retro-15.webp"
     },
@@ -142,7 +142,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/016_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/016_Filastrocca per l_Uganda.jpg",
       "miniatura": "/images/gift_card/miniature/porta-16.webp"
     },
     {
@@ -160,7 +160,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/011_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/011_Filastrocca per l_Uganda.jpg",
       "filastrocca": "Un giaciglio comodo spesso non hanno e una sua esistenza semplice conducono senza affanno.",
       "miniatura": "/images/gift_card/miniature/porta-18.webp"
     },
@@ -170,7 +170,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/019_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/019_Filastrocca per l_Uganda.jpg",
       "miniatura": "/images/gift_card/miniature/porta-19.webp"
     },
     {
@@ -187,8 +187,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/021a_Filastrocca per l_Uganda.jpg",
-      "disegno_retro": "/images/gift_card/021b_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/021a_Filastrocca per l_Uganda.jpg",
+      "disegno_retro": "/images/gift_card/web/021b_Filastrocca per l_Uganda.jpg",
       "miniatura": "/images/gift_card/miniature/porta-21.webp",
       "miniatura_retro": "/images/gift_card/miniature/retro-21.webp"
     },
@@ -206,7 +206,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/023_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/web/023_Filastrocca per l_Uganda.jpg",
       "miniatura": "/images/gift_card/miniature/porta-23.webp"
     },
     {

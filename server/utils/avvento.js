@@ -11,6 +11,8 @@ const path = require('path');
 
 const PUBLIC_DIR = path.join(__dirname, '../../public');
 const DATA_PATH = path.join(PUBLIC_DIR, 'data/avvento.json');
+// Cartella con i disegni in piena risoluzione (fuori dal repository), per le email
+const ORIGINALS_DIR = process.env.GIFT_ORIGINALS_DIR || '';
 
 // Design delle gift card già esistenti (immagini in public/images/gift_card)
 const LEGACY_DESIGNS = ['card1', 'card2', 'card3', 'card4', 'card5'];
@@ -50,6 +52,11 @@ function designImageUrl(design) {
 function designImageFile(design) {
     const url = designImageUrl(design);
     if (!url) return null;
+    // Per l'email: l'originale in piena risoluzione, se presente fuori dal sito
+    if (ORIGINALS_DIR) {
+        const original = path.join(ORIGINALS_DIR, path.basename(url));
+        if (fs.existsSync(original)) return original;
+    }
     const filePath = path.join(PUBLIC_DIR, url);
     return fs.existsSync(filePath) ? filePath : null;
 }
