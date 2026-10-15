@@ -44,8 +44,22 @@
 
             <div class="gift-banner" id="gift-banner" hidden>Grazie! Il pagamento è andato a buon fine. Riceverai la conferma per email.</div>
 
+            <div class="gift-layout">
+            <div class="gift-cards">
+                <figure class="gift-face">
+                    <img class="gift-preview" id="gift-preview" alt="Davanti della gift card: disegno scelto">
+                </figure>
+                <!-- Retro della gift card: il nome di chi riceve compare nel testo, come arriverà nell'email -->
+                <aside class="gift-back-preview" aria-label="Retro della gift card">
+                    <div class="card-back">
+                        <img class="back-logo" src="/images/gift_card/logo-effata.png" alt="Effatà Italia Charity Organisation ODV">
+                        <p class="back-poem">Caro/a <span id="gift-back-name">nome</span>, con questo regalo aiuti i bambini di Effatà a ricevere cibo, scuola e protezione.</p>
+                        <p class="back-thanks">Un Grazie e un augurio di Buon Natale dai bambini di Effatà Children's Home</p>
+                        <p class="back-site">www.effataitalia.it</p>
+                    </div>
+                </aside>
+            </div>
             <form id="gift-form" class="gift-form" novalidate>
-                <img class="gift-preview" id="gift-preview" alt="Disegno scelto">
 
                 <label for="gift-donor-name">Il tuo nome</label>
                 <input type="text" id="gift-donor-name" maxlength="100" required placeholder="es. Mario Rossi">
@@ -65,6 +79,8 @@
                 <p id="gift-error" class="gift-error" hidden></p>
                 <button type="submit" id="gift-submit" class="gift-submit">Regala questo disegno · 20 €</button>
             </form>
+
+            </div>
         </section>
 
         <section class="cta" aria-labelledby="cta-title">
@@ -79,6 +95,7 @@
             <div class="flip-card" id="flip-card">
                 <img id="modal-img" alt="">
                 <div class="flip-back" aria-live="polite">
+                    <img id="flip-img-back" class="flip-img-back" alt="" hidden>
                     <div class="card-back">
                         <img class="back-logo" src="/images/gift_card/logo-effata.png" alt="Effatà Italia Charity Organisation ODV">
                         <p class="back-poem" id="flip-text"></p>
