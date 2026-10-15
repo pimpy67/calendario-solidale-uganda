@@ -9,18 +9,17 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/1_Filastrocca per l_Uganda.jpg",
-      "child_name": "Winnie",
-      "filastrocca": "L'Uganda è un paese assai lontano che ha bisogno di una nostra generosa mano"
+      "disegno": "/images/gift_card/01_Filastrocca per l_Uganda.jpg",
+      "filastrocca": "L'Uganda è un paese assai lontano che ha bisogno di una nostra generosa mano",
+      "miniatura": "/images/gift_card/miniature/porta-01.webp"
     },
     {
       "day": 2,
       "title": "Porta 2",
       "image": null,
-      "text": "",
+      "text": "L'Uganda è un paese assai lontano che ha bisogno di una nostra generosa mano",
       "placeholder": true,
-      "disegno": null,
-      "child_name": "Justine"
+      "disegno": null
     },
     {
       "day": 3,
@@ -28,17 +27,16 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/2_Filastrocca per l_Uganda.jpg",
-      "child_name": "Mercy"
+      "disegno": "/images/gift_card/003_Filastrocca per l_Uganda.jpg",
+      "miniatura": "/images/gift_card/miniature/porta-03.webp"
     },
     {
       "day": 4,
       "title": "Porta 4",
       "image": null,
-      "text": "",
+      "text": "Poichè molti bambini che vorrebbero sentirsi lieti non possono farlo per mancanza di spazi sereni e quieti",
       "placeholder": true,
-      "disegno": null,
-      "child_name": "Daphne"
+      "disegno": null
     },
     {
       "day": 5,
@@ -46,17 +44,18 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/3_Filastrocca per l_Uganda.jpg",
-      "child_name": "Jane"
+      "disegno": "/images/gift_card/03_Filastrocca per l_Uganda.jpg",
+      "miniatura": "/images/gift_card/miniature/porta-05.webp",
+      "disegno_retro": "/images/gift_card/05_Filastrocca per l_Uganda.jpg",
+      "miniatura_retro": "/images/gift_card/miniature/retro-05.webp"
     },
     {
       "day": 6,
       "title": "Porta 6",
       "image": null,
-      "text": "",
+      "text": "non vivono come noi in mezzo a luci e comodità\nma in piccoli villaggi con casette di fango prive di elettricità",
       "placeholder": true,
-      "disegno": null,
-      "child_name": "Teresa"
+      "disegno": null
     },
     {
       "day": 7,
@@ -64,17 +63,16 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/4_Filastrocca per l_Uganda.jpg",
-      "child_name": null
+      "disegno": "/images/gift_card/07_Filastrocca per l_Uganda.jpg",
+      "miniatura": "/images/gift_card/miniature/porta-07.webp"
     },
     {
       "day": 8,
       "title": "Porta 8",
       "image": null,
-      "text": "",
+      "text": "Non hanno strade asfaltate o marciapiedi illuminati, camminano a piedi scalzi sopra arida terra e sassi acuminati",
       "placeholder": true,
-      "disegno": "/images/gift_card/5_Filastrocca per l_Uganda.jpg",
-      "child_name": "Mike"
+      "disegno": null
     },
     {
       "day": 9,
@@ -82,17 +80,16 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": null,
-      "child_name": "Scovia"
+      "disegno": "/images/gift_card/08_Filastrocca per l_Uganda.jpg",
+      "miniatura": "/images/gift_card/miniature/porta-08.webp"
     },
     {
       "day": 10,
       "title": "Porta 10",
       "image": null,
-      "text": "",
+      "text": "invece di giocare come ogni fanciullo dovrebbe fare, sono costretti fin da piccoli a mani nude a lavorare",
       "placeholder": true,
-      "disegno": "/images/gift_card/6_Filastrocca per l_Uganda.jpg",
-      "child_name": "Prossy"
+      "disegno": null
     },
     {
       "day": 11,
@@ -100,13 +97,14 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/7_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/011_Filastrocca per l_Uganda.jpg",
+      "miniatura": "/images/gift_card/miniature/porta-11.webp"
     },
     {
       "day": 12,
       "title": "Porta 12",
       "image": null,
-      "text": "",
+      "text": "Senza brontolare aiutano in casa pulendo e cucinando ed intanto il tempo gli scivola via mai più ritornando",
       "placeholder": true,
       "disegno": null
     },
@@ -116,13 +114,14 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/8_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/013_Filastrocca per l_Uganda.jpg",
+      "miniatura": "/images/gift_card/miniature/porta-13.webp"
     },
     {
       "day": 14,
       "title": "Porta 14",
       "image": null,
-      "text": "",
+      "text": "non hanno videogiochi, bambole, costruzioni o macchinette\nsolo la natura e l'immaginazione di trastullarsi gli permette",
       "placeholder": true,
       "disegno": null
     },
@@ -132,7 +131,10 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/9_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/015a_Filastrocca per l_Uganda.jpg",
+      "disegno_retro": "/images/gift_card/015b_Filastrocca per l_Uganda.jpg",
+      "miniatura": "/images/gift_card/miniature/porta-15.webp",
+      "miniatura_retro": "/images/gift_card/miniature/retro-15.webp"
     },
     {
       "day": 16,
@@ -140,15 +142,17 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": null
+      "disegno": "/images/gift_card/016_Filastrocca per l_Uganda.jpg",
+      "miniatura": "/images/gift_card/miniature/porta-16.webp"
     },
     {
       "day": 17,
       "title": "Porta 17",
       "image": null,
-      "text": "",
+      "text": "Disegnano con colori donati dalle bacche e dalla frutta e la creatività gioiosa gli sorride arricchendosi tutta",
       "placeholder": true,
-      "disegno": "/images/gift_card/10_Filastrocca per l_Uganda.jpg"
+      "disegno": null,
+      "filastrocca": "Un giaciglio comodo spesso non hanno e una sua esistenza semplice conducono senza affanno."
     },
     {
       "day": 18,
@@ -156,7 +160,9 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/11_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/011_Filastrocca per l_Uganda.jpg",
+      "filastrocca": "Un giaciglio comodo spesso non hanno e una sua esistenza semplice conducono senza affanno.",
+      "miniatura": "/images/gift_card/miniature/porta-18.webp"
     },
     {
       "day": 19,
@@ -164,13 +170,14 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/12a_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/019_Filastrocca per l_Uganda.jpg",
+      "miniatura": "/images/gift_card/miniature/porta-19.webp"
     },
     {
       "day": 20,
       "title": "Porta 20",
       "image": null,
-      "text": "",
+      "text": "Grazie a Dio ci sono anime gentili come i missionari, che portano speranza, amore e regali vari. Una di queste Silvia si chiama e concretamente sostiene chi ama",
       "placeholder": true,
       "disegno": "/images/gift_card/13_Filastrocca per l_Uganda.jpg"
     },
@@ -180,13 +187,16 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/14_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/021a_Filastrocca per l_Uganda.jpg",
+      "disegno_retro": "/images/gift_card/021b_Filastrocca per l_Uganda.jpg",
+      "miniatura": "/images/gift_card/miniature/porta-21.webp",
+      "miniatura_retro": "/images/gift_card/miniature/retro-21.webp"
     },
     {
       "day": 22,
       "title": "Porta 22",
       "image": null,
-      "text": "",
+      "text": "lo fa costruendo scuole, case, biblioteche o portandoli in ospedale, acquistando materassi, animali da cortile come il maiale",
       "placeholder": true,
       "disegno": null
     },
@@ -196,13 +206,14 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/15_Filastrocca per l_Uganda.jpg"
+      "disegno": "/images/gift_card/023_Filastrocca per l_Uganda.jpg",
+      "miniatura": "/images/gift_card/miniature/porta-23.webp"
     },
     {
       "day": 24,
       "title": "Porta 24",
       "image": null,
-      "text": "",
+      "text": "Anche noi possiamo dare un nostro piccolo contributo poichè è importante donare a chi poco dalla vita ha avuto",
       "placeholder": true,
       "disegno": null
     },

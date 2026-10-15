@@ -71,6 +71,28 @@
 
     function openModal(door) {
         const modal = document.getElementById('modal');
+        // Porta con il testo: finestra quasi a schermo intero con il testo
+        if (door.text) {
+            modal.classList.remove('cardview');
+            modal.classList.add('textview');
+            document.getElementById('flip-card').classList.remove('flipped');
+            document.getElementById('modal-img').hidden = true;
+            document.getElementById('modal-title').textContent = door.title;
+            document.getElementById('modal-text').textContent = door.text;
+            // Testo sul retro: il tasto passa dal davanti al retro e torna indietro
+            modal.dataset.face = 'front';
+            modal.dataset.front = door.text;
+            modal.dataset.back = door.filastrocca || '';
+            const toggle = document.getElementById('flip-toggle');
+            toggle.dataset.idle = 'Leggi il retro';
+            toggle.textContent = toggle.dataset.idle;
+            toggle.setAttribute('aria-pressed', 'false');
+            toggle.hidden = !door.filastrocca;
+            modal.hidden = false;
+            document.getElementById('modal-close').focus();
+            return;
+        }
+        modal.classList.remove('textview');
         // Porta con il disegno: la card a tutto schermo
         if (door.disegno) {
             const img = document.getElementById('modal-img');
@@ -82,10 +104,16 @@
             // Filastrocca sul retro della card, se la porta ne ha una
             const toggle = document.getElementById('flip-toggle');
             document.getElementById('flip-text').textContent = door.filastrocca || '';
+            // Retro con un disegno proprio: si mostra al posto della card con la filastrocca
+            const backImg = document.getElementById('flip-img-back');
+            backImg.hidden = !door.disegno_retro;
+            if (door.disegno_retro) backImg.src = door.disegno_retro;
+            document.querySelector('.card-back').style.display = door.disegno_retro ? 'none' : '';
             document.getElementById('flip-card').classList.remove('flipped');
-            toggle.textContent = 'Leggi la filastrocca';
+            toggle.dataset.idle = door.disegno_retro ? 'Vedi il retro' : 'Leggi la filastrocca';
+            toggle.textContent = toggle.dataset.idle;
             toggle.setAttribute('aria-pressed', 'false');
-            toggle.hidden = !door.filastrocca;
+            toggle.hidden = !(door.filastrocca || door.disegno_retro);
             modal.classList.add('cardview');
             modal.hidden = false;
             document.getElementById('modal-close').focus();
@@ -126,25 +154,53 @@
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'door';
+            // Porta con il testo: bianca, sempre visibile, con il testo sulla porta
+            const isText = Boolean(door.text);
+            if (isText) btn.classList.add('text-door');
             // Porta senza disegno: colore diverso dalle altre
-            if (!door.disegno) btn.classList.add('no-art');
+            else if (!door.disegno) btn.classList.add('no-art');
             btn.setAttribute('role', 'listitem');
             btn.setAttribute('aria-label', `Porta ${door.day}`);
+
+            // Porta con disegno: la miniatura riempie la tile, il numero resta sopra.
+            // Il disegno pieno resta quello del regalo, del carosello e dell'ingrandimento.
+            if (door.disegno && !isText) {
+                const thumb = document.createElement('img');
+                thumb.className = 'door-img';
+                thumb.src = door.miniatura || door.disegno;
+                thumb.alt = '';
+                thumb.loading = 'lazy';
+                btn.appendChild(thumb);
+            }
 
             const num = document.createElement('span');
             num.className = 'num';
             num.textContent = door.day;
             btn.appendChild(num);
+            // Lente di ingrandimento in basso a destra: si apre la finestra
+            const lens = document.createElement("span");
+            lens.className = "zoom-icon";
+            lens.setAttribute("aria-hidden", "true");
+            lens.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>';
+            btn.appendChild(lens);
 
-            // Nome del bambino sul davanti della porta, finché la porta è chiusa
-            if (door.child_name && !opened.has(door.day)) {
+            if (isText) {
+                const body = document.createElement('span');
+                body.className = 'door-text';
+                body.textContent = door.text;
+                btn.appendChild(body);
+            }
+
+            // Nome del bambino sul davanti della porta, finché la porta è chiusa (non sulle porte di testo)
+            if (door.child_name && !opened.has(door.day) && !isText) {
                 const name = document.createElement('span');
                 name.className = 'child-name';
                 name.textContent = door.child_name;
                 btn.appendChild(name);
             }
 
-            if (state === 'locked') {
+            // Le porte di testo restano sempre attive, non sono bloccate dalla data
+            if (state === 'locked' && !isText) {
                 btn.classList.add('locked');
                 btn.setAttribute('aria-disabled', 'true');
             }
@@ -332,8 +388,18 @@
             closeZoom();
         });
         document.getElementById('flip-toggle').addEventListener('click', (e) => {
+            const modal = document.getElementById('modal');
+            // Porta di testo: il retro è un altro testo, nella stessa finestra
+            if (modal.classList.contains('textview')) {
+                const toBack = modal.dataset.face !== 'back';
+                modal.dataset.face = toBack ? 'back' : 'front';
+                document.getElementById('modal-text').textContent = toBack ? modal.dataset.back : modal.dataset.front;
+                e.currentTarget.textContent = toBack ? 'Torna al davanti' : e.currentTarget.dataset.idle;
+                e.currentTarget.setAttribute('aria-pressed', String(toBack));
+                return;
+            }
             const flipped = document.getElementById('flip-card').classList.toggle('flipped');
-            e.currentTarget.textContent = flipped ? 'Torna al disegno' : 'Leggi la filastrocca';
+            e.currentTarget.textContent = flipped ? 'Torna al disegno' : e.currentTarget.dataset.idle;
             e.currentTarget.setAttribute('aria-pressed', String(flipped));
         });
         document.getElementById('modal').addEventListener('click', (e) => {
@@ -344,6 +410,10 @@
         });
 
         setupGiftForm();
+        // Il nome di chi riceve compare nel retro, mentre si scrive
+        document.getElementById('gift-recipient-name').addEventListener('input', (e) => {
+            document.getElementById('gift-back-name').textContent = e.target.value.trim() || 'nome';
+        });
 
         try {
             const response = await fetch('/data/avvento.json');

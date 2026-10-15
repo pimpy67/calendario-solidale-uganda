@@ -64,6 +64,16 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     grid-template-columns: repeat(5, 1fr);
     gap: 14px;
 }
+/* Calendario più largo del resto della pagina, centrato sullo schermo */
+@media (min-width: 640px) {
+    .wrap > section {
+        position: relative; left: 50%;
+        width: min(1240px, 96vw);
+        transform: translateX(-50%);
+    }
+    .doors { gap: 18px; }
+    .door-text { font-size: 0.98rem; line-height: 1.35; }
+}
 /* Telefono: una porta alla volta, a scorrimento con il dito */
 @media (max-width: 639px) {
     .doors {
@@ -127,6 +137,51 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 .door.locked { opacity: 0.55; cursor: default; }
 .door.locked:hover { transform: none; }
+/* Porta con il testo: bianca e fissa, con il testo sempre visibile sulla porta */
+.door.text-door,
+.door.text-door.open {
+    background: #fefef3;
+    color: #3b3b5c;
+    text-align: left;
+    overflow: hidden;
+    padding: 10px;
+    box-sizing: border-box;
+}
+.door.text-door.locked { opacity: 1; cursor: pointer; }
+.door.text-door.locked:hover { transform: translateY(-2px); }
+.door.text-door.today:not(.open) { animation: none; }
+.door.text-door .num { color: #b8860b; }
+/* Porta con disegno: il disegno riempie la tile, il numero resta leggibile sopra */
+.door .door-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+/* Lente di ingrandimento: in basso a destra su ogni finestra */
+.door .zoom-icon {
+    position: absolute; right: 8px; bottom: 8px; z-index: 2;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(0,0,0,0.5); color: #fff;
+    pointer-events: none;
+}
+.door:has(.door-img) .num {
+    position: relative;
+    z-index: 1;
+    background: rgba(0,0,0,0.55);
+    border-radius: 999px;
+    padding: 0 8px;
+}
+.door .door-text {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.68rem;
+    font-weight: 400;
+    line-height: 1.3;
+    color: #2b2b2b;
+    white-space: normal;
+}
 .door.open .num::after { content: ' ✨'; }
 .door .child-name {
     display: block;
@@ -224,6 +279,22 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 .modal.cardview #modal-img { width: 100%; height: 100%; object-fit: contain; border-radius: 0; margin: 0; }
 .modal.cardview .modal-box > h3, .modal.cardview .modal-box > p { display: none; }
+/* Porta di testo: finestra quasi a schermo intero, con il testo grande al centro */
+.modal.textview .modal-box {
+    max-width: none; width: 94vw; height: 92vh; max-height: 92vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 32px clamp(20px, 6vw, 80px);
+}
+.modal.textview .modal-box h3 { font-size: clamp(1.4rem, 3vw, 2.2rem); }
+.modal.textview #modal-text {
+    white-space: pre-line; color: var(--white);
+    font-size: clamp(1.3rem, 3.2vw, 2.4rem); line-height: 1.6;
+}
+/* Il tasto del retro sta sotto il testo, non sopra il titolo */
+.modal.textview .flip-card { display: none; }
+.modal.textview .modal-box > h3 { order: 1; }
+.modal.textview #modal-text { order: 2; }
+.modal.textview .flip-toggle { order: 3; align-self: center; margin: 32px 0 0; }
 /* Porta girabile: davanti il disegno, dietro la filastrocca */
 .flip-card { position: relative; transform-style: preserve-3d; transition: transform 0.6s ease; }
 .flip-card.flipped { transform: rotateY(180deg); }
@@ -235,6 +306,9 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     backface-visibility: hidden; -webkit-backface-visibility: hidden;
     transform: rotateY(180deg);
 }
+/* Retro con disegno proprio: occupa tutta la finestra come il davanti */
+.modal.cardview .flip-img-back { width: 100%; height: 100%; object-fit: contain; border-radius: 0; margin: 0; }
+.flip-img-back[hidden] { display: none; }
 /* Retro: stesso formato e impostazione della card (1748×1240), senza disegno */
 .card-back {
     position: relative; container-type: inline-size;
@@ -263,14 +337,13 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     font-weight: 600; cursor: pointer;
 }
 .flip-toggle[hidden] { display: none; }
-/* Sul disegno il tasto sta al centro, con fondo semitrasparente; sul retro scende in basso per non coprire il verso */
+/* Il tasto sta al centro, con fondo semitrasparente, sia sul davanti sia sul retro */
 .modal.cardview .flip-toggle {
     position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
     margin: 0; z-index: 1; padding: 12px 22px;
     background: rgba(0,0,0,0.45); color: #fff; backdrop-filter: blur(3px);
     box-shadow: 0 4px 14px rgba(0,0,0,0.3);
 }
-.flip-card.flipped ~ .flip-toggle { top: auto; bottom: 18px; transform: translateX(-50%); }
 .modal-close {
     position: absolute; top: 10px; right: 10px; z-index: 1;
     width: 36px; height: 36px; border-radius: 50%;
@@ -286,7 +359,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 /* Scelta del disegno: carosello */
 .choose { margin-top: 40px; text-align: center; }
 .choose h2 { margin-top: 0; }
-.choose-lead { color: var(--muted); max-width: 560px; margin: 0 auto 16px; line-height: 1.5; }
+.choose-lead { color: var(--muted); max-width: 1000px; margin: 0 auto 16px; line-height: 1.5; }
 .carousel { position: relative; display: flex; align-items: center; gap: 8px; }
 .carousel-track {
     flex: 1;
@@ -313,10 +386,22 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 .slide img {
     width: 100%;
-    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
     border-radius: 8px;
     display: block;
 }
+/* Carosello grande come le finestre del calendario, sul desktop */
+@media (min-width: 640px) {
+    .slide { flex: 0 0 240px; }
+    /* Carosello a tutta larghezza dello schermo */
+    .choose .carousel { width: 100vw; margin-left: calc(50% - 50vw); }
+    /* Senza scatti: lo scorrimento con le frecce è continuo */
+    .carousel-track { scroll-snap-type: none; }
+    .slide { scroll-snap-align: none; }
+}
+.carousel-btn { transition: transform 0.25s ease, background 0.25s ease; }
+.carousel-btn:hover { transform: scale(1.12); background: rgba(255,255,255,0.14); }
 .slide-label { display: block; margin-top: 6px; font-size: 0.85rem; color: var(--muted); }
 .slide.selected { border-color: var(--gold); }
 .slide.selected .slide-label { color: var(--gold); font-weight: 600; }
@@ -339,6 +424,17 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 /* Modulo di acquisto */
 .gift-form-section { margin-top: 40px; }
 .gift-form-section h2 { margin-top: 0; }
+/* Modulo a sinistra, retro della card a destra (sul telefono uno sotto l'altro) */
+.gift-layout { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
+.gift-back-preview { display: flex; justify-content: center; }
+.gift-back-preview .card-back { border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
+/* Il testo del retro va a capo come una frase, anche con il nome dentro */
+.gift-back-preview .card-back .back-poem { display: block; text-align: center; white-space: normal; top: 30%; }
+@media (min-width: 900px) {
+    .gift-layout { grid-template-columns: 1fr 1fr; }
+    .gift-layout .gift-form { max-width: none; margin: 0; }
+    .gift-back-preview { position: sticky; top: 24px; }
+}
 .gift-lead { text-align: center; color: var(--muted); margin: 0 0 16px; }
 .gift-banner {
     background: var(--green);
@@ -405,7 +501,65 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .zoom-box { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 100%; }
 .zoom-box img { display: block; max-width: 96vw; max-height: 84vh; width: auto; height: auto; object-fit: contain; border-radius: 8px; }
 .zoom-label { margin: 0; color: var(--white); font-weight: 600; }
+/* Tasto al centro, con lo stesso fondo delle finestre del calendario, un po' più grande */
 .zoom-choose {
-    padding: 10px 20px; border-radius: 999px; border: none; cursor: pointer;
-    background: var(--gold); color: #1f1f38; font-weight: 600;
+    align-self: center;
+    padding: 16px 40px; border-radius: 16px; border: none; cursor: pointer;
+    background: linear-gradient(160deg, #3b3b5c, #252540); color: var(--white);
+    font-family: var(--font); font-size: 1.25rem; font-weight: 700;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.zoom-choose:hover { transform: translateY(-2px); }
+
+/* Gift: fronte e retro affiancati, stessa misura; sotto il modulo, a tutta larghezza */
+.gift-layout { display: block; }
+.gift-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
+.gift-face { margin: 0; }
+.gift-face .gift-preview {
+    width: 100%; max-width: none; height: auto; aspect-ratio: 1748 / 1240;
+    object-fit: cover; margin: 0; border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+.gift-back-preview { position: static; display: block; }
+.gift-back-preview .card-back { width: 100%; max-width: none; }
+.gift-layout .gift-form { max-width: none; margin: 0; padding: 28px; }
+.gift-form label { font-size: 1.05rem; margin-top: 14px; }
+.gift-form input { padding: 16px 18px; font-size: 1.1rem; min-height: 56px; }
+.gift-form textarea { padding: 16px 18px; font-size: 1.1rem; min-height: 130px; }
+@media (max-width: 639px) {
+    .gift-cards { grid-template-columns: 1fr; }
+}
+
+/* Carosello: barra di scorrimento visibile in oro, frecce grandi e rientrate dal bordo */
+.carousel-track {
+    scrollbar-width: auto;
+    scrollbar-color: var(--gold) rgba(255,255,255,0.12);
+    padding-bottom: 18px;
+}
+.carousel-track::-webkit-scrollbar { height: 12px; }
+.carousel-track::-webkit-scrollbar-track { background: rgba(255,255,255,0.12); border-radius: 6px; }
+.carousel-track::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 6px; }
+.carousel-track::-webkit-scrollbar-thumb:hover { background: #ffe39a; }
+.carousel-btn {
+    flex: 0 0 56px; width: 56px; height: 56px;
+    display: grid; place-items: center;
+    background: var(--gold);
+    color: #1f1f38;
+    font-size: 36px;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+.carousel-btn:hover { background: #ffe39a; }
+@media (min-width: 640px) {
+    .carousel { padding: 0 3vw; }
+}
+
+/* Responsive: sul tablet 4 colonne, con finestre più grandi e testo leggibile */
+@media (min-width: 640px) and (max-width: 1023px) {
+    .doors { grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .door-text { font-size: 0.8rem; line-height: 1.3; }
+}
+/* Sul telefono il testo nelle finestre è più grande, senza uscire dal riquadro */
+@media (max-width: 639px) {
+    .door-text { font-size: 0.85rem; line-height: 1.35; }
 }

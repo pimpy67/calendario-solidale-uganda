@@ -884,6 +884,13 @@ async function sendNataleGiftCard(card) {
 <p><strong>${donorName.replace(/</g, '&lt;')}</strong> ti ha regalato una gift card di Natale del Calendario Solidale Effatà.</p>
 ${messageHtml}
 ${imageTag}
+<!-- Retro della card: stesso testo e stile del retro del calendario, con il nome di chi riceve -->
+<div style="background: #fefef3; border-radius: 12px; padding: 24px 26px; margin-top: 16px; font-family: Georgia, 'Times New Roman', serif; color: #111;">
+<img src="${process.env.BASE_URL || 'https://calendario.effataitalia.it'}/images/gift_card/logo-effata.png" alt="Effatà Italia Charity Organisation ODV" style="float: right; width: 120px; height: auto; margin: 0 0 8px 16px;">
+<p style="font-size: 18px; line-height: 1.5; margin: 0 0 18px 0;">Caro/a ${card.recipient_name.replace(/</g, '&lt;')}, con questo regalo aiuti i bambini di Effatà a ricevere cibo, scuola e protezione.</p>
+<p style="font-size: 16px; line-height: 1.4; margin: 0 0 8px 0; clear: both;">Un Grazie e un augurio di Buon Natale dai bambini di Effatà Children's Home</p>
+<p style="font-size: 14px; margin: 0;"><a href="https://www.effataitalia.it" style="color: #c2185b; text-decoration: none;">www.effataitalia.it</a></p>
+</div>
 <p style="text-align: center; margin: 24px 0;"><a href="${giftCardUrl}" style="background: #c0392b; color: #fff; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">🎁 Apri il tuo regalo</a></p>
 <p>Questa gift card sostiene i bambini della Casa Famiglia Effatà in Uganda: cibo, istruzione e cure.</p>
 <p style="color: #777; font-size: 12px;">Grazie di cuore da parte dei nostri bambini.</p>
