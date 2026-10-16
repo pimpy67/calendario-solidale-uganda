@@ -122,7 +122,7 @@
             const backImg = document.getElementById('flip-img-back');
             backImg.hidden = !door.disegno_retro;
             if (door.disegno_retro) backImg.src = door.disegno_retro;
-            document.querySelector('.card-back').style.display = door.disegno_retro ? 'none' : '';
+            document.querySelector('#flip-card .card-back').style.display = door.disegno_retro ? 'none' : '';
             document.getElementById('flip-card').classList.remove('flipped');
             toggle.dataset.idle = door.disegno_retro ? 'Vedi il retro' : 'Leggi la filastrocca';
             toggle.textContent = toggle.dataset.idle;
@@ -460,7 +460,7 @@
         });
 
         try {
-            const response = await fetch('/data/avvento.json?v=2026-10-16p');
+            const response = await fetch('/data/avvento.json?v=2026-10-16s');
             const data = await response.json();
             doors = data.doors;
             renderDoors(today);
