@@ -1,0 +1,41 @@
+/* Pagina del mercatino: usa i colori e lo sfondo di natale-avvento.css */
+.merc { max-width: 720px; }
+.merc-head { text-align: center; margin: 8px 0 20px; }
+.merc-head h1 { font-size: 1.6rem; margin: 0 0 8px; color: var(--gold); }
+.merc-lead { color: var(--muted); margin: 0; }
+.merc-card {
+    background: rgba(20,20,43,0.8);
+    border: 1px solid rgba(245,210,122,0.25);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+.merc-card h2 { text-align: left; margin: 0 0 12px; font-size: 1.2rem; color: var(--gold); }
+.merc-form { display: flex; flex-direction: column; gap: 6px; }
+.merc-form label { margin-top: 10px; font-size: 1rem; }
+.merc-form input, .merc-form textarea {
+    font: inherit; font-size: 1.05rem; padding: 12px 14px; min-height: 48px;
+    border-radius: 10px; border: 1px solid rgba(245,210,122,0.4);
+    background: #fff; color: #1a1a1a;
+}
+.merc-btn {
+    margin-top: 14px; padding: 12px 18px; border: none; border-radius: 999px;
+    background: var(--gold); color: #1f1f38; font-weight: 700; font-size: 1rem; cursor: pointer;
+}
+.merc-btn-big { padding: 16px 18px; font-size: 1.1rem; width: 100%; }
+.merc-btn-small { font-size: 0.95rem; padding: 8px 14px; }
+.merc-btn:disabled { opacity: 0.6; cursor: default; }
+.merc-error { color: #ffb4b4; margin: 6px 0 0; }
+.merc-ok { color: #b9f5c4; font-weight: 600; margin: 6px 0 0; }
+.merc-note { color: var(--muted); font-size: 0.9rem; margin: 10px 0 0; text-align: center; }
+.merc-designs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.merc-design {
+    padding: 0; border: 3px solid transparent; border-radius: 10px; overflow: hidden;
+    background: #000; cursor: pointer; aspect-ratio: 1 / 1;
+}
+.merc-design img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.merc-design[aria-checked="true"] { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
+.merc-selected { margin: 10px 0 0; color: var(--muted); }
+.merc-total { font-size: 1.3rem; margin: 0 0 8px; font-weight: 700; }
+.merc-list { list-style: none; padding: 0; margin: 0 0 12px; max-height: 320px; overflow-y: auto; }
+.merc-list li { padding: 8px 0; border-bottom: 1px solid rgba(245,210,122,0.15); color: var(--muted); }
