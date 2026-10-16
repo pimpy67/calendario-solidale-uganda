@@ -129,7 +129,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .door.open {
     background: linear-gradient(160deg, #e74c3c, var(--red));
 }
-.door.today:not(.open) {
+.door.today {
     animation: pulse 1.8s ease-in-out infinite;
     box-shadow: 0 0 0 3px var(--gold), 0 4px 14px rgba(245,210,122,0.4);
 }
@@ -213,20 +213,37 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .door .shutter.right { display: none; }
 .door.shutters-open .shutter.left { transform: rotateY(-100deg); }
 .door.open .num::after { content: ' ✨'; }
-/* Etichetta "OGGI" sulla porta del giorno: resta anche quando la porta è aperta o le animazioni sono spente */
+/* Porta di oggi: stellina dorata che brilla nell'angolo e luce che scorre sopra la porta.
+   Restano anche quando la porta è aperta; si fermano con "riduci movimento". */
 .door.today::before {
-    content: 'OGGI';
-    position: absolute; top: 6px; left: 50%;
-    transform: translateX(-50%);
+    content: '✦';
+    position: absolute; top: 4px; right: 6px;
     z-index: 3;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: var(--gold);
-    color: #1f1f38;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    color: var(--gold);
+    font-size: 0.9rem;
+    line-height: 1;
+    text-shadow: 0 0 6px rgba(245,210,122,0.9);
     pointer-events: none;
+    animation: twinkle 2s ease-in-out infinite;
+}
+.door.today::after {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(115deg, transparent 40%, rgba(255,240,180,0.45) 50%, transparent 60%);
+    background-size: 250% 100%;
+    background-repeat: no-repeat;
+    z-index: 2;
+    pointer-events: none;
+    animation: sweep 3.5s ease-in-out infinite;
+}
+@keyframes twinkle {
+    0%, 100% { opacity: 0.45; transform: scale(0.8) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1.15) rotate(20deg); }
+}
+@keyframes sweep {
+    from { background-position: 150% 0; }
+    to { background-position: -50% 0; }
 }
 .door .child-name {
     display: block;
@@ -329,11 +346,17 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     max-width: none; width: 94vw; height: 92vh; max-height: 92vh;
     display: flex; flex-direction: column; justify-content: center;
     padding: 32px clamp(20px, 6vw, 80px);
+    background: #fffdf2;
+    color: #1a1a1a;
 }
-.modal.textview .modal-box h3 { font-size: clamp(1.4rem, 3vw, 2.2rem); }
+/* Solo la filastrocca: niente titolo "Porta N" */
+.modal.textview .modal-box > h3 { display: none; }
+/* Testo a mano, come scritto da un bambino: corsivo, nero su crema */
 .modal.textview #modal-text {
-    white-space: pre-line; color: var(--white);
-    font-size: clamp(1.3rem, 3.2vw, 2.4rem); line-height: 1.6;
+    white-space: pre-line; color: #1a1a1a;
+    font-family: 'Patrick Hand', cursive;
+    font-style: italic;
+    font-size: clamp(1.6rem, 3.6vw, 2.7rem); line-height: 1.5;
 }
 /* Il tasto del retro sta sotto il testo, non sopra il titolo */
 .modal.textview .flip-card { display: none; }
@@ -397,7 +420,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .flake, .hero h1, .door.today:not(.open), .door.just-opened, .modal-box { animation: none; }
+    .flake, .hero h1, .door.today, .door.today::before, .door.today::after, .door.just-opened, .modal-box { animation: none; }
     .door, .door .shutter, .flip-card { transition: none; }
 }
 
