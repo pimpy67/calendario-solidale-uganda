@@ -2,8 +2,8 @@
     --bg-top: #14142b;
     --bg-bottom: #2a1520;
     --gold: #f5d27a;
-    --red: #c0392b;
-    --green: #2e7d32;
+    --red: #ed1c23;
+    --green: #3b8c6e;
     --white: #ffffff;
     --muted: rgba(255,255,255,0.7);
     --font: 'Poppins', system-ui, sans-serif;
@@ -698,3 +698,16 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     font-size: 3rem; font-weight: 700; color: rgba(245,210,122,0.7);
 }
 .slide.placeholder .slide-label { margin-bottom: 4px; }
+
+/* Stile Effatà: logo in testata, piè di pagina con i contatti del sito principale */
+.site-logo-link { display: inline-block; margin-bottom: 10px; }
+.site-logo { display: block; width: 72px; height: 72px; border-radius: 50%; background: #fff; padding: 4px; }
+.site-footer {
+    margin-top: 80px; padding: 32px 16px 40px;
+    text-align: center; color: var(--muted); font-size: 0.9rem; line-height: 1.6;
+    border-top: 1px solid rgba(245,210,122,0.25);
+}
+.site-footer-logo { display: block; margin: 0 auto 8px; border-radius: 50%; background: #fff; padding: 3px; }
+.site-footer-name { margin: 0 0 4px; color: var(--gold); font-weight: 600; }
+.site-footer a { color: var(--white); }
+.site-footer-links { margin-top: 10px; }
