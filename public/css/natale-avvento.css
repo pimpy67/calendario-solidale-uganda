@@ -708,8 +708,8 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .slide.placeholder .slide-label { margin-bottom: 4px; }
 
 /* Stile Effatà: logo in testata, piè di pagina con i contatti del sito principale */
-.site-logo-link { display: inline-block; margin-bottom: 10px; }
-.site-logo { display: block; width: 84px; height: 84px; border-radius: 12px; background: #fff; padding: 6px; object-fit: contain; }
+.site-logo-link { position: absolute; top: 14px; right: 14px; z-index: 2; }
+.site-logo { display: block; width: 76px; height: 76px; border-radius: 12px; background: #fff; padding: 6px; object-fit: contain; }
 .site-footer {
     margin-top: 80px; padding: 32px 16px 40px;
     text-align: center; color: var(--muted); font-size: 0.9rem; line-height: 1.6;
@@ -723,4 +723,9 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 /* Telefono: il titolo del calendario sta più vicino alla frase introduttiva */
 @media (max-width: 639px) {
     #advent-title { margin-top: 4px; }
+}
+
+/* Telefono: il logo in alto a destra ha una fascia sua, sopra la riga "Casa Famiglia" */
+@media (max-width: 639px) {
+    .hero { padding-top: 104px; }
 }
