@@ -48,6 +48,10 @@ body {
     to { text-shadow: 0 0 24px rgba(245,210,122,0.6); }
 }
 .lead { max-width: 520px; margin: 0 auto; color: var(--muted); line-height: 1.5; }
+/* PC: la frase introduttiva sta tutta su una riga */
+@media (min-width: 900px) {
+    .lead { max-width: none; white-space: nowrap; }
+}
 .today-line { color: var(--gold); font-size: 0.9rem; margin-top: 14px; min-height: 1.2em; }
 
 .wrap {
@@ -74,40 +78,34 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     .doors { gap: 18px; }
     .door-text { font-size: 0.98rem; line-height: 1.35; }
 }
-/* Telefono: una porta alla volta, a scorrimento con il dito */
+/* Telefono: griglia 5×5 come sul PC, con solo numero e immagine.
+   Testo, nome del bambino e lente restano nella finestra che si apre al tocco. */
 @media (max-width: 639px) {
-    .doors {
-        display: flex;
-        position: relative;
-        align-items: center;
-        gap: 12px;
-        padding: 6px 10% 14px;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        scrollbar-width: none;
+    .doors { gap: 8px; }
+    .doors .door { font-size: 1rem; }
+    .doors .door .door-text,
+    .doors .door .child-name,
+    .doors .door .zoom-icon { display: none; }
+    /* Porte di testo: finestra bianca, numero centrato nella pillola scura che lo fa risaltare */
+    .doors .door.text-door,
+    .doors .door.text-door.open {
+        background: #ffffff;
+        color: var(--white);
+        text-align: center;
     }
-    .doors::-webkit-scrollbar { display: none; }
-    .doors .door {
-        flex: 0 0 80%;
-        scroll-snap-align: center;
-        font-size: 3rem;
+    .doors .door.text-door .num {
+        position: relative; z-index: 1;
+        color: var(--white);
+        background: rgba(0,0,0,0.55);
+        border-radius: 999px;
+        padding: 0 8px;
+    }
+    .doors .door.text-door.today:not(.open) {
+        animation: pulse 1.8s ease-in-out infinite;
+        box-shadow: 0 0 0 3px var(--gold), 0 4px 14px rgba(245,210,122,0.4);
     }
 }
 .today-btn { display: none; }
-@media (max-width: 639px) {
-    .today-btn {
-        display: block;
-        margin: 6px auto 0;
-        padding: 8px 18px;
-        border: 1px solid var(--gold);
-        border-radius: 999px;
-        background: transparent;
-        color: var(--gold);
-        font-family: var(--font);
-        font-size: 0.9rem;
-        cursor: pointer;
-    }
-}
 .door {
     position: relative;
     aspect-ratio: 1 / 1;
@@ -182,6 +180,33 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     color: #2b2b2b;
     white-space: normal;
 }
+/* Imposte di legno: coprono i due lati della finestra, il disegno resta leggibile al centro.
+   Il tocco le apre (classe .shutters-open) e le imposte scorrono fuori dalla finestra. */
+.door .shutters {
+    position: absolute; inset: 0; z-index: 1;
+    pointer-events: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+/* Asta dorata in alto, da cui pendono le tendine */
+.door .shutters::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(#e0b84a, #b8860b);
+    box-shadow: 0 2px 3px rgba(0,0,0,0.35);
+}
+.door .shutter {
+    position: absolute; top: 0; bottom: 0;
+    width: 24%;
+    background: repeating-linear-gradient(90deg, #a51d2d 0 7px, #7a1220 7px 10px);
+    box-shadow: inset -3px 0 4px rgba(0,0,0,0.25);
+    transition: transform 0.6s ease;
+}
+.door .shutter.left { left: 0; }
+.door .shutter.right { right: 0; }
+.door.shutters-open .shutter.left { transform: translateX(-100%); }
+.door.shutters-open .shutter.right { transform: translateX(100%); }
 .door.open .num::after { content: ' ✨'; }
 .door .child-name {
     display: block;
@@ -353,7 +378,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 
 @media (prefers-reduced-motion: reduce) {
     .flake, .hero h1, .door.today:not(.open), .door.just-opened, .modal-box { animation: none; }
-    .door, .flip-card { transition: none; }
+    .door, .door .shutter, .flip-card { transition: none; }
 }
 
 /* Scelta del disegno: carosello */
