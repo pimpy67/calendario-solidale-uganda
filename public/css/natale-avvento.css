@@ -505,8 +505,8 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 
 /* Modulo di acquisto */
-.gift-form-section { margin-top: 96px; }
-.gift-form-section h2 { margin-top: 0; }
+.gift-form-section { margin-top: 40px; }
+.gift-form-section h2 { margin: 0 0 40px; }
 /* Modulo a sinistra, retro della card a destra (sul telefono uno sotto l'altro) */
 .gift-layout { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
 .gift-back-preview { display: flex; justify-content: center; }
