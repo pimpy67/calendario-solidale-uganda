@@ -55,6 +55,8 @@
             img.src = door.miniatura || door.disegno;
             img.alt = `Finestra ${door.day}`;
             img.loading = 'lazy';
+            // Sfondo sfocato dello stesso disegno: il riquadro si riempie senza tagliare il disegno
+            btn.style.setProperty('--thumb', `url("${img.src}")`);
             btn.appendChild(img);
             btn.addEventListener('click', () => selectDesign(design, door.day, btn));
             box.appendChild(btn);
