@@ -83,9 +83,9 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 @media (max-width: 639px) {
     .doors { gap: 8px; }
     .doors .door { font-size: 1rem; }
-    .door-text,
-    .door .child-name,
-    .door .zoom-icon { display: none; }
+    .doors .door .door-text,
+    .doors .door .child-name,
+    .doors .door .zoom-icon { display: none; }
 }
 .today-btn { display: none; }
 .door {
