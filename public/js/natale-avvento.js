@@ -288,11 +288,11 @@
             slide.setAttribute('aria-label', `Scegli il disegno della porta ${door.day}`);
 
             const img = document.createElement('img');
-            img.src = door.disegno;
+            // Stessa immagine che si vede in griglia (la miniatura, se c'è)
+            img.src = door.miniatura || door.disegno;
             img.alt = `Disegno della porta ${door.day}`;
             img.loading = 'lazy';
-            // Se il file grande manca, si usa la miniatura della griglia
-            img.onerror = () => { if (door.miniatura) img.src = door.miniatura; };
+            img.onerror = () => { if (img.src !== door.disegno) img.src = door.disegno; };
             slide.appendChild(img);
 
             const label = document.createElement('span');
@@ -331,7 +331,7 @@
     let zoomDay = null;
     function openZoom(door) {
         zoomDay = door.day;
-        document.getElementById('zoom-img').src = door.disegno;
+        document.getElementById('zoom-img').src = door.miniatura || door.disegno;
         document.getElementById('zoom-img').alt = `Disegno della porta ${door.day}`;
         document.getElementById('zoom-label').textContent = `Porta ${door.day}`;
         document.getElementById('zoom').hidden = false;
@@ -347,7 +347,7 @@
         const door = doors.find(d => d.day === day);
         document.getElementById('selected-label').textContent = `Porta ${day}`;
         const preview = document.getElementById('gift-preview');
-        preview.src = door ? door.disegno : '';
+        preview.src = door ? (door.miniatura || door.disegno) : '';
         document.querySelectorAll('.slide').forEach(s => {
             s.classList.toggle('selected', Number(s.dataset.day) === day);
         });
