@@ -28,6 +28,18 @@
     }
     .merc-pick .merc-design img { object-fit: contain; height: 100%; width: 100%; }
     .merc-selected { margin: 0; font-size: 0.95rem; color: var(--muted); font-weight: 400; }
+    /* Disegni del retro: una barra a scorrimento con le frecce, sotto la griglia */
+    .merc-strip-title { margin: 8px 0 4px; font-size: 0.9rem; color: var(--muted); }
+    .merc-strip-wrap { display: flex; align-items: center; gap: 8px; flex: none; }
+    .merc-strip {
+        flex: 1; min-width: 0; display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth;
+        padding: 4px 2px 8px;
+    }
+    .merc-pick .merc-strip .merc-design { flex: 0 0 auto; height: 96px; aspect-ratio: 3 / 2; }
+    .merc-arrow {
+        flex: none; width: 40px; height: 40px; border: none; border-radius: 50%;
+        background: var(--gold); color: #1f1f38; font-size: 1.5rem; font-weight: 700; cursor: pointer;
+    }
     .merc-selected strong { color: var(--white); }
 
     /* Sotto: modulo dati a sinistra, riepilogo a destra */
