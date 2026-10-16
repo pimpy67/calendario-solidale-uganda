@@ -54,6 +54,9 @@
     .merc-list li { padding: 4px 0; }
     .merc-summary .merc-btn-small { margin-top: auto; align-self: flex-start; }
 }
+/* Ingrandimento del disegno: quasi a tutto schermo, con il tasto di scelta al centro */
+.zoom-box img { max-width: 96vw; max-height: 88vh; }
+.zoom-choose { font-size: 1.05rem; padding: 12px 22px; }
 .merc-head { text-align: center; margin: 8px 0 20px; }
 .merc-head h1 { font-size: 1.6rem; margin: 0 0 8px; color: var(--gold); }
 .merc-lead { color: var(--muted); margin: 0; }
