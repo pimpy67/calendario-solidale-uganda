@@ -58,10 +58,40 @@
             // Sfondo sfocato dello stesso disegno: il riquadro si riempie senza tagliare il disegno
             btn.style.setProperty('--thumb', `url("${img.src}")`);
             btn.appendChild(img);
-            btn.addEventListener('click', () => selectDesign(design, door.day, btn));
+            btn.addEventListener('click', () => openZoom(design, door, btn));
             box.appendChild(btn);
         });
     }
+
+    // Ingrandimento del disegno: si sceglie con il tasto al centro, come nel calendario
+    let zoomDesign = null;
+    let zoomDay = null;
+    let zoomBtn = null;
+    function openZoom(design, door, btn) {
+        zoomDesign = design;
+        zoomDay = door.day;
+        zoomBtn = btn;
+        const img = document.getElementById('zoom-img');
+        img.src = door.disegno;
+        img.alt = `Disegno della finestra ${door.day}`;
+        document.getElementById('zoom-label').textContent = `Finestra ${door.day}`;
+        document.getElementById('zoom').hidden = false;
+        document.getElementById('zoom-choose').focus();
+    }
+    function closeZoom() {
+        document.getElementById('zoom').hidden = true;
+    }
+    document.getElementById('zoom-choose').addEventListener('click', () => {
+        selectDesign(zoomDesign, zoomDay, zoomBtn);
+        closeZoom();
+    });
+    document.getElementById('zoom-close').addEventListener('click', closeZoom);
+    document.getElementById('zoom').addEventListener('click', (e) => {
+        if (e.target.id === 'zoom') closeZoom();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeZoom();
+    });
 
     function selectDesign(design, day, btn) {
         selectedDesign = design;
