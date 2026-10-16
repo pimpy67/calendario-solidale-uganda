@@ -127,7 +127,8 @@
             toggle.dataset.idle = door.disegno_retro ? 'Vedi il retro' : 'Leggi la filastrocca';
             toggle.textContent = toggle.dataset.idle;
             toggle.setAttribute('aria-pressed', 'false');
-            toggle.hidden = !(door.filastrocca || door.disegno_retro);
+            // Porta 1: niente pulsante "Leggi la filastrocca" (si vede solo il disegno)
+            toggle.hidden = !(door.filastrocca || door.disegno_retro) || String(door.day) === '1';
             modal.classList.add('cardview');
             modal.hidden = false;
             document.getElementById('modal-close').focus();
