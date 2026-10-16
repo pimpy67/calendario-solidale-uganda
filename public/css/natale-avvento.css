@@ -186,8 +186,26 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     position: absolute; inset: 0; z-index: 1;
     pointer-events: none;
     border-radius: 12px;
-    box-shadow: inset 0 0 0 4px #4a2c12;
     overflow: hidden;
+}
+/* Vetri: riflesso in alto a sinistra e due montanti in croce al centro */
+.door .shutters::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+        linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%),
+        linear-gradient(#f4ecd8, #f4ecd8) center / 4px 100% no-repeat,
+        linear-gradient(#f4ecd8, #f4ecd8) center / 100% 4px no-repeat;
+}
+/* Davanzale sotto la finestra */
+.door:has(.door-img)::after {
+    content: '';
+    position: absolute; left: -4px; right: -4px; bottom: -9px;
+    height: 9px;
+    background: #f4ecd8;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 3px 4px rgba(0,0,0,0.35);
+    pointer-events: none;
 }
 .door .shutter {
     position: absolute; top: 0; bottom: 0;
