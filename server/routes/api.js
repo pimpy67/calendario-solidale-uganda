@@ -429,6 +429,78 @@ router.get('/natale/count', (req, res) => {
 });
 
 /**
+ * Mercatino: vendita in contanti e riepilogo, protetti dal PIN unico dei volontari.
+ * Il PIN sta in MERCATINO_PIN (solo sul server). Se non è impostato, il mercatino è chiuso.
+ */
+const MERCATINO_PIN = process.env.MERCATINO_PIN || '';
+function mercatinoAuthorized(req) {
+    const pin = req.headers['x-mercatino-pin'];
+    return MERCATINO_PIN !== '' && typeof pin === 'string' && pin === MERCATINO_PIN;
+}
+
+/**
+ * POST /api/mercatino/cash
+ * Registra una gift card di Natale pagata in contanti. Consegna: all'orario di consegna, come le altre.
+ */
+router.post('/mercatino/cash', (req, res) => {
+    if (!mercatinoAuthorized(req)) {
+        return res.status(401).json({ error: true, message: 'PIN non valido' });
+    }
+    if (process.env.NATALE_VENDITA_ATTIVA !== 'true') {
+        return res.status(403).json({ error: true, message: 'Le gift card di Natale non sono ancora in vendita' });
+    }
+    const { donor_name, donor_email, recipient_name, recipient_email, message, card_design } = req.body || {};
+    if (!donor_name || !recipient_name || !recipient_email || !EMAIL_RE.test(recipient_email)) {
+        return res.status(400).json({ error: true, message: 'Compila nome di chi regala, nome di chi riceve ed email valida del destinatario' });
+    }
+    if (donor_email && !EMAIL_RE.test(donor_email)) {
+        return res.status(400).json({ error: true, message: 'Email di chi regala non valida' });
+    }
+    if (!isNataleDesign(card_design)) {
+        return res.status(400).json({ error: true, message: 'Disegno non valido' });
+    }
+    try {
+        const card = db.createCashNataleGiftCard({
+            payment_id: uuidv4(),
+            amount: NATALE_PRICE_CENTS / 100,
+            donor_name: donor_name.toString().substring(0, 100),
+            donor_email: donor_email || null,
+            recipient_name: recipient_name.toString().substring(0, 100),
+            recipient_email,
+            message: (message || '').toString().substring(0, 490) || null,
+            card_design,
+            delivery_at: NATALE_DELIVERY_AT
+        });
+        console.log(`[Mercatino] Gift card di Natale ${card.id} registrata in contanti (consegna ${card.delivery_at})`);
+        res.status(201).json({ success: true, id: card.id, delivery_at: card.delivery_at });
+    } catch (error) {
+        console.error('Errore registrazione contanti mercatino:', error);
+        res.status(500).json({ error: true, message: 'Errore nel salvataggio, riprova' });
+    }
+});
+
+/**
+ * GET /api/mercatino/riepilogo
+ * Gift card vendute oggi in contanti, con il totale. Niente email nel riepilogo.
+ */
+router.get('/mercatino/riepilogo', (req, res) => {
+    if (!mercatinoAuthorized(req)) {
+        return res.status(401).json({ error: true, message: 'PIN non valido' });
+    }
+    const cards = db.getCashNataleGiftCardsToday().map(c => ({
+        id: c.id,
+        donor_name: c.donor_name,
+        recipient_name: c.recipient_name,
+        card_design: c.card_design,
+        amount: c.amount,
+        delivery_at: c.delivery_at,
+        paid_at: c.paid_at
+    }));
+    const total = cards.reduce((sum, c) => sum + Number(c.amount), 0);
+    res.json({ count: cards.length, total, cards });
+});
+
+/**
  * GET /api/natale/card/:paymentId
  * Dati per la pagina di apertura. Non espone le email e non rivela nulla prima dell'orario di consegna.
  */

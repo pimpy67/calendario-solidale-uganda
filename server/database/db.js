@@ -104,6 +104,12 @@ function init() {
         )
     `);
 
+    // Migrazione: metodo di pagamento delle gift card di Natale ('stripe' o 'cash', dal mercatino)
+    const nataleColumns = db.prepare('PRAGMA table_info(natale_gift_cards)').all();
+    if (!nataleColumns.some(c => c.name === 'payment_method')) {
+        db.exec("ALTER TABLE natale_gift_cards ADD COLUMN payment_method VARCHAR(20) DEFAULT 'stripe'");
+    }
+
     // Crea indici per performance
     db.exec(`
         CREATE INDEX IF NOT EXISTS idx_donations_date ON donations(year, month, day);
@@ -609,7 +615,44 @@ function getNataleGiftCardByPaymentId(paymentId) {
     return db.prepare("SELECT * FROM natale_gift_cards WHERE payment_id = ? AND payment_status = 'completed'").get(paymentId);
 }
 
+/**
+ * Gift card di Natale venduta al mercatino, già pagata in contanti.
+ * La consegna segue la stessa regola delle altre: parte all'orario di consegna dal job natale.
+ */
+function createCashNataleGiftCard(data) {
+    const info = db.prepare(`
+        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, recipient_name, recipient_email, message, card_design, delivery_at, payment_status, payment_method, paid_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', 'cash', CURRENT_TIMESTAMP)
+    `).run(
+        data.payment_id, data.amount, data.donor_name, data.donor_email,
+        data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at
+    );
+    return db.prepare('SELECT * FROM natale_gift_cards WHERE id = ?').get(info.lastInsertRowid);
+}
+
+/**
+ * Gift card di Natale vendute in contanti al mercatino, di oggi (fuso di Roma), dalla più recente
+ */
+function getCashNataleGiftCardsToday() {
+    const today = getRomeDate();
+    const rows = db.prepare(`
+        SELECT * FROM natale_gift_cards
+        WHERE payment_method = 'cash' AND payment_status = 'completed'
+        ORDER BY id DESC
+        LIMIT 500
+    `).all();
+    const dayKey = (d) => `${d.year}-${d.month}-${d.day}`;
+    return rows.filter(row => {
+        const paid = new Date(row.paid_at.replace(' ', 'T') + 'Z');
+        const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Rome', year: 'numeric', month: 'numeric', day: 'numeric' }).formatToParts(paid);
+        const get = (type) => Number(parts.find(p => p.type === type).value);
+        return dayKey({ year: get('year'), month: get('month'), day: get('day') }) === dayKey(today);
+    });
+}
+
 module.exports = {
+    createCashNataleGiftCard,
+    getCashNataleGiftCardsToday,
     getDueNataleGiftCards,
     claimNataleGiftCard,
     releaseNataleGiftCard,
