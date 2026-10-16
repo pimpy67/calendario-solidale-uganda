@@ -505,6 +505,20 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .gift-back-preview .card-back { border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
 /* Il testo del retro va a capo come una frase, anche con il nome dentro */
 .gift-back-preview .card-back .back-poem { display: block; text-align: center; white-space: normal; top: 30%; }
+/* Retro del modulo: logo al centro in alto, frase un po' più in basso e a destra,
+   ringraziamento su un vetro chiaro (stile glass) e un pixel più grande */
+.gift-back-preview .card-back .back-logo { left: 50%; right: auto; transform: translateX(-50%); }
+.gift-back-preview .card-back .back-poem { top: 34%; left: 12%; right: 4%; }
+.gift-back-preview .card-back .back-thanks {
+    background: rgba(255,255,255,0.3);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 10px;
+    padding: 4px 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    font-size: calc(2.3cqw + 1px);
+}
 @media (min-width: 900px) {
     .gift-layout { grid-template-columns: 1fr 1fr; }
     .gift-layout .gift-form { max-width: none; margin: 0; }

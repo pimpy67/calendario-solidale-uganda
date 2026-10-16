@@ -460,7 +460,7 @@
         });
 
         try {
-            const response = await fetch('/data/avvento.json?v=2026-10-16r');
+            const response = await fetch('/data/avvento.json?v=2026-10-16s');
             const data = await response.json();
             doors = data.doors;
             renderDoors(today);
