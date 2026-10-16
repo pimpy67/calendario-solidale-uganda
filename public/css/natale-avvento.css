@@ -101,7 +101,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
         padding: 0 8px;
     }
     .doors .door.text-door.today:not(.open) {
-        animation: pulse 1.8s ease-in-out infinite;
+        animation: pulse 3.6s ease-in-out infinite;
         box-shadow: 0 0 0 3px var(--gold), 0 4px 14px rgba(245,210,122,0.4);
     }
 }
@@ -130,7 +130,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     background: linear-gradient(160deg, #e74c3c, var(--red));
 }
 .door.today {
-    animation: pulse 1.8s ease-in-out infinite;
+    animation: pulse 3.6s ease-in-out infinite;
     box-shadow: 0 0 0 3px var(--gold), 0 4px 14px rgba(245,210,122,0.4);
 }
 .door.locked { opacity: 0.55; cursor: default; }
@@ -351,12 +351,18 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 /* Solo la filastrocca: niente titolo "Porta N" */
 .modal.textview .modal-box > h3 { display: none; }
-/* Testo a mano, come scritto da un bambino: corsivo, nero su crema */
+/* Testo a mano, come scritto da un bambino: corsivo dorato su crema, con riflesso come una bacchetta magica.
+   La dimensione la sceglie fitModalText() in base allo spazio della finestra. */
 .modal.textview #modal-text {
-    white-space: pre-line; color: #1a1a1a;
+    white-space: pre-line;
+    color: transparent;
+    background: linear-gradient(120deg, #7a5a0e 0%, #b8860b 35%, #f5d27a 50%, #b8860b 65%, #7a5a0e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 0 2px rgba(120,80,10,0.35));
     font-family: 'Patrick Hand', cursive;
     font-style: italic;
-    font-size: clamp(1.6rem, 3.6vw, 2.7rem); line-height: 1.5;
+    line-height: 1.35;
 }
 /* Il tasto del retro sta sotto il testo, non sopra il titolo */
 .modal.textview .flip-card { display: none; }
