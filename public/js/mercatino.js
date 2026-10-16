@@ -36,45 +36,63 @@
         el.hidden = !message;
     }
 
-    // Disegni scelti dal calendario dell'Avvento (una porta = un disegno)
+    // Disegni del calendario dell'Avvento: davanti (griglia) e retro (carosello sotto).
+    // Ogni disegno ha un codice: "porta7" davanti, "porta15r" retro della stessa finestra.
+    function makeTile(design, label, thumbSrc, fullSrc, container) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'merc-design';
+        btn.setAttribute('role', 'radio');
+        btn.setAttribute('aria-checked', 'false');
+        btn.setAttribute('aria-label', label);
+        const img = document.createElement('img');
+        img.src = thumbSrc;
+        img.alt = label;
+        img.loading = 'lazy';
+        // Sfondo sfocato dello stesso disegno: il riquadro si riempie senza tagliare il disegno
+        btn.style.setProperty('--thumb', `url("${thumbSrc}")`);
+        btn.appendChild(img);
+        btn.addEventListener('click', () => openZoom(design, label, fullSrc, btn));
+        container.appendChild(btn);
+    }
+
     async function loadDesigns() {
         const response = await fetch('/data/avvento.json?v=2026-10-16ae');
         const data = await response.json();
-        const doors = (data.doors || []).filter(d => d.disegno);
-        const box = document.getElementById('merc-designs');
-        box.innerHTML = '';
-        doors.forEach(door => {
-            const design = `porta${door.day}`;
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'merc-design';
-            btn.setAttribute('role', 'radio');
-            btn.setAttribute('aria-checked', 'false');
-            btn.setAttribute('aria-label', `Finestra ${door.day}`);
-            const img = document.createElement('img');
-            img.src = door.miniatura || door.disegno;
-            img.alt = `Finestra ${door.day}`;
-            img.loading = 'lazy';
-            // Sfondo sfocato dello stesso disegno: il riquadro si riempie senza tagliare il disegno
-            btn.style.setProperty('--thumb', `url("${img.src}")`);
-            btn.appendChild(img);
-            btn.addEventListener('click', () => openZoom(design, door, btn));
-            box.appendChild(btn);
+        const doors = data.doors || [];
+        const grid = document.getElementById('merc-designs');
+        const strip = document.getElementById('merc-strip');
+        grid.innerHTML = '';
+        strip.innerHTML = '';
+        doors.filter(d => d.disegno).forEach(door => {
+            makeTile(`porta${door.day}`, `Finestra ${door.day}`, door.miniatura || door.disegno, door.disegno, grid);
+        });
+        doors.filter(d => d.disegno_retro).forEach(door => {
+            makeTile(`porta${door.day}r`, `Finestra ${door.day}, retro`, door.disegno_retro, door.disegno_retro, strip);
         });
     }
 
+    // Frecce del carosello dei retro: scorrono di due disegni alla volta
+    function scrollStrip(direction) {
+        const strip = document.getElementById('merc-strip');
+        const step = (strip.querySelector('.merc-design')?.offsetWidth || 150) * 2 + 16;
+        strip.scrollBy({ left: direction * step, behavior: 'smooth' });
+    }
+    document.getElementById('strip-prev').addEventListener('click', () => scrollStrip(-1));
+    document.getElementById('strip-next').addEventListener('click', () => scrollStrip(1));
+
     // Ingrandimento del disegno: si sceglie con il tasto al centro, come nel calendario
     let zoomDesign = null;
-    let zoomDay = null;
+    let zoomLabel = null;
     let zoomBtn = null;
-    function openZoom(design, door, btn) {
+    function openZoom(design, label, fullSrc, btn) {
         zoomDesign = design;
-        zoomDay = door.day;
+        zoomLabel = label;
         zoomBtn = btn;
         const img = document.getElementById('zoom-img');
-        img.src = door.disegno;
-        img.alt = `Disegno della finestra ${door.day}`;
-        document.getElementById('zoom-label').textContent = `Finestra ${door.day}`;
+        img.src = fullSrc;
+        img.alt = label;
+        document.getElementById('zoom-label').textContent = label;
         document.getElementById('zoom').hidden = false;
         document.getElementById('zoom-choose').focus();
     }
@@ -82,7 +100,7 @@
         document.getElementById('zoom').hidden = true;
     }
     document.getElementById('zoom-choose').addEventListener('click', () => {
-        selectDesign(zoomDesign, zoomDay, zoomBtn);
+        selectDesign(zoomDesign, zoomLabel, zoomBtn);
         closeZoom();
     });
     document.getElementById('zoom-close').addEventListener('click', closeZoom);
@@ -93,11 +111,11 @@
         if (e.key === 'Escape') closeZoom();
     });
 
-    function selectDesign(design, day, btn) {
+    function selectDesign(design, label, btn) {
         selectedDesign = design;
         document.querySelectorAll('.merc-design').forEach(b => b.setAttribute('aria-checked', 'false'));
         btn.setAttribute('aria-checked', 'true');
-        document.getElementById('merc-selected').textContent = `Finestra ${day}`;
+        document.getElementById('merc-selected').textContent = label;
     }
 
     function formatTime(iso) {
@@ -114,7 +132,7 @@
             list.innerHTML = '';
             data.cards.forEach(card => {
                 const li = document.createElement('li');
-                li.textContent = `#${card.id} · da ${card.donor_name} a ${card.recipient_name} · finestra ${String(card.card_design).replace('porta', '')} · consegna ${formatTime(card.delivery_at)}`;
+                li.textContent = `#${card.id} · da ${card.donor_name} a ${card.recipient_name} · finestra ${String(card.card_design).replace('porta', '').replace('r', ' retro')} · consegna ${formatTime(card.delivery_at)}`;
                 list.appendChild(li);
             });
         } catch (error) {

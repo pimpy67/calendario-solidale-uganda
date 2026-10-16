@@ -25,22 +25,27 @@ function loadDoors() {
     }
 }
 
+// "porta7" = disegno davanti della finestra 7; "porta15r" = disegno del retro della finestra 15
+const DESIGN_RE = /^porta(\d{1,2})(r?)$/;
+
 function isNataleDesign(design) {
     if (LEGACY_DESIGNS.includes(design)) return true;
-    const match = /^porta(\d{1,2})$/.exec(design || '');
+    const match = DESIGN_RE.exec(design || '');
     if (!match) return false;
-    const day = Number(match[1]);
-    return loadDoors().some(d => d.day === day);
+    const door = loadDoors().find(d => d.day === Number(match[1]));
+    if (!door) return false;
+    return Boolean(match[2] === 'r' ? door.disegno_retro : door.disegno);
 }
 
 /**
  * URL pubblico dell'immagine del design, es. "/images/gift_card/3.webp"
  */
 function designImageUrl(design) {
-    const match = /^porta(\d{1,2})$/.exec(design || '');
+    const match = DESIGN_RE.exec(design || '');
     if (match) {
         const door = loadDoors().find(d => d.day === Number(match[1]));
-        return door && door.disegno ? door.disegno : null;
+        if (!door) return null;
+        return (match[2] === 'r' ? door.disegno_retro : door.disegno) || null;
     }
     const legacy = /^card(\d)$/.exec(design || '');
     return legacy ? `/images/gift_card/${legacy[1]}.webp` : null;

@@ -7,7 +7,7 @@
     <title>Mercatino · gift card di Natale</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
     <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-10-16ab">
-    <link rel="stylesheet" href="/css/mercatino.css?v=2026-10-16ad">
+    <link rel="stylesheet" href="/css/mercatino.css?v=2026-10-16af">
 </head>
 <body>
     <main class="wrap merc">
@@ -29,7 +29,13 @@
         <div id="merc-app" class="merc-app" hidden>
             <section class="merc-card merc-pick" aria-labelledby="design-title">
                 <h2 id="design-title">1. Scegli il disegno <span class="merc-selected">· scelto: <strong id="merc-selected">nessuno</strong></span></h2>
-                <div class="merc-designs" id="merc-designs" role="radiogroup" aria-label="Disegni"></div>
+                <div class="merc-designs" id="merc-designs" role="radiogroup" aria-label="Disegni davanti"></div>
+                <p class="merc-strip-title">Disegni sul retro: scorri con le frecce</p>
+                <div class="merc-strip-wrap">
+                    <button type="button" class="merc-arrow" id="strip-prev" aria-label="Disegni precedenti">‹</button>
+                    <div class="merc-strip" id="merc-strip" role="radiogroup" aria-label="Disegni sul retro"></div>
+                    <button type="button" class="merc-arrow" id="strip-next" aria-label="Disegni successivi">›</button>
+                </div>
             </section>
 
             <div class="merc-side">
@@ -60,7 +66,7 @@
                         <p id="sale-error" class="merc-error" hidden></p>
                         <p id="sale-ok" class="merc-ok" hidden></p>
                         <button type="submit" class="merc-btn merc-btn-big" id="sale-submit">Registra vendita in contanti · 20 €</button>
-                        <p class="merc-note">Consegna per email il 25 dicembre alle 08:00.</p>
+                        <p class="merc-note">Consegna per email il 25 dicembre alle 00:00.</p>
                     </div>
                 </form>
             </section>
@@ -84,6 +90,6 @@
             <p class="zoom-label" id="zoom-label"></p>
         </div>
     </div>
-    <script src="/js/mercatino.js?v=2026-10-16ae"></script>
+    <script src="/js/mercatino.js?v=2026-10-16af"></script>
 </body>
 </html>
