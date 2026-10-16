@@ -1,7 +1,7 @@
 {
   "year": 2026,
   "month": 12,
-  "vendita_attiva": false,
+  "vendita_attiva": true,
   "doors": [
     {
       "day": 1,
