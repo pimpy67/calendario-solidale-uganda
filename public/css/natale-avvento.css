@@ -387,7 +387,8 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .card-back {
     position: relative; container-type: inline-size;
     flex: none; width: 100%; max-width: calc(100dvh * 1.41); aspect-ratio: 1748 / 1240;
-    background: #fefef3; color: #111; overflow: hidden;
+    background: #fefef3 url('/images/gift_card/retro-sfondo.svg') center / 100% 100% no-repeat;
+    color: #111; overflow: hidden;
     font-family: Georgia, 'Times New Roman', serif;
 }
 .card-back .back-logo { position: absolute; top: 6%; right: 6%; width: 21%; height: auto; }
