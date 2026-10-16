@@ -115,6 +115,9 @@
             img.hidden = false;
             // Sfondo sfocato dello stesso disegno: riempie lo schermo del telefono senza tagliarlo
             modal.style.setProperty('--bg-img', `url("${door.disegno}")`);
+            // Il retro con un disegno proprio ha il suo sfondo, quando la card si gira
+            modal.dataset.backImg = door.disegno_retro || '';
+            modal.dataset.frontImg = door.disegno;
             document.getElementById('modal-title').textContent = '';
             document.getElementById('modal-text').textContent = '';
             // Filastrocca sul retro della card, se la porta ne ha una
@@ -445,6 +448,8 @@
                 return;
             }
             const flipped = document.getElementById('flip-card').classList.toggle('flipped');
+            const bg = flipped ? modal.dataset.backImg : modal.dataset.frontImg;
+            if (bg) modal.style.setProperty('--bg-img', `url("${bg}")`);
             e.currentTarget.textContent = flipped ? 'Torna al disegno' : e.currentTarget.dataset.idle;
             e.currentTarget.setAttribute('aria-pressed', String(flipped));
         });
