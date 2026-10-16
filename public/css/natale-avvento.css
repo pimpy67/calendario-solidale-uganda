@@ -140,7 +140,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .door.text-door.open {
     background: #fefef3;
     color: #3b3b5c;
-    text-align: left;
+    text-align: center;
     overflow: hidden;
     padding: 10px;
     box-sizing: border-box;
@@ -148,7 +148,14 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .door.text-door.locked { opacity: 1; cursor: pointer; }
 .door.text-door.locked:hover { transform: translateY(-2px); }
 .door.text-door.today:not(.open) { animation: none; }
-.door.text-door .num { color: #b8860b; }
+/* Numero delle porte di testo: stesso aspetto di quelle con disegno (pillola scura, centrato) */
+.door.text-door .num {
+    position: relative; z-index: 1;
+    color: var(--white);
+    background: rgba(0,0,0,0.55);
+    border-radius: 999px;
+    padding: 0 8px;
+}
 /* Porta con disegno: il disegno riempie la tile, il numero resta leggibile sopra */
 .door .door-img {
     position: absolute; inset: 0;
