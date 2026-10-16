@@ -219,7 +219,8 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": null
+      "disegno": "/images/gift_card/web/025_albero-natale.png",
+      "disegno_retro": "/images/gift_card/web/025b_presepe.jpeg"
     }
   ]
 }
