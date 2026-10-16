@@ -69,6 +69,19 @@
         }
     }
 
+    // Filastrocca a schermo: la dimensione cresce finché il testo riempie la finestra (lasciando spazio al tasto del retro)
+    function fitModalText() {
+        const box = document.querySelector('#modal .modal-box');
+        const text = document.getElementById('modal-text');
+        const limit = box.clientHeight * 0.72;
+        let size = 160;
+        text.style.fontSize = size + 'px';
+        while (size > 14 && text.scrollHeight > limit) {
+            size -= 2;
+            text.style.fontSize = size + 'px';
+        }
+    }
+
     function openModal(door) {
         const modal = document.getElementById('modal');
         // Porta con il testo: finestra quasi a schermo intero con il testo
@@ -89,6 +102,7 @@
             toggle.setAttribute('aria-pressed', 'false');
             toggle.hidden = !door.filastrocca;
             modal.hidden = false;
+            fitModalText();
             document.getElementById('modal-close').focus();
             return;
         }
@@ -423,7 +437,7 @@
         });
 
         try {
-            const response = await fetch('/data/avvento.json');
+            const response = await fetch('/data/avvento.json?v=2026-10-16h');
             const data = await response.json();
             doors = data.doors;
             renderDoors(today);
