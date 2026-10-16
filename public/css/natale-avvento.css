@@ -575,15 +575,19 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .zoom-box { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 100%; }
 .zoom-box img { display: block; max-width: 96vw; max-height: 84vh; width: auto; height: auto; object-fit: contain; border-radius: 8px; }
 .zoom-label { margin: 0; color: var(--white); font-weight: 600; }
-/* Tasto al centro, con lo stesso fondo delle finestre del calendario, un po' più grande */
+/* Contenitore del disegno: il tasto si posiziona sopra il centro dell'immagine */
+.zoom-frame { position: relative; display: inline-block; max-width: 96vw; }
+/* Tasto al centro del disegno, con lo stesso fondo delle finestre del calendario, un po' più grande */
 .zoom-choose {
-    align-self: center;
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
     padding: 16px 40px; border-radius: 16px; border: none; cursor: pointer;
     background: linear-gradient(160deg, #3b3b5c, #252540); color: var(--white);
     font-family: var(--font); font-size: 1.25rem; font-weight: 700;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    white-space: nowrap;
 }
-.zoom-choose:hover { transform: translateY(-2px); }
+.zoom-choose:hover { transform: translate(-50%, calc(-50% - 2px)); }
 
 /* Gift: fronte e retro affiancati, stessa misura; sotto il modulo, a tutta larghezza */
 .gift-layout { display: block; }
