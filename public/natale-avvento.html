@@ -6,7 +6,7 @@
     <meta name="description" content="Il calendario dell'Avvento di Effatà: ogni giorno dal 1 al 25 dicembre una porta con un disegno dei bambini della Casa Famiglia in Uganda. Scegli un disegno per regalare un Natale solidale.">
     <title>Natale a Effatà · Calendario dell'Avvento</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
-    <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-10-16l">
+    <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-10-16p">
 </head>
 <body>
     <div class="snow" id="snow" aria-hidden="true"></div>
@@ -33,7 +33,7 @@
                 <li><strong>Scegli</strong> dal carosello il disegno che vuoi regalare per questo Natale</li>
                 <li><strong>Clicca</strong> sul disegno e premi «Scegli questo disegno»</li>
                 <li><strong>Compila</strong> il modulo con i tuoi dati e quelli di chi riceve il regalo</li>
-                <li><strong>Regala</strong>: la gift card arriva per email il 25 dicembre alle 9:00</li>
+                <li><strong>Regala</strong>: la gift card arriva per email il 25 dicembre alle 00:00</li>
             </ol>
 
             <div class="carousel" id="carousel">
@@ -46,7 +46,7 @@
 
         <section aria-labelledby="gift-title" class="gift-form-section" id="gift-section">
             <h2 id="gift-title">Regala questo disegno · 20 €</h2>
-            <p class="gift-lead">La gift card arriva per email al destinatario il 25 dicembre alle 9:00.</p>
+            <p class="gift-lead">La gift card arriva per email al destinatario il 25 dicembre alle 00:00.</p>
 
             <div class="gift-banner" id="gift-banner" hidden>Grazie! Il pagamento è andato a buon fine. Riceverai la conferma per email.</div>
 
@@ -119,12 +119,14 @@
     <div class="zoom" id="zoom" hidden>
         <div class="zoom-box" role="dialog" aria-modal="true" aria-labelledby="zoom-label">
             <button type="button" class="modal-close" id="zoom-close" aria-label="Chiudi">×</button>
-            <img id="zoom-img" alt="">
+            <div class="zoom-frame">
+                <img id="zoom-img" alt="">
+                <button type="button" class="zoom-choose" id="zoom-choose">Scegli questo disegno</button>
+            </div>
             <p class="zoom-label" id="zoom-label"></p>
-            <button type="button" class="zoom-choose" id="zoom-choose">Scegli questo disegno</button>
         </div>
     </div>
 
-    <script src="/js/natale-avvento.js?v=2026-10-16l"></script>
+    <script src="/js/natale-avvento.js?v=2026-10-16p"></script>
 </body>
 </html>
