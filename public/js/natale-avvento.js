@@ -111,7 +111,7 @@
         if (door.disegno) {
             const img = document.getElementById('modal-img');
             img.src = door.disegno;
-            img.alt = `Disegno della porta ${door.day}`;
+            img.alt = `Disegno della finestra ${door.day}`;
             img.hidden = false;
             document.getElementById('modal-title').textContent = '';
             document.getElementById('modal-text').textContent = '';
@@ -136,7 +136,7 @@
         }
         // Porta senza contenuto ancora pronto: nessuna finestra vuota
         if (!door.text && !door.image && !door.filastrocca) {
-            document.getElementById('today-line').textContent = `La porta ${door.day} arriverà presto.`;
+            document.getElementById('today-line').textContent = `La finestra ${door.day} arriverà presto.`;
             return;
         }
         modal.classList.remove('cardview');
@@ -147,7 +147,7 @@
         const img = document.getElementById('modal-img');
         if (door.image) {
             img.src = door.image;
-            img.alt = `Disegno della porta ${door.day}`;
+            img.alt = `Disegno della finestra ${door.day}`;
             img.hidden = false;
         } else {
             img.hidden = true;
@@ -175,7 +175,7 @@
             // Porta senza disegno: colore diverso dalle altre
             else if (!door.disegno) btn.classList.add('no-art');
             btn.setAttribute('role', 'listitem');
-            btn.setAttribute('aria-label', `Porta ${door.day}`);
+            btn.setAttribute('aria-label', `Finestra ${door.day}`);
 
             // Porta con disegno: la miniatura riempie la tile, il numero resta sopra.
             // Il disegno pieno resta quello del regalo, del carosello e dell'ingrandimento.
@@ -268,7 +268,7 @@
         const line = document.getElementById('today-line');
         if (today.year === YEAR && today.month === MONTH) {
             line.textContent = today.day <= 25
-                ? `Oggi è il giorno ${today.day}: la porta ${today.day} è aperta.`
+                ? `Oggi è il giorno ${today.day}: la finestra ${today.day} è aperta.`
                 : 'Buon Natale!';
         } else if (today.year === YEAR && today.month < MONTH) {
             line.textContent = 'Le porte si aprono dal 1 dicembre.';
@@ -286,19 +286,19 @@
             slide.type = 'button';
             slide.className = 'slide';
             slide.dataset.day = door.day;
-            slide.setAttribute('aria-label', `Scegli il disegno della porta ${door.day}`);
+            slide.setAttribute('aria-label', `Scegli il disegno della finestra ${door.day}`);
 
             const img = document.createElement('img');
             // Stessa immagine che si vede in griglia (la miniatura, se c'è)
             img.src = door.miniatura || door.disegno;
-            img.alt = `Disegno della porta ${door.day}`;
+            img.alt = `Disegno della finestra ${door.day}`;
             img.loading = 'lazy';
             img.onerror = () => { if (img.src !== door.disegno) img.src = door.disegno; };
             slide.appendChild(img);
 
             const label = document.createElement('span');
             label.className = 'slide-label';
-            label.textContent = `Porta ${door.day}`;
+            label.textContent = `Finestra ${door.day}`;
             slide.appendChild(label);
 
             slide.addEventListener('click', () => openZoom(door));
@@ -312,7 +312,7 @@
             slide.setAttribute('aria-disabled', 'true');
             slide.innerHTML = '<span class="placeholder-num"></span><span class="slide-label"></span>';
             slide.querySelector('.placeholder-num').textContent = door.day;
-            slide.querySelector('.slide-label').textContent = `Porta ${door.day} · in arrivo`;
+            slide.querySelector('.slide-label').textContent = `Finestra ${door.day} · in arrivo`;
             track.appendChild(slide);
         });
 
@@ -333,8 +333,8 @@
     function openZoom(door) {
         zoomDay = door.day;
         document.getElementById('zoom-img').src = door.miniatura || door.disegno;
-        document.getElementById('zoom-img').alt = `Disegno della porta ${door.day}`;
-        document.getElementById('zoom-label').textContent = `Porta ${door.day}`;
+        document.getElementById('zoom-img').alt = `Disegno della finestra ${door.day}`;
+        document.getElementById('zoom-label').textContent = `Finestra ${door.day}`;
         document.getElementById('zoom').hidden = false;
         document.getElementById('zoom-choose').focus();
     }
@@ -346,7 +346,7 @@
     function selectDay(day) {
         selectedDay = day;
         const door = doors.find(d => d.day === day);
-        document.getElementById('selected-label').textContent = `Porta ${day}`;
+        document.getElementById('selected-label').textContent = `Finestra ${day}`;
         const preview = document.getElementById('gift-preview');
         preview.src = door ? (door.miniatura || door.disegno) : '';
         document.querySelectorAll('.slide').forEach(s => {
@@ -460,7 +460,7 @@
         });
 
         try {
-            const response = await fetch('/data/avvento.json?v=2026-10-16t');
+            const response = await fetch('/data/avvento.json?v=2026-10-16x');
             const data = await response.json();
             doors = data.doors;
             renderDoors(today);
