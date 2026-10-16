@@ -329,11 +329,17 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     max-width: none; width: 94vw; height: 92vh; max-height: 92vh;
     display: flex; flex-direction: column; justify-content: center;
     padding: 32px clamp(20px, 6vw, 80px);
+    background: #fffdf2;
+    color: #1a1a1a;
 }
-.modal.textview .modal-box h3 { font-size: clamp(1.4rem, 3vw, 2.2rem); }
+/* Solo la filastrocca: niente titolo "Porta N" */
+.modal.textview .modal-box > h3 { display: none; }
+/* Testo a mano, come scritto da un bambino: corsivo, nero su crema */
 .modal.textview #modal-text {
-    white-space: pre-line; color: var(--white);
-    font-size: clamp(1.3rem, 3.2vw, 2.4rem); line-height: 1.6;
+    white-space: pre-line; color: #1a1a1a;
+    font-family: 'Patrick Hand', cursive;
+    font-style: italic;
+    font-size: clamp(1.6rem, 3.6vw, 2.7rem); line-height: 1.5;
 }
 /* Il tasto del retro sta sotto il testo, non sopra il titolo */
 .modal.textview .flip-card { display: none; }
