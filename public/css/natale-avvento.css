@@ -86,6 +86,24 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     .doors .door .door-text,
     .doors .door .child-name,
     .doors .door .zoom-icon { display: none; }
+    /* Porte di testo: stesso aspetto delle porte con disegno, numero centrato nella pillola scura */
+    .doors .door.text-door,
+    .doors .door.text-door.open {
+        background: linear-gradient(160deg, #3b3b5c, #252540);
+        color: var(--white);
+        text-align: center;
+    }
+    .doors .door.text-door .num {
+        position: relative; z-index: 1;
+        color: var(--white);
+        background: rgba(0,0,0,0.55);
+        border-radius: 999px;
+        padding: 0 8px;
+    }
+    .doors .door.text-door.today:not(.open) {
+        animation: pulse 1.8s ease-in-out infinite;
+        box-shadow: 0 0 0 3px var(--gold), 0 4px 14px rgba(245,210,122,0.4);
+    }
 }
 .today-btn { display: none; }
 .door {
