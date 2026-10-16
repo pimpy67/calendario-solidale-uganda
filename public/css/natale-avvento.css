@@ -18,13 +18,12 @@ body {
     overflow-x: hidden;
 }
 html { background-color: var(--bg-top); }
-/* Sfondo: foto Silvia con un velo scuro blu-viola, fisso dietro la neve e i contenuti */
+/* Sfondo: foto Silvia, fissa dietro la neve e i contenuti. Senza velo scuro, foto un 5% più chiara */
 body::before {
     content: '';
     position: fixed; inset: 0; z-index: -1;
-    background:
-        linear-gradient(180deg, rgba(20,20,43,0.78) 0%, rgba(42,21,32,0.9) 100%),
-        url('/images/Silvia.jpg') center / cover no-repeat;
+    background: url('/images/Silvia.jpg') center / cover no-repeat;
+    filter: brightness(1.05);
 }
 
 /* Neve */
@@ -86,10 +85,10 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     .doors { gap: 18px; }
     .door-text { font-size: 0.98rem; line-height: 1.35; }
 }
-/* Telefono: griglia 5×5 come sul PC, con solo numero e immagine.
+/* Telefono: griglia 2 colonne, con solo numero e immagine.
    Testo, nome del bambino e lente restano nella finestra che si apre al tocco. */
 @media (max-width: 639px) {
-    .doors { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .doors { grid-template-columns: repeat(2, 1fr); gap: 8px; }
     .doors .door { font-size: 1rem; }
     .doors .door .door-text,
     .doors .door .child-name,
@@ -355,9 +354,10 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     .modal.cardview::before {
         content: ''; position: absolute; inset: -20px;
         background: var(--bg-img) center / cover no-repeat;
-        filter: blur(24px) brightness(0.45);
+        filter: blur(8px) brightness(0.6);
     }
     .modal.cardview .modal-box { background: transparent; z-index: 1; }
+    .modal.cardview .flip-back { background: transparent; }
 }
 /* Porta di testo: finestra quasi a schermo intero, con il testo grande al centro */
 .modal.textview .modal-box {
@@ -732,7 +732,10 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 
 /* Telefono: il titolo del calendario sta più vicino alla frase introduttiva */
 @media (max-width: 639px) {
-    #advent-title { margin-top: 4px; }
+    #advent-title { margin-top: 0; }
+    .wrap { padding-top: 4px; }
+    .today-line { margin-top: 8px; }
+    .choose { margin-top: 48px; }
 }
 
 /* Telefono: il logo in alto a destra ha una fascia sua, sopra la riga "Casa Famiglia" */
