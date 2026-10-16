@@ -448,7 +448,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .carousel-track:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 .slide {
     flex: 0 0 160px;
-    scroll-snap-align: start;
+    scroll-snap-align: center;
     background: rgba(255,255,255,0.06);
     border: 3px solid transparent;
     border-radius: 12px;

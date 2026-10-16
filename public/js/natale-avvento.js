@@ -337,6 +337,14 @@
         document.querySelectorAll('.slide').forEach(s => {
             s.classList.toggle('selected', Number(s.dataset.day) === day);
         });
+        // Il disegno scelto va al centro del carosello (scorre solo il carosello, non la pagina)
+        const track = document.getElementById('carousel-track');
+        const slide = track.querySelector(`.slide[data-day="${day}"]`);
+        if (slide) {
+            const offset = slide.getBoundingClientRect().left - track.getBoundingClientRect().left;
+            const left = track.scrollLeft + offset - (track.clientWidth - slide.offsetWidth) / 2;
+            track.scrollTo({ left, behavior: reducedMotion ? 'auto' : 'smooth' });
+        }
     }
 
     function showGiftError(message) {
@@ -437,7 +445,7 @@
         });
 
         try {
-            const response = await fetch('/data/avvento.json?v=2026-10-16h');
+            const response = await fetch('/data/avvento.json?v=2026-10-16i');
             const data = await response.json();
             doors = data.doors;
             renderDoors(today);
