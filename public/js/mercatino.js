@@ -70,6 +70,7 @@
         doors.filter(d => d.disegno_retro).forEach(door => {
             makeTile(`porta${door.day}r`, `Finestra ${door.day}, retro`, door.disegno_retro, door.disegno_retro, strip);
         });
+        updateStripArrows();
     }
 
     // Frecce del carosello dei retro: scorrono di due disegni alla volta
@@ -80,6 +81,14 @@
     }
     document.getElementById('strip-prev').addEventListener('click', () => scrollStrip(-1));
     document.getElementById('strip-next').addEventListener('click', () => scrollStrip(1));
+    // Le frecce compaiono solo se i disegni del retro non entrano tutti nella barra
+    function updateStripArrows() {
+        const strip = document.getElementById('merc-strip');
+        const overflow = strip.scrollWidth > strip.clientWidth + 1;
+        document.getElementById('strip-prev').hidden = !overflow;
+        document.getElementById('strip-next').hidden = !overflow;
+    }
+    window.addEventListener('resize', updateStripArrows);
 
     // Ingrandimento del disegno: si sceglie con il tasto al centro, come nel calendario
     let zoomDesign = null;
