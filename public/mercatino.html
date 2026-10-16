@@ -7,7 +7,7 @@
     <title>Mercatino · gift card di Natale</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
     <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-10-16ab">
-    <link rel="stylesheet" href="/css/mercatino.css?v=2026-10-16ab">
+    <link rel="stylesheet" href="/css/mercatino.css?v=2026-10-16ac">
 </head>
 <body>
     <main class="wrap merc">
@@ -26,13 +26,14 @@
             </form>
         </section>
 
-        <div id="merc-app" hidden>
-            <section class="merc-card" aria-labelledby="design-title">
+        <div id="merc-app" class="merc-app" hidden>
+            <section class="merc-card merc-pick" aria-labelledby="design-title">
                 <h2 id="design-title">1. Scegli il disegno</h2>
                 <div class="merc-designs" id="merc-designs" role="radiogroup" aria-label="Disegni"></div>
                 <p class="merc-selected">Disegno scelto: <strong id="merc-selected">nessuno</strong></p>
             </section>
 
+            <div class="merc-side">
             <section class="merc-card" aria-labelledby="data-title">
                 <h2 id="data-title">2. Dati</h2>
                 <form id="sale-form" class="merc-form" novalidate>
@@ -64,8 +65,9 @@
                 <ul class="merc-list" id="sum-list"></ul>
                 <button type="button" class="merc-btn merc-btn-small" id="sum-refresh">Aggiorna</button>
             </section>
+            </div>
         </div>
     </main>
-    <script src="/js/mercatino.js?v=2026-10-16ab"></script>
+    <script src="/js/mercatino.js?v=2026-10-16ac"></script>
 </body>
 </html>

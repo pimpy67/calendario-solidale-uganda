@@ -1,5 +1,26 @@
 /* Pagina del mercatino: usa i colori e lo sfondo di natale-avvento.css */
 .merc { max-width: 720px; }
+/* Schermo largo (tablet orizzontale, PC): scelta dei disegni a sinistra, dati a destra, senza scorrere la pagina */
+@media (min-width: 900px) and (min-height: 560px) {
+    .merc { max-width: 1240px; width: 96vw; }
+    .merc-head { margin: 4px 0 12px; }
+    .merc-head h1 { font-size: 1.3rem; margin-bottom: 4px; }
+    .merc-app {
+        display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px;
+        height: calc(100dvh - 120px); min-height: 0;
+    }
+    .merc-pick { margin: 0; min-height: 0; display: flex; flex-direction: column; }
+    .merc-pick .merc-designs { overflow-y: auto; padding-right: 4px; min-height: 0; flex: 1; }
+    .merc-side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+    .merc-side .merc-card { margin: 0; padding: 14px 16px; }
+    .merc-side .merc-card h2 { margin-bottom: 8px; font-size: 1.05rem; }
+    .merc-side .merc-form label { margin-top: 6px; font-size: 0.92rem; }
+    .merc-side .merc-form input, .merc-side .merc-form textarea { font-size: 0.98rem; padding: 8px 12px; min-height: 38px; }
+    .merc-side .merc-form textarea { min-height: 52px; }
+    .merc-side .merc-btn-big { padding: 11px 14px; font-size: 1rem; margin-top: 8px; }
+    .merc-side .merc-note { margin-top: 6px; }
+    .merc-list { max-height: 120px; }
+}
 .merc-head { text-align: center; margin: 8px 0 20px; }
 .merc-head h1 { font-size: 1.6rem; margin: 0 0 8px; color: var(--gold); }
 .merc-lead { color: var(--muted); margin: 0; }
@@ -28,7 +49,7 @@
 .merc-error { color: #ffb4b4; margin: 6px 0 0; }
 .merc-ok { color: #b9f5c4; font-weight: 600; margin: 6px 0 0; }
 .merc-note { color: var(--muted); font-size: 0.9rem; margin: 10px 0 0; text-align: center; }
-.merc-designs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.merc-designs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .merc-design {
     padding: 0; border: 3px solid transparent; border-radius: 10px; overflow: hidden;
     background: #000; cursor: pointer; aspect-ratio: 1 / 1;
