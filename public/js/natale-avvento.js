@@ -276,10 +276,11 @@
         }
     }
 
-    // Carosello: tutti i 25 disegni, solo immagine (il testo resta nel calendario)
+    // Carosello: gli stessi disegni che si vedono in griglia (porte con immagine, non di testo),
+    // più le porte senza immagine ancora da inserire, come segnaposto non cliccabile
     function renderCarousel() {
         const track = document.getElementById('carousel-track');
-        doors.filter(d => d.disegno).forEach(door => {
+        doors.filter(d => d.disegno && !d.text).forEach(door => {
             const slide = document.createElement('button');
             slide.type = 'button';
             slide.className = 'slide';
@@ -290,6 +291,8 @@
             img.src = door.disegno;
             img.alt = `Disegno della porta ${door.day}`;
             img.loading = 'lazy';
+            // Se il file grande manca, si usa la miniatura della griglia
+            img.onerror = () => { if (door.miniatura) img.src = door.miniatura; };
             slide.appendChild(img);
 
             const label = document.createElement('span');
@@ -298,6 +301,17 @@
             slide.appendChild(label);
 
             slide.addEventListener('click', () => openZoom(door));
+            track.appendChild(slide);
+        });
+        // Porte senza ancora un disegno: segnaposto, non si può scegliere
+        doors.filter(d => !d.disegno && !d.text).forEach(door => {
+            const slide = document.createElement('div');
+            slide.className = 'slide placeholder';
+            slide.dataset.day = door.day;
+            slide.setAttribute('aria-disabled', 'true');
+            slide.innerHTML = '<span class="placeholder-num"></span><span class="slide-label"></span>';
+            slide.querySelector('.placeholder-num').textContent = door.day;
+            slide.querySelector('.slide-label').textContent = `Porta ${door.day} · in arrivo`;
             track.appendChild(slide);
         });
 

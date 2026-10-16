@@ -663,3 +663,19 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 @media (min-width: 900px) {
     .choose-lead { max-width: none; white-space: nowrap; }
 }
+
+/* Segnaposto del carosello: porta senza ancora il disegno, non cliccabile */
+.slide.placeholder {
+    cursor: default;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    align-items: center;
+    border: 2px dashed rgba(245,210,122,0.5);
+    background: rgba(255,255,255,0.04);
+}
+.slide.placeholder:hover { border-color: rgba(245,210,122,0.5); }
+.placeholder-num {
+    display: grid; place-items: center;
+    aspect-ratio: 1 / 1; width: 100%;
+    font-size: 3rem; font-weight: 700; color: rgba(245,210,122,0.7);
+}
+.slide.placeholder .slide-label { margin-bottom: 4px; }
