@@ -719,3 +719,8 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .site-footer-name { margin: 0 0 4px; color: var(--gold); font-weight: 600; }
 .site-footer a { color: var(--white); }
 .site-footer-links { margin-top: 10px; }
+
+/* Telefono: il titolo del calendario sta più vicino alla frase introduttiva */
+@media (max-width: 639px) {
+    #advent-title { margin-top: 4px; }
+}
