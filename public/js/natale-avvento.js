@@ -276,10 +276,11 @@
         }
     }
 
-    // Carosello: tutti i 25 disegni, solo immagine (il testo resta nel calendario)
+    // Carosello: gli stessi disegni che si vedono in griglia (porte con immagine, non di testo),
+    // più le porte senza immagine ancora da inserire, come segnaposto non cliccabile
     function renderCarousel() {
         const track = document.getElementById('carousel-track');
-        doors.filter(d => d.disegno).forEach(door => {
+        doors.filter(d => d.disegno && !d.text).forEach(door => {
             const slide = document.createElement('button');
             slide.type = 'button';
             slide.className = 'slide';
@@ -287,9 +288,11 @@
             slide.setAttribute('aria-label', `Scegli il disegno della porta ${door.day}`);
 
             const img = document.createElement('img');
-            img.src = door.disegno;
+            // Stessa immagine che si vede in griglia (la miniatura, se c'è)
+            img.src = door.miniatura || door.disegno;
             img.alt = `Disegno della porta ${door.day}`;
             img.loading = 'lazy';
+            img.onerror = () => { if (img.src !== door.disegno) img.src = door.disegno; };
             slide.appendChild(img);
 
             const label = document.createElement('span');
@@ -298,6 +301,17 @@
             slide.appendChild(label);
 
             slide.addEventListener('click', () => openZoom(door));
+            track.appendChild(slide);
+        });
+        // Porte senza ancora un disegno: segnaposto, non si può scegliere
+        doors.filter(d => !d.disegno && !d.text).forEach(door => {
+            const slide = document.createElement('div');
+            slide.className = 'slide placeholder';
+            slide.dataset.day = door.day;
+            slide.setAttribute('aria-disabled', 'true');
+            slide.innerHTML = '<span class="placeholder-num"></span><span class="slide-label"></span>';
+            slide.querySelector('.placeholder-num').textContent = door.day;
+            slide.querySelector('.slide-label').textContent = `Porta ${door.day} · in arrivo`;
             track.appendChild(slide);
         });
 
@@ -317,7 +331,7 @@
     let zoomDay = null;
     function openZoom(door) {
         zoomDay = door.day;
-        document.getElementById('zoom-img').src = door.disegno;
+        document.getElementById('zoom-img').src = door.miniatura || door.disegno;
         document.getElementById('zoom-img').alt = `Disegno della porta ${door.day}`;
         document.getElementById('zoom-label').textContent = `Porta ${door.day}`;
         document.getElementById('zoom').hidden = false;
@@ -333,10 +347,18 @@
         const door = doors.find(d => d.day === day);
         document.getElementById('selected-label').textContent = `Porta ${day}`;
         const preview = document.getElementById('gift-preview');
-        preview.src = door ? door.disegno : '';
+        preview.src = door ? (door.miniatura || door.disegno) : '';
         document.querySelectorAll('.slide').forEach(s => {
             s.classList.toggle('selected', Number(s.dataset.day) === day);
         });
+        // Il disegno scelto va al centro del carosello (scorre solo il carosello, non la pagina)
+        const track = document.getElementById('carousel-track');
+        const slide = track.querySelector(`.slide[data-day="${day}"]`);
+        if (slide) {
+            const offset = slide.getBoundingClientRect().left - track.getBoundingClientRect().left;
+            const left = track.scrollLeft + offset - (track.clientWidth - slide.offsetWidth) / 2;
+            track.scrollTo({ left, behavior: reducedMotion ? 'auto' : 'smooth' });
+        }
     }
 
     function showGiftError(message) {
@@ -437,7 +459,7 @@
         });
 
         try {
-            const response = await fetch('/data/avvento.json?v=2026-10-16h');
+            const response = await fetch('/data/avvento.json?v=2026-10-16i');
             const data = await response.json();
             doors = data.doors;
             renderDoors(today);

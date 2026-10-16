@@ -431,7 +431,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 
 /* Scelta del disegno: carosello */
-.choose { margin-top: 40px; text-align: center; }
+.choose { margin-top: 96px; text-align: center; }
 .choose h2 { margin-top: 0; }
 .choose-lead { color: var(--muted); max-width: 1000px; margin: 0 auto 16px; line-height: 1.5; }
 .carousel { position: relative; display: flex; align-items: center; gap: 8px; }
@@ -448,7 +448,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 .carousel-track:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 .slide {
     flex: 0 0 160px;
-    scroll-snap-align: start;
+    scroll-snap-align: center;
     background: rgba(255,255,255,0.06);
     border: 3px solid transparent;
     border-radius: 12px;
@@ -496,7 +496,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 
 /* Modulo di acquisto */
-.gift-form-section { margin-top: 40px; }
+.gift-form-section { margin-top: 96px; }
 .gift-form-section h2 { margin-top: 0; }
 /* Modulo a sinistra, retro della card a destra (sul telefono uno sotto l'altro) */
 .gift-layout { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
@@ -637,3 +637,45 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 @media (max-width: 639px) {
     .door-text { font-size: 0.85rem; line-height: 1.35; }
 }
+
+/* Passi per regalare: numerati, con cerchi dorati */
+.steps {
+    list-style: none; counter-reset: step;
+    max-width: 680px; margin: 22px auto 40px; padding: 0; text-align: left;
+}
+.steps li {
+    counter-increment: step;
+    position: relative;
+    padding: 8px 0 8px 52px;
+    color: var(--white);
+    font-size: 1.05rem; line-height: 1.5;
+}
+.steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 8px;
+    width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--gold); color: #1f1f38;
+    font-weight: 700;
+}
+.steps strong { color: var(--gold); }
+/* PC: la frase introduttiva resta su una riga */
+@media (min-width: 900px) {
+    .choose-lead { max-width: none; white-space: nowrap; }
+}
+
+/* Segnaposto del carosello: porta senza ancora il disegno, non cliccabile */
+.slide.placeholder {
+    cursor: default;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    align-items: center;
+    border: 2px dashed rgba(245,210,122,0.5);
+    background: rgba(255,255,255,0.04);
+}
+.slide.placeholder:hover { border-color: rgba(245,210,122,0.5); }
+.placeholder-num {
+    display: grid; place-items: center;
+    aspect-ratio: 1 / 1; width: 100%;
+    font-size: 3rem; font-weight: 700; color: rgba(245,210,122,0.7);
+}
+.slide.placeholder .slide-label { margin-bottom: 4px; }
