@@ -28,38 +28,44 @@
 
         <div id="merc-app" class="merc-app" hidden>
             <section class="merc-card merc-pick" aria-labelledby="design-title">
-                <h2 id="design-title">1. Scegli il disegno</h2>
+                <h2 id="design-title">1. Scegli il disegno <span class="merc-selected">· scelto: <strong id="merc-selected">nessuno</strong></span></h2>
                 <div class="merc-designs" id="merc-designs" role="radiogroup" aria-label="Disegni"></div>
-                <p class="merc-selected">Disegno scelto: <strong id="merc-selected">nessuno</strong></p>
             </section>
 
             <div class="merc-side">
-            <section class="merc-card" aria-labelledby="data-title">
+            <section class="merc-card merc-data" aria-labelledby="data-title">
                 <h2 id="data-title">2. Dati</h2>
                 <form id="sale-form" class="merc-form" novalidate>
-                    <label for="donor-name">Nome di chi regala</label>
-                    <input type="text" id="donor-name" maxlength="100" required placeholder="es. Mario Rossi">
-
-                    <label for="donor-email">Email di chi regala (facoltativa)</label>
-                    <input type="email" id="donor-email" maxlength="255" placeholder="es. mario@email.com">
-
-                    <label for="recipient-name">Nome di chi riceve</label>
-                    <input type="text" id="recipient-name" maxlength="100" required placeholder="es. Anna Bianchi">
-
-                    <label for="recipient-email">Email di chi riceve</label>
-                    <input type="email" id="recipient-email" maxlength="255" required placeholder="es. anna@email.com">
-
-                    <label for="message">Messaggio di auguri (facoltativo)</label>
-                    <textarea id="message" maxlength="490" rows="3" placeholder="Buon Natale!"></textarea>
-
-                    <p id="sale-error" class="merc-error" hidden></p>
-                    <p id="sale-ok" class="merc-ok" hidden></p>
-                    <button type="submit" class="merc-btn merc-btn-big" id="sale-submit">Registra vendita in contanti · 20 €</button>
-                    <p class="merc-note">La gift card arriva per email al destinatario il 25 dicembre alle 08:00.</p>
+                    <div class="merc-field">
+                        <label for="donor-name">Nome di chi regala</label>
+                        <input type="text" id="donor-name" maxlength="100" required placeholder="es. Mario Rossi">
+                    </div>
+                    <div class="merc-field">
+                        <label for="donor-email">Email di chi regala (facoltativa)</label>
+                        <input type="email" id="donor-email" maxlength="255" placeholder="es. mario@email.com">
+                    </div>
+                    <div class="merc-field">
+                        <label for="recipient-name">Nome di chi riceve</label>
+                        <input type="text" id="recipient-name" maxlength="100" required placeholder="es. Anna Bianchi">
+                    </div>
+                    <div class="merc-field">
+                        <label for="recipient-email">Email di chi riceve</label>
+                        <input type="email" id="recipient-email" maxlength="255" required placeholder="es. anna@email.com">
+                    </div>
+                    <div class="merc-field merc-field-wide">
+                        <label for="message">Messaggio di auguri (facoltativo)</label>
+                        <textarea id="message" maxlength="490" rows="2" placeholder="Buon Natale!"></textarea>
+                    </div>
+                    <div class="merc-actions">
+                        <p id="sale-error" class="merc-error" hidden></p>
+                        <p id="sale-ok" class="merc-ok" hidden></p>
+                        <button type="submit" class="merc-btn merc-btn-big" id="sale-submit">Registra vendita in contanti · 20 €</button>
+                        <p class="merc-note">Consegna per email il 25 dicembre alle 08:00.</p>
+                    </div>
                 </form>
             </section>
 
-            <section class="merc-card" aria-labelledby="sum-title">
+            <section class="merc-card merc-summary" aria-labelledby="sum-title">
                 <h2 id="sum-title">Riepilogo di oggi</h2>
                 <p class="merc-total" id="sum-total">Caricamento…</p>
                 <ul class="merc-list" id="sum-list"></ul>

@@ -38,7 +38,7 @@
 
     // Disegni scelti dal calendario dell'Avvento (una porta = un disegno)
     async function loadDesigns() {
-        const response = await fetch('/data/avvento.json?v=2026-10-16ab');
+        const response = await fetch('/data/avvento.json?v=2026-10-16ad');
         const data = await response.json();
         const doors = (data.doors || []).filter(d => d.disegno);
         const box = document.getElementById('merc-designs');
