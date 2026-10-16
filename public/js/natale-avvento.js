@@ -113,6 +113,8 @@
             img.src = door.disegno;
             img.alt = `Disegno della finestra ${door.day}`;
             img.hidden = false;
+            // Sfondo sfocato dello stesso disegno: riempie lo schermo del telefono senza tagliarlo
+            modal.style.setProperty('--bg-img', `url("${door.disegno}")`);
             document.getElementById('modal-title').textContent = '';
             document.getElementById('modal-text').textContent = '';
             // Filastrocca sul retro della card, se la porta ne ha una

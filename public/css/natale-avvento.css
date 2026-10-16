@@ -89,7 +89,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 /* Telefono: griglia 5×5 come sul PC, con solo numero e immagine.
    Testo, nome del bambino e lente restano nella finestra che si apre al tocco. */
 @media (max-width: 639px) {
-    .doors { gap: 8px; }
+    .doors { grid-template-columns: repeat(4, 1fr); gap: 8px; }
     .doors .door { font-size: 1rem; }
     .doors .door .door-text,
     .doors .door .child-name,
@@ -349,6 +349,16 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 .modal.cardview #modal-img { width: 100%; height: 100%; object-fit: contain; border-radius: 0; margin: 0; }
 .modal.cardview .modal-box > h3, .modal.cardview .modal-box > p { display: none; }
+/* Telefono: il disegno intero al centro, sopra una copia sfocata dello stesso disegno che riempie lo schermo */
+@media (max-width: 639px) {
+    .modal.cardview { overflow: hidden; }
+    .modal.cardview::before {
+        content: ''; position: absolute; inset: -20px;
+        background: var(--bg-img) center / cover no-repeat;
+        filter: blur(24px) brightness(0.45);
+    }
+    .modal.cardview .modal-box { background: transparent; z-index: 1; }
+}
 /* Porta di testo: finestra quasi a schermo intero, con il testo grande al centro */
 .modal.textview .modal-box {
     max-width: none; width: 94vw; height: 92vh; max-height: 92vh;
