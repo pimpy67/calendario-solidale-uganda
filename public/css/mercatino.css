@@ -1,41 +1,58 @@
 /* Pagina del mercatino: usa i colori e lo sfondo di natale-avvento.css */
 .merc { max-width: 720px; }
-/* Schermo largo (tablet orizzontale, PC): scelta dei disegni a sinistra, dati a destra, senza scorrere la pagina */
+/* Schermo largo (tablet orizzontale, PC): finestre dei disegni a 5 colonne che riempiono lo schermo,
+   modulo dati e riepilogo sotto, più compatti. Nessuno scorrimento della pagina. */
 @media (min-width: 900px) and (min-height: 560px) {
-    .merc { max-width: none; width: 98vw; }
-    .merc-head { margin: 2px 0 8px; }
+    .merc { max-width: none; width: 98vw; padding-bottom: 0; }
+    .merc-head { margin: 0 0 4px; }
     .merc-head h1 { font-size: 1.2rem; margin-bottom: 2px; }
     .merc-lead { font-size: 0.9rem; }
     .merc-app {
-        display: grid; grid-template-columns: 1.6fr 1fr; gap: 12px;
-        height: calc(100dvh - 88px); min-height: 0;
+        display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 10px;
+        height: calc(100dvh - 118px); min-height: 0;
     }
-    .merc-pick { margin: 0; min-height: 0; display: flex; flex-direction: column; padding: 12px; }
-    .merc-pick h2 { margin-bottom: 8px; }
-    /* Sei colonne, le finestre riempiono il riquadro in altezza (con scorrimento solo se non entrano tutte) */
+    .merc-pick { margin: 0; min-height: 0; display: flex; flex-direction: column; padding: 10px 12px; }
+    .merc-pick h2 { margin: 0 0 6px; font-size: 1.05rem; }
+    /* Cinque colonne: 14 disegni in tre righe, ciascuno intero (senza tagli) sopra la sua copia sfocata */
     .merc-pick .merc-designs {
-        grid-template-columns: repeat(6, 1fr);
+        grid-template-columns: repeat(5, 1fr);
         grid-auto-rows: minmax(0, 1fr);
-        gap: 10px;
-        overflow-y: auto; padding-right: 4px; min-height: 0; flex: 1;
+        gap: 8px;
+        overflow: hidden; min-height: 0; flex: 1;
     }
     .merc-pick .merc-design { aspect-ratio: auto; height: 100%; min-height: 0; position: relative; isolation: isolate; }
-    /* Disegno intero (senza tagli) al centro, sopra la sua copia sfocata che riempie il riquadro */
     .merc-pick .merc-design::before {
         content: ''; position: absolute; inset: -8px; z-index: -1;
         background: var(--thumb) center / cover no-repeat;
         filter: blur(6px) brightness(0.6);
     }
     .merc-pick .merc-design img { object-fit: contain; height: 100%; width: 100%; }
-    .merc-side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
-    .merc-side .merc-card { margin: 0; padding: 14px 16px; }
-    .merc-side .merc-card h2 { margin-bottom: 8px; font-size: 1.05rem; }
-    .merc-side .merc-form label { margin-top: 6px; font-size: 0.92rem; }
-    .merc-side .merc-form input, .merc-side .merc-form textarea { font-size: 0.98rem; padding: 8px 12px; min-height: 38px; }
-    .merc-side .merc-form textarea { min-height: 52px; }
-    .merc-side .merc-btn-big { padding: 11px 14px; font-size: 1rem; margin-top: 8px; }
-    .merc-side .merc-note { margin-top: 6px; }
-    .merc-list { max-height: 120px; }
+    .merc-selected { margin: 0; font-size: 0.95rem; color: var(--muted); font-weight: 400; }
+    .merc-selected strong { color: var(--white); }
+
+    /* Sotto: modulo dati a sinistra, riepilogo a destra */
+    .merc-side { display: grid; grid-template-columns: 1fr 230px; gap: 10px; min-height: 0; }
+    .merc-side .merc-card { margin: 0; padding: 10px 14px; }
+    .merc-side .merc-card h2 { margin: 0 0 6px; font-size: 0.98rem; }
+    .merc-data .merc-form {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 10px; align-items: start;
+    }
+    .merc-field { display: flex; flex-direction: column; min-width: 0; }
+    .merc-field-wide { grid-column: span 2; }
+    .merc-form label { margin: 0 0 2px; font-size: 0.85rem; }
+    .merc-form input, .merc-form textarea {
+        font-size: 0.95rem; padding: 6px 10px; min-height: 34px; border-radius: 8px;
+    }
+    .merc-field-wide textarea { min-height: 46px; resize: none; }
+    .merc-actions { grid-column: span 2; display: flex; flex-direction: column; justify-content: flex-end; }
+    .merc-actions .merc-error, .merc-actions .merc-ok { margin: 0; font-size: 0.9rem; }
+    .merc-btn-big { padding: 10px 14px; font-size: 0.98rem; margin-top: 4px; }
+    .merc-note { margin: 4px 0 0; font-size: 0.8rem; }
+    .merc-summary { display: flex; flex-direction: column; }
+    .merc-total { font-size: 1rem; margin: 0 0 4px; }
+    .merc-list { max-height: 80px; margin: 0 0 6px; font-size: 0.85rem; }
+    .merc-list li { padding: 4px 0; }
+    .merc-summary .merc-btn-small { margin-top: auto; align-self: flex-start; }
 }
 .merc-head { text-align: center; margin: 8px 0 20px; }
 .merc-head h1 { font-size: 1.6rem; margin: 0 0 8px; color: var(--gold); }
