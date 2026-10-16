@@ -162,6 +162,26 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     color: #2b2b2b;
     white-space: normal;
 }
+/* Imposte di legno: coprono i due lati della finestra, il disegno resta leggibile al centro.
+   Il tocco le apre (classe .shutters-open) e le imposte scorrono fuori dalla finestra. */
+.door .shutters {
+    position: absolute; inset: 0; z-index: 1;
+    pointer-events: none;
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 4px #4a2c12;
+    overflow: hidden;
+}
+.door .shutter {
+    position: absolute; top: 0; bottom: 0;
+    width: 22%;
+    background: repeating-linear-gradient(90deg, #8b5a2b 0 9px, #6b4220 9px 11px);
+    box-shadow: inset 0 0 0 2px #4a2c12;
+    transition: transform 0.6s ease;
+}
+.door .shutter.left { left: 0; }
+.door .shutter.right { right: 0; }
+.door.shutters-open .shutter.left { transform: translateX(-100%); }
+.door.shutters-open .shutter.right { transform: translateX(100%); }
 .door.open .num::after { content: ' ✨'; }
 .door .child-name {
     display: block;
@@ -333,7 +353,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 
 @media (prefers-reduced-motion: reduce) {
     .flake, .hero h1, .door.today:not(.open), .door.just-opened, .modal-box { animation: none; }
-    .door, .flip-card { transition: none; }
+    .door, .door .shutter, .flip-card { transition: none; }
 }
 
 /* Scelta del disegno: carosello */

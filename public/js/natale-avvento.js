@@ -171,6 +171,13 @@
                 thumb.alt = '';
                 thumb.loading = 'lazy';
                 btn.appendChild(thumb);
+
+                // Imposte di legno sui due lati: il disegno resta visibile al centro, il tocco le apre
+                const shutters = document.createElement('span');
+                shutters.className = 'shutters';
+                shutters.setAttribute('aria-hidden', 'true');
+                shutters.innerHTML = '<span class="shutter left"></span><span class="shutter right"></span>';
+                btn.appendChild(shutters);
             }
 
             const num = document.createElement('span');
@@ -205,13 +212,13 @@
                 btn.setAttribute('aria-disabled', 'true');
             }
             if (state === 'today') btn.classList.add('today');
-            if (opened.has(door.day)) btn.classList.add('open');
+            if (opened.has(door.day)) btn.classList.add('open', 'shutters-open');
 
             btn.addEventListener('click', () => {
                 const wasOpen = opened.has(door.day);
                 opened.add(door.day);
                 saveOpened(opened);
-                btn.classList.add('open');
+                btn.classList.add('open', 'shutters-open');
                 if (!wasOpen && !reducedMotion) {
                     btn.classList.add('just-opened');
                     btn.addEventListener('animationend', () => btn.classList.remove('just-opened'), { once: true });
