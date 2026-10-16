@@ -13,10 +13,18 @@ html, body { margin: 0; }
 body {
     font-family: var(--font);
     color: var(--white);
-    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
-    background-color: var(--bg-top);
+    background: transparent;
     min-height: 100vh;
     overflow-x: hidden;
+}
+html { background-color: var(--bg-top); }
+/* Sfondo: foto Silvia con un velo scuro blu-viola, fisso dietro la neve e i contenuti */
+body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: -1;
+    background:
+        linear-gradient(180deg, rgba(20,20,43,0.78) 0%, rgba(42,21,32,0.9) 100%),
+        url('/images/Silvia.jpg') center / cover no-repeat;
 }
 
 /* Neve */
