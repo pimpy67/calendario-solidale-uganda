@@ -86,10 +86,10 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     .doors .door .door-text,
     .doors .door .child-name,
     .doors .door .zoom-icon { display: none; }
-    /* Porte di testo: stesso aspetto delle porte con disegno, numero centrato nella pillola scura */
+    /* Porte di testo: finestra bianca, numero centrato nella pillola scura che lo fa risaltare */
     .doors .door.text-door,
     .doors .door.text-door.open {
-        background: linear-gradient(160deg, #3b3b5c, #252540);
+        background: #ffffff;
         color: var(--white);
         text-align: center;
     }
