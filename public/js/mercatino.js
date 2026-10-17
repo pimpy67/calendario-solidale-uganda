@@ -120,7 +120,7 @@
         if (e.target.id === 'zoom') closeZoom();
     });
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') { closeZoom(); closePreview(); }
+        if (e.key === 'Escape') { closeZoom(); closePayQr(); closePreview(); }
     });
 
     function selectDesign(design, label, btn, src) {
@@ -260,6 +260,67 @@
         }
     }
 
+    // Pagamento con QR: il cliente paga dal suo telefono, con carta o Satispay (pagina Stripe).
+    // Il codice fiscale serve solo qui, per la ricevuta: i contanti non lo chiedono.
+    async function showPayQr() {
+        const button = document.getElementById('preview-qr');
+        button.disabled = true;
+        showError('preview-error', '');
+        try {
+            const response = await fetch('/api/natale/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    card_design: selectedDesign,
+                    donor_name: document.getElementById('donor-name').value.trim(),
+                    donor_email: document.getElementById('donor-email').value.trim() || null,
+                    donor_cf: document.getElementById('donor-cf').value.trim() || null,
+                    recipient_name: document.getElementById('recipient-name').value.trim(),
+                    recipient_email: document.getElementById('recipient-email').value.trim(),
+                    message: document.getElementById('message').value.trim() || null
+                })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.stripe_url) throw new Error(data.message || 'Errore nella creazione del pagamento');
+            drawQr(data.stripe_url);
+            document.getElementById('pay-qr').hidden = false;
+        } catch (error) {
+            showError('preview-error', error.message);
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    // Disegna il QR del link di pagamento nel canvas (libreria qrcode-generator, caricata in pagina)
+    function drawQr(text) {
+        const generator = qrcode(0, 'M');
+        generator.addData(text);
+        generator.make();
+        const canvas = document.getElementById('pay-qr-canvas');
+        const size = 360;
+        const cells = generator.getModuleCount();
+        const scale = Math.floor(size / (cells + 8)) || 1;
+        canvas.width = canvas.height = (cells + 8) * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#000';
+        for (let r = 0; r < cells; r++) {
+            for (let c = 0; c < cells; c++) {
+                if (generator.isDark(r, c)) ctx.fillRect((c + 4) * scale, (r + 4) * scale, scale, scale);
+            }
+        }
+    }
+    function closePayQr() {
+        document.getElementById('pay-qr').hidden = true;
+    }
+
+    document.getElementById('preview-qr').addEventListener('click', showPayQr);
+    document.getElementById('pay-qr-close').addEventListener('click', closePayQr);
+    document.getElementById('pay-qr-done').addEventListener('click', closePayQr);
+    document.getElementById('pay-qr').addEventListener('click', (e) => {
+        if (e.target.id === 'pay-qr') closePayQr();
+    });
     document.getElementById('preview-confirm').addEventListener('click', registerSale);
     document.getElementById('preview-back').addEventListener('click', closePreview);
     document.getElementById('preview-close').addEventListener('click', closePreview);

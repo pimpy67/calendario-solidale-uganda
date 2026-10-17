@@ -537,12 +537,17 @@ router.post('/natale/checkout', async (req, res) => {
         return res.status(503).json({ error: true, message: 'Pagamenti non disponibili al momento' });
     }
 
-    const { donor_name, donor_email, recipient_name, recipient_email, message, card_design } = req.body;
+    const { donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design } = req.body;
     if (!donor_name || !recipient_name || !recipient_email || !EMAIL_RE.test(recipient_email)) {
         return res.status(400).json({ error: true, message: 'Compila nome di chi regala, nome di chi riceve ed email valida del destinatario' });
     }
     if (donor_email && !EMAIL_RE.test(donor_email)) {
         return res.status(400).json({ error: true, message: 'Email di chi regala non valida' });
+    }
+    // Codice fiscale facoltativo: serve solo per la ricevuta fiscale
+    const cleanCf = (donor_cf || '').toString().trim().toUpperCase();
+    if (cleanCf && !/^[A-Z0-9]{16}$/.test(cleanCf)) {
+        return res.status(400).json({ error: true, message: 'Codice fiscale non valido (16 caratteri)' });
     }
     const design = isNataleDesign(card_design) ? card_design : 'card1';
     const cleanMessage = (message || '').toString().substring(0, 490);
@@ -554,6 +559,7 @@ router.post('/natale/checkout', async (req, res) => {
             amount: NATALE_PRICE_CENTS / 100,
             donor_name: donor_name.toString().substring(0, 100),
             donor_email: donor_email || null,
+            donor_cf: cleanCf || null,
             recipient_name: recipient_name.toString().substring(0, 100),
             recipient_email,
             message: cleanMessage || null,

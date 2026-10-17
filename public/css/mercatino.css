@@ -84,6 +84,12 @@
 .merc-preview-actions { display: flex; flex-direction: column; gap: 8px; }
 .merc-preview-actions .merc-btn { margin-top: 0; }
 .merc-preview-box .merc-error { text-align: center; }
+/* Finestra del QR per pagare: il codice grande, al centro dello schermo */
+.merc-qr-box { width: min(94vw, 480px); align-items: center; gap: 12px; padding: 18px; background: rgba(20,20,43,0.96); border: 1px solid rgba(245,210,122,0.25); border-radius: 14px; }
+.merc-qr-box h2 { margin: 0; text-align: center; color: var(--gold); font-size: 1.2rem; }
+.merc-qr-canvas { width: min(80vw, 360px); height: auto; aspect-ratio: 1 / 1; border-radius: 10px; background: #fff; }
+.merc-qr-note { margin: 0; text-align: center; color: var(--muted); font-size: 0.95rem; }
+.merc-qr-box .merc-btn { margin-top: 0; }
 
 /* Ingrandimento del disegno: quasi a tutto schermo, con il tasto di scelta al centro */
 .zoom-box img { max-width: 96vw; max-height: 88vh; }

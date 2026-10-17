@@ -109,6 +109,10 @@ function init() {
     if (!nataleColumns.some(c => c.name === 'payment_method')) {
         db.exec("ALTER TABLE natale_gift_cards ADD COLUMN payment_method VARCHAR(20) DEFAULT 'stripe'");
     }
+    // Codice fiscale di chi regala, per la ricevuta fiscale (solo pagamenti online, non i contanti)
+    if (!nataleColumns.some(c => c.name === 'donor_cf')) {
+        db.exec('ALTER TABLE natale_gift_cards ADD COLUMN donor_cf VARCHAR(16)');
+    }
 
     // Crea indici per performance
     db.exec(`
@@ -540,11 +544,11 @@ function close() {
  */
 function createNataleGiftCard(data) {
     const stmt = db.prepare(`
-        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, recipient_name, recipient_email, message, card_design, delivery_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const info = stmt.run(
-        data.payment_id, data.amount, data.donor_name, data.donor_email,
+        data.payment_id, data.amount, data.donor_name, data.donor_email, data.donor_cf || null,
         data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at
     );
     return info.lastInsertRowid;
