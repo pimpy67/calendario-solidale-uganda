@@ -385,6 +385,7 @@
                 card_design: `porta${selectedDay}`,
                 donor_name: document.getElementById('gift-donor-name').value.trim(),
                 donor_email: document.getElementById('gift-donor-email').value.trim(),
+                donor_cf: document.getElementById('gift-donor-cf').value.trim(),
                 recipient_name: document.getElementById('gift-recipient-name').value.trim(),
                 recipient_email: document.getElementById('gift-recipient-email').value.trim(),
                 message: document.getElementById('gift-message').value.trim()
