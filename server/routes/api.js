@@ -11,7 +11,7 @@ const { deliverNataleCardIfDue } = require('../jobs/natale');
 
 // Gift card di Natale: prezzo e design ammessi decisi dal server, non dal browser
 const NATALE_PRICE_CENTS = 2000; // 20,00 €
-// Orario di consegna al destinatario: 25 dicembre 2026 alle 09:00 di Roma (UTC+1)
+// Orario di consegna al destinatario: 25 dicembre 2026 alle 00:00 di Roma (UTC+1)
 const NATALE_DELIVERY_AT = process.env.NATALE_DELIVERY_AT || '2026-12-24T23:00:00.000Z';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const { isNataleDesign, designImageUrl } = require('../utils/avvento');

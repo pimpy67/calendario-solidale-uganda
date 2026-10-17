@@ -28,7 +28,7 @@ startBackup();
 const { startStripeReconciliation } = require('./jobs/stripeReconciliation');
 startStripeReconciliation();
 
-// Consegna gift card di Natale alle 09:00 del 25 dicembre
+// Consegna gift card di Natale alle 00:00 del 25 dicembre
 const { startNataleDelivery } = require('./jobs/natale');
 startNataleDelivery();
 

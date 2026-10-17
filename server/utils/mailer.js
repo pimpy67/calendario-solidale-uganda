@@ -909,7 +909,7 @@ ${imageTag}
 }
 
 /**
- * Link alla pagina di apertura della gift card di Natale (si apre dal 25 dicembre alle 9:00)
+ * Link alla pagina di apertura della gift card di Natale (si apre dal 25 dicembre alle 00:00)
  */
 function nataleCardUrl(card) {
     const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
@@ -931,7 +931,7 @@ async function sendNataleDonorConfirmation(card) {
     const html = `<div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
 <h2 style="color: #b22222;">Grazie, ${(card.donor_name || '').replace(/</g, '&lt;')}!</h2>
 <p>La tua gift card di Natale per <strong>${card.recipient_name.replace(/</g, '&lt;')}</strong> è stata pagata.</p>
-<p>Arriverà per email al destinatario il <strong>25 dicembre alle 9:00</strong>. Se vuoi, puoi anche inoltrargli subito il link di apertura:</p>
+<p>Arriverà per email al destinatario il <strong>25 dicembre alle 00:00</strong>. Se vuoi, puoi anche inoltrargli subito il link di apertura:</p>
 <p style="text-align: center; margin: 24px 0;"><a href="${whatsappUrl}" style="background: #25D366; color: #fff; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">Condividi su WhatsApp</a></p>
 <p style="font-size: 12px; color: #777;">Link diretto: ${link}</p>
 </div>`;
