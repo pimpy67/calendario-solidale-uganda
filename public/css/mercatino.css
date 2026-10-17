@@ -116,12 +116,13 @@
 .merc-error { color: #ffb4b4; margin: 6px 0 0; }
 .merc-ok { color: #b9f5c4; font-weight: 600; margin: 6px 0 0; }
 .merc-note { color: var(--muted); font-size: 0.9rem; margin: 10px 0 0; text-align: center; }
-.merc-designs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+/* Telefono: due finestre per riga, ciascuna intera (senza tagli) e grande */
+.merc-designs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .merc-design {
     padding: 0; border: 3px solid transparent; border-radius: 10px; overflow: hidden;
-    background: #000; cursor: pointer; aspect-ratio: 1 / 1;
+    background: #000; cursor: pointer; aspect-ratio: 1748 / 1240;
 }
-.merc-design img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.merc-design img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .merc-design[aria-checked="true"] { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
 .merc-selected { margin: 10px 0 0; color: var(--muted); }
 .merc-total { font-size: 1.3rem; margin: 0 0 8px; font-weight: 700; }
