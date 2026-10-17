@@ -6,8 +6,8 @@
     <meta name="robots" content="noindex">
     <title>Mercatino · gift card di Natale</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
-    <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-10-16ab">
-    <link rel="stylesheet" href="/css/mercatino.css?v=2026-10-16ag">
+    <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-10-17a">
+    <link rel="stylesheet" href="/css/mercatino.css?v=2026-10-17a">
 </head>
 <body>
     <main class="wrap merc">
@@ -65,8 +65,8 @@
                     <div class="merc-actions">
                         <p id="sale-error" class="merc-error" hidden></p>
                         <p id="sale-ok" class="merc-ok" hidden></p>
-                        <button type="submit" class="merc-btn merc-btn-big" id="sale-submit">Registra vendita in contanti · 20 €</button>
-                        <p class="merc-note">Consegna per email il 25 dicembre alle 00:00.</p>
+                        <button type="submit" class="merc-btn merc-btn-big" id="sale-submit">Salva</button>
+                        <p class="merc-note">Prima vedi fronte e retro della gift card. Consegna per email il 25 dicembre alle 00:00.</p>
                     </div>
                 </form>
             </section>
@@ -90,6 +90,30 @@
             <p class="zoom-label" id="zoom-label"></p>
         </div>
     </div>
-    <script src="/js/mercatino.js?v=2026-10-16ag"></script>
+    <div class="zoom" id="preview" hidden>
+        <div class="zoom-box merc-preview-box" role="dialog" aria-modal="true" aria-labelledby="preview-title">
+            <button type="button" class="modal-close" id="preview-close" aria-label="Chiudi">×</button>
+            <h2 id="preview-title">Controlla la gift card</h2>
+            <div class="merc-preview-cards">
+                <figure class="merc-preview-face">
+                    <img id="preview-front" alt="Davanti della gift card">
+                </figure>
+                <aside class="gift-back-preview" aria-label="Retro della gift card">
+                    <div class="card-back">
+                        <img class="back-logo" src="/images/gift_card/logo-effata.png" alt="Effatà Italia Charity Organisation ODV">
+                        <p class="back-poem">Caro/a <span id="preview-back-name"></span>, con questo regalo aiuti i bambini di Effatà a ricevere cibo, scuola e protezione.</p>
+                        <p class="back-thanks">Un Grazie e un augurio di Buon Natale dai bambini di Effatà Children's Home</p>
+                        <p class="back-site">www.effataitalia.it</p>
+                    </div>
+                </aside>
+            </div>
+            <p id="preview-error" class="merc-error" hidden></p>
+            <div class="merc-preview-actions">
+                <button type="button" class="merc-btn merc-btn-big" id="preview-confirm">Registra vendita in contanti · 20 €</button>
+                <button type="button" class="merc-btn" id="preview-back">Torna indietro</button>
+            </div>
+        </div>
+    </div>
+    <script src="/js/mercatino.js?v=2026-10-17a"></script>
 </body>
 </html>
