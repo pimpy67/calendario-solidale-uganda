@@ -2,6 +2,14 @@
   "year": 2026,
   "month": 12,
   "vendita_attiva": true,
+  "disegni_mercatino": [
+    { "code": "extra-16", "label": "Disegno 16", "file": "/images/gift_card/16-Disegno colorato di Winnie babysitter.webp" },
+    { "code": "extra-17", "label": "Disegno 17", "file": "/images/gift_card/17-Disegno infantile natalizio colorato.webp" },
+    { "code": "extra-20", "label": "Disegno 20", "file": "/images/gift_card/20-Disegno natalizio con bimba e albero decorato.webp" },
+    { "code": "extra-21", "label": "Disegno 21 (capovolto)", "file": "/images/gift_card/21-Disegno Natalizio con Figura Capovolta.webp" },
+    { "code": "extra-22", "label": "Disegno 22", "file": "/images/gift_card/22-Disegno natalizio di Francesca con fiori.webp" },
+    { "code": "extra-24", "label": "Disegno 24", "file": "/images/gift_card/24-Disegno natalizio di Mike tra colori e sorrisi.webp" }
+  ],
   "doors": [
     {
       "day": 1,
@@ -44,7 +52,8 @@
       "text": "",
       "placeholder": true,
       "disegno": "/images/gift_card/web/05_Filastrocca per l_Uganda.jpg",
-      "miniatura": "/images/gift_card/miniature/porta-05.webp"
+      "miniatura": "/images/gift_card/miniature/porta-05.webp",
+      "disegno_retro": "/images/gift_card/miniature/retro-05.webp"
     },
     {
       "day": 6,
@@ -157,7 +166,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/web/011_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/18-Disegno natalizio a cera con bambino.webp",
       "miniatura": "/images/gift_card/miniature/porta-18.webp"
     },
     {
