@@ -2,14 +2,7 @@
   "year": 2026,
   "month": 12,
   "vendita_attiva": true,
-  "disegni_mercatino": [
-    { "code": "extra-16", "label": "Disegno 16", "file": "/images/gift_card/16-Disegno colorato di Winnie babysitter.webp" },
-    { "code": "extra-17", "label": "Disegno 17", "file": "/images/gift_card/17-Disegno infantile natalizio colorato.webp" },
-    { "code": "extra-20", "label": "Disegno 20", "file": "/images/gift_card/20-Disegno natalizio con bimba e albero decorato.webp" },
-    { "code": "extra-21", "label": "Disegno 21 (capovolto)", "file": "/images/gift_card/21-Disegno Natalizio con Figura Capovolta.webp" },
-    { "code": "extra-22", "label": "Disegno 22", "file": "/images/gift_card/22-Disegno natalizio di Francesca con fiori.webp" },
-    { "code": "extra-24", "label": "Disegno 24", "file": "/images/gift_card/24-Disegno natalizio di Mike tra colori e sorrisi.webp" }
-  ],
+  "disegni_mercatino": [],
   "doors": [
     {
       "day": 1,
