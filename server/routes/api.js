@@ -472,6 +472,11 @@ router.post('/mercatino/cash', (req, res) => {
             delivery_at: NATALE_DELIVERY_AT
         });
         console.log(`[Mercatino] Gift card di Natale ${card.id} registrata in contanti (consegna ${card.delivery_at})`);
+        // Conferma a chi paga in contanti, se ha lasciato l'email (stesso messaggio dei pagamenti online)
+        if (card.donor_email) {
+            sendNataleDonorConfirmation(card)
+                .catch(err => console.error('Errore conferma gift card di Natale (contanti):', err));
+        }
         res.status(201).json({ success: true, id: card.id, delivery_at: card.delivery_at });
     } catch (error) {
         console.error('Errore registrazione contanti mercatino:', error);
