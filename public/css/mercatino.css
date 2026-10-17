@@ -7,20 +7,16 @@
     .merc-head { margin: 0 0 4px; }
     .merc-head h1 { font-size: 1.2rem; margin-bottom: 2px; }
     .merc-lead { font-size: 0.9rem; }
-    .merc-app {
-        display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 10px;
-        height: calc(100dvh - 118px); min-height: 0;
-    }
+    .merc-app { display: grid; grid-template-rows: auto auto; gap: 10px; }
     .merc-pick { margin: 0; min-height: 0; display: flex; flex-direction: column; padding: 10px 12px; }
     .merc-pick h2 { margin: 0 0 6px; font-size: 1.05rem; }
     /* Cinque colonne: 14 disegni in tre righe, ciascuno intero (senza tagli) sopra la sua copia sfocata */
     .merc-pick .merc-designs {
         grid-template-columns: repeat(5, 1fr);
-        grid-auto-rows: minmax(0, 1fr);
+        grid-auto-rows: auto;
         gap: 8px;
-        overflow: hidden; min-height: 0; flex: 1;
     }
-    .merc-pick .merc-design { aspect-ratio: auto; height: 100%; min-height: 0; position: relative; isolation: isolate; }
+    .merc-pick .merc-design { aspect-ratio: 1748 / 1240; height: auto; position: relative; isolation: isolate; }
     .merc-pick .merc-design::before {
         content: ''; position: absolute; inset: -8px; z-index: -1;
         background: var(--thumb) center / cover no-repeat;
@@ -28,18 +24,19 @@
     }
     .merc-pick .merc-design img { object-fit: contain; height: 100%; width: 100%; }
     .merc-selected { margin: 0; font-size: 0.95rem; color: var(--muted); font-weight: 400; }
-    /* Disegni del retro: una barra a scorrimento con le frecce, sotto la griglia */
+    /* Disegni del retro: carosello a due righe con le frecce, sotto la griglia */
     .merc-strip-title { margin: 8px 0 4px; font-size: 0.9rem; color: var(--muted); }
     .merc-strip-wrap { display: flex; align-items: center; gap: 8px; flex: none; }
     .merc-strip {
-        flex: 1 1 0; width: 0; min-width: 0; display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth;
-        padding: 4px 2px 8px;
+        flex: 1 1 0; width: 0; min-width: 0; display: grid; grid-template-rows: repeat(2, auto); grid-auto-flow: column;
+        grid-auto-columns: 230px; gap: 8px; overflow-x: auto; scroll-behavior: smooth; padding: 4px 2px 8px;
     }
-    .merc-pick .merc-strip .merc-design { flex: 0 0 auto; height: 96px; aspect-ratio: 3 / 2; }
+    .merc-pick .merc-strip .merc-design { width: 230px; height: auto; aspect-ratio: 1748 / 1240; }
     .merc-arrow {
         flex: none; width: 40px; height: 40px; border: none; border-radius: 50%;
         background: var(--gold); color: #1f1f38; font-size: 1.5rem; font-weight: 700; cursor: pointer;
     }
+    .merc-arrow:disabled { opacity: 0.35; cursor: default; }
     .merc-selected strong { color: var(--white); }
 
     /* Sotto: modulo dati a sinistra, riepilogo a destra */
@@ -122,11 +119,19 @@
 .merc-error { color: #ffb4b4; margin: 6px 0 0; }
 .merc-ok { color: #b9f5c4; font-weight: 600; margin: 6px 0 0; }
 .merc-note { color: var(--muted); font-size: 0.9rem; margin: 10px 0 0; text-align: center; }
-/* Fascia dei retro a scorrimento (telefono e PC): ogni retro ha la sua misura, anche se fuori schermo */
+/* Carosello dei retro (telefono): due righe a scorrimento con le frecce */
 .merc-strip-wrap { display: flex; align-items: center; gap: 8px; }
-.merc-strip { flex: 1 1 0; width: 0; min-width: 0; display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; }
-.merc-strip .merc-design { flex: 0 0 auto; height: 96px; aspect-ratio: 3 / 2; }
+.merc-strip {
+    flex: 1 1 0; width: 0; min-width: 0; display: grid; grid-template-rows: repeat(2, auto); grid-auto-flow: column;
+    gap: 8px; overflow-x: auto; scroll-behavior: smooth; padding: 4px 2px 8px;
+}
+.merc-strip .merc-design { width: 150px; height: auto; aspect-ratio: 1748 / 1240; }
 .merc-strip .merc-design img { object-fit: contain; }
+.merc-arrow {
+    flex: none; width: 36px; height: 36px; border: none; border-radius: 50%;
+    background: var(--gold); color: #1f1f38; font-size: 1.4rem; font-weight: 700; cursor: pointer;
+}
+.merc-arrow:disabled { opacity: 0.35; cursor: default; }
 /* Telefono: due finestre per riga, ciascuna intera (senza tagli) e grande */
 .merc-designs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .merc-design {

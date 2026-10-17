@@ -78,21 +78,22 @@
         updateStripArrows();
     }
 
-    // Frecce del carosello dei retro: scorrono di due disegni alla volta
+    // Frecce del carosello dei retro (due righe): ogni freccia sposta di due colonne di disegni
     function scrollStrip(direction) {
         const strip = document.getElementById('merc-strip');
-        const step = (strip.querySelector('.merc-design')?.offsetWidth || 150) * 2 + 16;
-        strip.scrollBy({ left: direction * step, behavior: 'smooth' });
+        const column = (strip.querySelector('.merc-design')?.offsetWidth || 150) + 8;
+        strip.scrollBy({ left: direction * column * 2, behavior: 'smooth' });
     }
     document.getElementById('strip-prev').addEventListener('click', () => scrollStrip(-1));
     document.getElementById('strip-next').addEventListener('click', () => scrollStrip(1));
-    // Le frecce compaiono solo se i disegni del retro non entrano tutti nella barra
+    // Le frecce restano sempre visibili; si spengono quando non c'è altro da scorrere
     function updateStripArrows() {
         const strip = document.getElementById('merc-strip');
-        const overflow = strip.scrollWidth > strip.clientWidth + 1;
-        document.getElementById('strip-prev').hidden = !overflow;
-        document.getElementById('strip-next').hidden = !overflow;
+        const maxLeft = strip.scrollWidth - strip.clientWidth;
+        document.getElementById('strip-prev').disabled = strip.scrollLeft <= 1;
+        document.getElementById('strip-next').disabled = strip.scrollLeft >= maxLeft - 1;
     }
+    document.getElementById('merc-strip').addEventListener('scroll', updateStripArrows);
     window.addEventListener('resize', updateStripArrows);
 
     // Ingrandimento del disegno: si sceglie con il tasto al centro, come nel calendario
@@ -186,6 +187,8 @@
             await loadSummary();
             gate.hidden = true;
             app.hidden = false;
+            // Ora che la sezione è visibile si possono misurare le frecce
+            updateStripArrows();
         } catch (error) {
             clearPin();
             pin = '';
