@@ -563,7 +563,8 @@ router.post('/natale/checkout', async (req, res) => {
 
         const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
+            // Carta e Satispay (Satispay compare solo se è attivo nel dashboard Stripe)
+            payment_method_types: ['card', 'satispay'],
             line_items: [{
                 price_data: {
                     currency: 'eur',
