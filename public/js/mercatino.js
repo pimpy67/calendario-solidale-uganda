@@ -5,6 +5,7 @@
     const PIN_KEY = 'mercatinoPin';
     let pin = '';
     let selectedDesign = null;
+    let selectedSrc = null;
 
     // Il PIN resta solo per questa scheda del browser (sessionStorage), se disponibile
     function readPin() {
@@ -94,10 +95,12 @@
     let zoomDesign = null;
     let zoomLabel = null;
     let zoomBtn = null;
+    let zoomSrc = null;
     function openZoom(design, label, fullSrc, btn) {
         zoomDesign = design;
         zoomLabel = label;
         zoomBtn = btn;
+        zoomSrc = fullSrc;
         const img = document.getElementById('zoom-img');
         img.src = fullSrc;
         img.alt = label;
@@ -109,7 +112,7 @@
         document.getElementById('zoom').hidden = true;
     }
     document.getElementById('zoom-choose').addEventListener('click', () => {
-        selectDesign(zoomDesign, zoomLabel, zoomBtn);
+        selectDesign(zoomDesign, zoomLabel, zoomBtn, zoomSrc);
         closeZoom();
     });
     document.getElementById('zoom-close').addEventListener('click', closeZoom);
@@ -117,14 +120,28 @@
         if (e.target.id === 'zoom') closeZoom();
     });
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeZoom();
+        if (e.key === 'Escape') { closeZoom(); closePreview(); }
     });
 
-    function selectDesign(design, label, btn) {
+    function selectDesign(design, label, btn, src) {
         selectedDesign = design;
+        selectedSrc = src;
         document.querySelectorAll('.merc-design').forEach(b => b.setAttribute('aria-checked', 'false'));
         btn.setAttribute('aria-checked', 'true');
         document.getElementById('merc-selected').textContent = label;
+    }
+
+    // Popup di controllo: fronte (disegno scelto) e retro con il nome di chi riceve, come nel modulo dell'Avvento
+    function openPreview(recipientName) {
+        const front = document.getElementById('preview-front');
+        front.src = selectedSrc;
+        document.getElementById('preview-back-name').textContent = recipientName;
+        showError('preview-error', '');
+        document.getElementById('preview').hidden = false;
+        document.getElementById('preview-confirm').focus();
+    }
+    function closePreview() {
+        document.getElementById('preview').hidden = true;
     }
 
     function formatTime(iso) {
@@ -175,39 +192,47 @@
         await unlock();
     });
 
-    document.getElementById('sale-form').addEventListener('submit', async (e) => {
+    // "Salva" controlla i dati e apre il popup: la vendita si registra solo dal tasto nel popup
+    document.getElementById('sale-form').addEventListener('submit', (e) => {
         e.preventDefault();
         showError('sale-error', '');
         document.getElementById('sale-ok').hidden = true;
 
         const donorName = document.getElementById('donor-name').value.trim();
-        const donorEmail = document.getElementById('donor-email').value.trim();
         const recipientName = document.getElementById('recipient-name').value.trim();
         const recipientEmail = document.getElementById('recipient-email').value.trim();
-        const message = document.getElementById('message').value.trim();
 
         if (!selectedDesign) return showError('sale-error', 'Scegli prima un disegno');
         if (!donorName || !recipientName || !recipientEmail) return showError('sale-error', 'Compila nome di chi regala, nome di chi riceve ed email del destinatario');
 
-        const button = document.getElementById('sale-submit');
+        openPreview(recipientName);
+    });
+
+    async function registerSale() {
+        const donorEmail = document.getElementById('donor-email').value.trim();
+        const message = document.getElementById('message').value.trim();
+        const button = document.getElementById('preview-confirm');
         button.disabled = true;
+        showError('preview-error', '');
         try {
             const data = await api('/api/mercatino/cash', {
                 method: 'POST',
                 body: JSON.stringify({
-                    donor_name: donorName,
+                    donor_name: document.getElementById('donor-name').value.trim(),
                     donor_email: donorEmail || null,
-                    recipient_name: recipientName,
-                    recipient_email: recipientEmail,
+                    recipient_name: document.getElementById('recipient-name').value.trim(),
+                    recipient_email: document.getElementById('recipient-email').value.trim(),
                     message: message || null,
                     card_design: selectedDesign
                 })
             });
+            closePreview();
             const ok = document.getElementById('sale-ok');
             ok.textContent = `Registrata la gift card n. ${data.id} in contanti. Consegna il ${formatTime(data.delivery_at)}.`;
             ok.hidden = false;
-            e.target.reset();
+            document.getElementById('sale-form').reset();
             selectedDesign = null;
+            selectedSrc = null;
             document.querySelectorAll('.merc-design').forEach(b => b.setAttribute('aria-checked', 'false'));
             document.getElementById('merc-selected').textContent = 'nessuno';
             await loadSummary();
@@ -217,10 +242,17 @@
                 location.reload();
                 return;
             }
-            showError('sale-error', error.message);
+            showError('preview-error', error.message);
         } finally {
             button.disabled = false;
         }
+    }
+
+    document.getElementById('preview-confirm').addEventListener('click', registerSale);
+    document.getElementById('preview-back').addEventListener('click', closePreview);
+    document.getElementById('preview-close').addEventListener('click', closePreview);
+    document.getElementById('preview').addEventListener('click', (e) => {
+        if (e.target.id === 'preview') closePreview();
     });
 
     document.getElementById('sum-refresh').addEventListener('click', loadSummary);

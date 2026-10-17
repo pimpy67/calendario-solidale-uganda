@@ -66,6 +66,25 @@
     .merc-list li { padding: 4px 0; }
     .merc-summary .merc-btn-small { margin-top: auto; align-self: flex-start; }
 }
+/* Popup di controllo prima della vendita: fronte e retro della gift card, affiancati se c'è spazio */
+.merc-preview-box {
+    width: min(96vw, 1220px); max-height: 96dvh; overflow-y: auto;
+    align-items: stretch; gap: 12px; padding: 16px;
+    background: rgba(20,20,43,0.96); border: 1px solid rgba(245,210,122,0.25); border-radius: 14px;
+}
+.merc-preview-box h2 { margin: 0; text-align: center; color: var(--gold); font-size: 1.2rem; }
+.merc-preview-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.merc-preview-face { margin: 0; }
+.merc-preview-face img {
+    width: 100%; height: auto; aspect-ratio: 1748 / 1240; max-height: none;
+    object-fit: cover; border-radius: 10px; box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+.merc-preview-cards .gift-back-preview { display: block; }
+.merc-preview-cards .card-back { width: 100%; max-width: none; }
+.merc-preview-actions { display: flex; flex-direction: column; gap: 8px; }
+.merc-preview-actions .merc-btn { margin-top: 0; }
+.merc-preview-box .merc-error { text-align: center; }
+
 /* Ingrandimento del disegno: quasi a tutto schermo, con il tasto di scelta al centro */
 .zoom-box img { max-width: 96vw; max-height: 88vh; }
 .zoom-choose { font-size: 1.05rem; padding: 12px 22px; }

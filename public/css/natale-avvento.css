@@ -536,7 +536,7 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     border-radius: 10px;
     padding: 4px 12px;
     box-shadow: 0 4px 14px rgba(0,0,0,0.18);
-    font-size: calc(2.3cqw + 1px);
+    font-size: 2.1cqw;
 }
 @media (min-width: 900px) {
     .gift-layout { grid-template-columns: 1fr 1fr; }
