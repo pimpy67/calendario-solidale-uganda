@@ -58,7 +58,7 @@
     }
 
     async function loadDesigns() {
-        const response = await fetch('/data/avvento.json?v=2026-10-16ae');
+        const response = await fetch('/data/avvento.json?v=2026-10-17c');
         const data = await response.json();
         const doors = data.doors || [];
         const grid = document.getElementById('merc-designs');
