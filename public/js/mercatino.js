@@ -68,6 +68,10 @@
         doors.filter(d => d.disegno).forEach(door => {
             makeTile(`porta${door.day}`, `Finestra ${door.day}`, door.miniatura || door.disegno, door.disegno, grid);
         });
+        // Disegni del carosello che non sono su nessuna finestra
+        (data.disegni_mercatino || []).forEach(extra => {
+            makeTile(extra.code, extra.label, extra.file, extra.file, grid);
+        });
         doors.filter(d => d.disegno_retro).forEach(door => {
             makeTile(`porta${door.day}r`, `Finestra ${door.day}, retro`, door.disegno_retro, door.disegno_retro, strip);
         });
@@ -149,6 +153,14 @@
         return isNaN(date) ? '' : date.toLocaleString('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
     }
 
+    // Nome leggibile del disegno: "finestra 15", "finestra 15 retro" o "disegno 16"
+    function designLabel(design) {
+        const door = /^porta(\d+)(r?)$/.exec(design);
+        if (door) return `finestra ${door[1]}${door[2] ? ' retro' : ''}`;
+        const extra = /^extra-(\d+)$/.exec(design);
+        return extra ? `disegno ${Number(extra[1])}` : String(design);
+    }
+
     async function loadSummary() {
         const total = document.getElementById('sum-total');
         const list = document.getElementById('sum-list');
@@ -158,7 +170,7 @@
             list.innerHTML = '';
             data.cards.forEach(card => {
                 const li = document.createElement('li');
-                li.textContent = `#${card.id} · da ${card.donor_name} a ${card.recipient_name} · finestra ${String(card.card_design).replace('porta', '').replace('r', ' retro')} · consegna ${formatTime(card.delivery_at)}`;
+                li.textContent = `#${card.id} · da ${card.donor_name} a ${card.recipient_name} · ${designLabel(card.card_design)} · consegna ${formatTime(card.delivery_at)}`;
                 list.appendChild(li);
             });
         } catch (error) {

@@ -122,6 +122,11 @@
 .merc-error { color: #ffb4b4; margin: 6px 0 0; }
 .merc-ok { color: #b9f5c4; font-weight: 600; margin: 6px 0 0; }
 .merc-note { color: var(--muted); font-size: 0.9rem; margin: 10px 0 0; text-align: center; }
+/* Fascia dei retro a scorrimento (telefono e PC): ogni retro ha la sua misura, anche se fuori schermo */
+.merc-strip-wrap { display: flex; align-items: center; gap: 8px; }
+.merc-strip { flex: 1 1 0; width: 0; min-width: 0; display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; }
+.merc-strip .merc-design { flex: 0 0 auto; height: 96px; aspect-ratio: 3 / 2; }
+.merc-strip .merc-design img { object-fit: contain; }
 /* Telefono: due finestre per riga, ciascuna intera (senza tagli) e grande */
 .merc-designs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .merc-design {
