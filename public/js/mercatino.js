@@ -202,8 +202,20 @@
         const recipientName = document.getElementById('recipient-name').value.trim();
         const recipientEmail = document.getElementById('recipient-email').value.trim();
 
-        if (!selectedDesign) return showError('sale-error', 'Scegli prima un disegno');
-        if (!donorName || !recipientName || !recipientEmail) return showError('sale-error', 'Compila nome di chi regala, nome di chi riceve ed email del destinatario');
+        // Avviso chiaro: dice quale dato manca e porta il cursore sul primo campo vuoto
+        const missing = [];
+        if (!selectedDesign) missing.push('il disegno (tocca un disegno, poi "Scelgo questo disegno")');
+        if (!donorName) missing.push('il nome di chi regala');
+        if (!recipientName) missing.push('il nome di chi riceve');
+        if (!recipientEmail) missing.push("l'email di chi riceve");
+        if (missing.length) {
+            const message = `Manca: ${missing.join(', ')}.`;
+            showError('sale-error', message);
+            window.alert(message);
+            const firstEmpty = !donorName ? 'donor-name' : !recipientName ? 'recipient-name' : !recipientEmail ? 'recipient-email' : null;
+            if (firstEmpty) document.getElementById(firstEmpty).focus();
+            return;
+        }
 
         openPreview(recipientName);
     });
