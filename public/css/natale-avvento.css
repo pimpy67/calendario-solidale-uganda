@@ -431,6 +431,13 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     font-weight: 600; cursor: pointer;
 }
 .flip-toggle[hidden] { display: none; }
+/* Ascolta / Ferma: in alto a sinistra del pop-up, sia con il disegno sia con il testo */
+.speak-toggle {
+    position: absolute; top: 12px; left: 12px; z-index: 2;
+    padding: 8px 16px; border-radius: 999px; border: none; cursor: pointer;
+    background: rgba(0,0,0,0.45); color: #fff; font-weight: 600; backdrop-filter: blur(3px);
+}
+.speak-toggle[hidden] { display: none; }
 /* Il tasto sta al centro, con fondo semitrasparente, sia sul davanti sia sul retro */
 .modal.cardview .flip-toggle {
     position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);

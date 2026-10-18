@@ -103,6 +103,7 @@
             toggle.setAttribute('aria-pressed', 'false');
             toggle.hidden = !door.filastrocca;
             modal.hidden = false;
+            setupSpeech(door);
             fitModalText();
             document.getElementById('modal-close').focus();
             return;
@@ -137,6 +138,7 @@
             toggle.hidden = !(door.filastrocca || door.disegno_retro) || String(door.day) === '1';
             modal.classList.add('cardview');
             modal.hidden = false;
+            setupSpeech(door);
             document.getElementById('modal-close').focus();
             return;
         }
@@ -159,11 +161,52 @@
             img.hidden = true;
         }
         modal.hidden = false;
+        setupSpeech(door);
         document.getElementById('modal-close').focus();
     }
 
     function closeModal() {
+        stopSpeech();
         document.getElementById('modal').hidden = true;
+    }
+
+    // Lettura ad alta voce della porta (sintesi vocale del browser)
+    function speechSupported() {
+        return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+    }
+
+    function setSpeakLabel(playing) {
+        const btn = document.getElementById('speak-toggle');
+        btn.textContent = playing ? 'Ferma' : 'Ascolta';
+        btn.setAttribute('aria-pressed', String(playing));
+    }
+
+    function stopSpeech() {
+        if (speechSupported()) speechSynthesis.cancel();
+        setSpeakLabel(false);
+    }
+
+    function speak(text) {
+        if (!speechSupported() || !text) return;
+        speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'it-IT';
+        utter.rate = 0.9;
+        const voice = speechSynthesis.getVoices().find((v) => v.lang.startsWith('it'));
+        if (voice) utter.voice = voice;
+        utter.onend = () => setSpeakLabel(false);
+        speechSynthesis.speak(utter);
+        setSpeakLabel(true);
+    }
+
+    // Tasto "Ascolta" nel pop-up: se la porta ha un testo, parte subito all'apertura
+    function setupSpeech(door) {
+        const btn = document.getElementById('speak-toggle');
+        const text = door.audio || door.filastrocca || door.text || '';
+        stopSpeech();
+        btn.dataset.text = text;
+        btn.hidden = !text || !speechSupported();
+        if (!btn.hidden) speak(text);
     }
 
     function renderDoors(today) {
@@ -478,6 +521,10 @@
         document.getElementById('zoom-choose').addEventListener('click', () => {
             selectDay(zoomDay, zoomFace);
             closeZoom();
+        });
+        document.getElementById('speak-toggle').addEventListener('click', () => {
+            if (speechSupported() && speechSynthesis.speaking) stopSpeech();
+            else speak(document.getElementById('speak-toggle').dataset.text);
         });
         document.getElementById('flip-toggle').addEventListener('click', (e) => {
             const modal = document.getElementById('modal');
