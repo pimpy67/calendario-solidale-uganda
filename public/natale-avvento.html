@@ -6,7 +6,7 @@
     <meta name="description" content="Il calendario dell'Avvento di Effatà: ogni giorno dal 1 al 25 dicembre una finestra con un disegno dei bambini della Casa Famiglia in Uganda. Scegli un disegno per regalare un Natale solidale.">
     <title>Natale a Effatà · Calendario dell'Avvento</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
-    <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-10-17c">
+    <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-10-18b">
 </head>
 <body>
     <div class="snow" id="snow" aria-hidden="true"></div>
@@ -36,7 +36,7 @@
                 <li><strong>Scegli</strong> dal carosello il disegno che vuoi regalare per questo Natale</li>
                 <li><strong>Clicca</strong> sul disegno e premi «Scegli questo disegno»</li>
                 <li><strong>Compila</strong> il modulo con i tuoi dati e quelli di chi riceve il regalo</li>
-                <li><strong>Regala</strong>: la gift card arriva per email il 25 dicembre alle 00:00</li>
+                <li><strong>Regala</strong>: la gift card si apre il 24 dicembre alle 00:00, l'email arriva il 25</li>
             </ol>
 
             <div class="carousel" id="carousel">
@@ -49,7 +49,7 @@
 
         <section aria-labelledby="gift-title" class="gift-form-section" id="gift-section">
             <h2 id="gift-title">Regala questo disegno · 20 €</h2>
-            <p class="gift-lead">La gift card arriva per email al destinatario il 25 dicembre alle 00:00.</p>
+            <p class="gift-lead">La gift card si apre il 24 dicembre alle 00:00. Se indichi l'email, arriva anche per posta il 25 dicembre alle 00:00. Puoi inviarla anche su WhatsApp prima.</p>
 
             <div class="gift-banner" id="gift-banner" hidden>Grazie! Il pagamento è andato a buon fine. Riceverai la conferma per email.</div>
 
@@ -82,17 +82,40 @@
                 <label for="gift-recipient-name">Nome di chi riceve</label>
                 <input type="text" id="gift-recipient-name" maxlength="100" required placeholder="es. Anna Bianchi">
 
-                <label for="gift-recipient-email">Email di chi riceve</label>
-                <input type="email" id="gift-recipient-email" maxlength="255" required placeholder="es. anna@email.com">
+                <label for="gift-recipient-email">Email di chi riceve (facoltativa)</label>
+                <input type="email" id="gift-recipient-email" maxlength="255" placeholder="es. anna@email.com">
+
+                <label for="gift-recipient-phone">Telefono di chi riceve (facoltativo)</label>
+                <input type="tel" id="gift-recipient-phone" maxlength="30" placeholder="es. 333 1234567">
+                <p class="gift-hint">Inserisci almeno un contatto, email o telefono.</p>
+
+                <fieldset class="gift-channels">
+                    <legend>Come far arrivare il regalo</legend>
+                    <label><input type="checkbox" id="gift-send-email" style="width: auto"> Per email</label>
+                    <label><input type="checkbox" id="gift-send-whatsapp" style="width: auto"> Per WhatsApp</label>
+                </fieldset>
 
                 <label for="gift-message">Messaggio di auguri (facoltativo)</label>
                 <textarea id="gift-message" maxlength="490" rows="3" placeholder="Buon Natale!"></textarea>
+
+                <label class="gift-consent"><input type="checkbox" id="gift-privacy" style="width: auto"> Ho letto e accetto l'<a href="/natale-avvento.html#informativa-natale" target="_blank" rel="noopener">informativa sulla privacy</a>: nome e contatti di chi riceve servono solo a consegnare la gift card.</label>
 
                 <p id="gift-error" class="gift-error" hidden></p>
                 <button type="submit" id="gift-submit" class="gift-submit">Regala questo disegno · 20 €</button>
             </form>
 
             </div>
+        </section>
+
+        <section class="privacy-natale" id="informativa-natale" aria-labelledby="privacy-natale-title">
+            <h2 id="privacy-natale-title">Informativa privacy · gift card di Natale</h2>
+            <p><strong>Titolare del trattamento:</strong> Effatà Italia Charity Organisation ODV, contatto info@effataitalia.it.</p>
+            <p><strong>Dati trattati:</strong> nome di chi regala, email di chi regala (facoltativa), nome di chi riceve, email e/o telefono di chi riceve, messaggio di auguri, data del consenso e canali scelti per l'invio.</p>
+            <p><strong>Finalità:</strong> consegnare la gift card a chi riceve, per email o per WhatsApp, secondo i canali scelti da chi regala, e gestire il pagamento.</p>
+            <p><strong>Base giuridica:</strong> esecuzione del regalo richiesto e consenso di chi regala, che dichiara di avere il consenso di chi riceve a fornire i suoi contatti.</p>
+            <p><strong>Chi riceve i dati:</strong> i fornitori tecnici necessari al servizio (il sistema di pagamento Stripe e il servizio di posta elettronica). Il messaggio WhatsApp è inviato dall'associazione dal proprio numero. I dati non sono venduti né usati per pubblicità.</p>
+            <p><strong>Conservazione:</strong> i dati sono conservati per il tempo necessario alla consegna e agli obblighi contabili, poi cancellati.</p>
+            <p><strong>Diritti:</strong> puoi chiedere accesso, correzione, cancellazione o limitazione dei dati, e opporti al trattamento, scrivendo a info@effataitalia.it.</p>
         </section>
 
         <section class="cta" aria-labelledby="cta-title">
@@ -140,6 +163,6 @@
         <p><a href="mailto:effataitalia@gmail.com">effataitalia@gmail.com</a> · Tel <a href="tel:+393701421570">370 1421570</a></p>
         <p class="site-footer-links"><a href="https://effataitalia.it/">effataitalia.it</a> · <a href="/">Calendario solidale</a></p>
     </footer>
-    <script src="/js/natale-avvento.js?v=2026-10-17c"></script>
+    <script src="/js/natale-avvento.js?v=2026-10-18b"></script>
 </body>
 </html>

@@ -34,7 +34,7 @@
         }
     }
 
-    // Data di apertura in ora di Roma, es. "25 dicembre alle 00:00"
+    // Data di apertura in ora di Roma, es. "24 dicembre alle 00:00"
     function formatDelivery(iso) {
         const date = new Date(iso);
         const day = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long', timeZone: 'Europe/Rome' }).format(date);

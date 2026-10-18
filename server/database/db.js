@@ -114,6 +114,23 @@ function init() {
         db.exec('ALTER TABLE natale_gift_cards ADD COLUMN donor_cf VARCHAR(16)');
     }
 
+    // Migrazione: telefono del destinatario, canali scelti da chi regala, consenso privacy e invio WhatsApp
+    const nataleContactColumns = {
+        recipient_phone: 'VARCHAR(30)',
+        send_email: 'INTEGER DEFAULT 1',
+        send_whatsapp: 'INTEGER DEFAULT 0',
+        privacy_consent_at: 'DATETIME',
+        whatsapp_sent_at: 'DATETIME',
+        email_at: 'VARCHAR(30)'
+    };
+    for (const [name, type] of Object.entries(nataleContactColumns)) {
+        if (!nataleColumns.some(c => c.name === name)) {
+            db.exec(`ALTER TABLE natale_gift_cards ADD COLUMN ${name} ${type}`);
+        }
+    }
+    // Le gift card create prima dello spostamento hanno un solo orario: email e apertura coincidono
+    db.exec('UPDATE natale_gift_cards SET email_at = delivery_at WHERE email_at IS NULL');
+
     // Crea indici per performance
     db.exec(`
         CREATE INDEX IF NOT EXISTS idx_donations_date ON donations(year, month, day);
@@ -544,12 +561,13 @@ function close() {
  */
 function createNataleGiftCard(data) {
     const stmt = db.prepare(`
-        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const info = stmt.run(
         data.payment_id, data.amount, data.donor_name, data.donor_email, data.donor_cf || null,
-        data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at
+        data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at, data.email_at,
+        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at
     );
     return info.lastInsertRowid;
 }
@@ -584,14 +602,36 @@ function countNataleGiftCards() {
 
 /**
  * Gift card di Natale pagate, il cui invio al destinatario è scaduto e non ancora partito.
- * delivery_at è in ISO UTC: il confronto come stringa è corretto perché il formato è fisso.
+ * email_at è in ISO UTC: il confronto come stringa è corretto perché il formato è fisso.
  */
 function getDueNataleGiftCards(nowIso) {
     return db.prepare(`
         SELECT * FROM natale_gift_cards
-        WHERE payment_status = 'completed' AND email_sent_at IS NULL AND delivery_at <= ?
-        ORDER BY delivery_at
+        WHERE payment_status = 'completed' AND email_sent_at IS NULL AND email_at <= ?
+            AND send_email = 1 AND recipient_email != ''
+        ORDER BY email_at
     `).all(nowIso);
+}
+
+/**
+ * Gift card di Natale da inviare su WhatsApp dal mercatino o dalla lista di invio, in ordine di vendita
+ */
+function getNataleWhatsappList() {
+    return db.prepare(`
+        SELECT * FROM natale_gift_cards
+        WHERE payment_status = 'completed' AND send_whatsapp = 1 AND recipient_phone != ''
+        ORDER BY id
+    `).all();
+}
+
+/**
+ * Segna come inviata su WhatsApp una gift card di Natale. Non sovrascrive la data del primo invio.
+ */
+function markNataleWhatsappSent(id) {
+    return db.prepare(`
+        UPDATE natale_gift_cards SET whatsapp_sent_at = COALESCE(whatsapp_sent_at, CURRENT_TIMESTAMP)
+        WHERE id = ? AND send_whatsapp = 1 AND recipient_phone != ''
+    `).run(id).changes;
 }
 
 /**
@@ -625,11 +665,12 @@ function getNataleGiftCardByPaymentId(paymentId) {
  */
 function createCashNataleGiftCard(data) {
     const info = db.prepare(`
-        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, recipient_name, recipient_email, message, card_design, delivery_at, payment_status, payment_method, paid_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', 'cash', CURRENT_TIMESTAMP)
+        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at, payment_status, payment_method, paid_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', 'cash', CURRENT_TIMESTAMP)
     `).run(
         data.payment_id, data.amount, data.donor_name, data.donor_email,
-        data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at
+        data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at, data.email_at,
+        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at
     );
     return db.prepare('SELECT * FROM natale_gift_cards WHERE id = ?').get(info.lastInsertRowid);
 }
@@ -658,6 +699,8 @@ module.exports = {
     createCashNataleGiftCard,
     getCashNataleGiftCardsToday,
     getDueNataleGiftCards,
+    getNataleWhatsappList,
+    markNataleWhatsappSent,
     claimNataleGiftCard,
     releaseNataleGiftCard,
     getNataleGiftCardByPaymentId,

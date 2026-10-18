@@ -6,8 +6,8 @@
     <meta name="robots" content="noindex">
     <title>Mercatino · gift card di Natale</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
-    <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-10-17c">
-    <link rel="stylesheet" href="/css/mercatino.css?v=2026-10-17c">
+    <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-10-18b">
+    <link rel="stylesheet" href="/css/mercatino.css?v=2026-10-18b">
 </head>
 <body>
     <main class="wrap merc">
@@ -58,8 +58,20 @@
                         <input type="text" id="recipient-name" maxlength="100" required placeholder="es. Anna Bianchi">
                     </div>
                     <div class="merc-field">
-                        <label for="recipient-email">Email di chi riceve</label>
-                        <input type="email" id="recipient-email" maxlength="255" required placeholder="es. anna@email.com">
+                        <label for="recipient-email">Email di chi riceve (facoltativa)</label>
+                        <input type="email" id="recipient-email" maxlength="255" placeholder="es. anna@email.com">
+                    </div>
+                    <div class="merc-field">
+                        <label for="recipient-phone">Telefono di chi riceve (facoltativo)</label>
+                        <input type="tel" id="recipient-phone" maxlength="30" placeholder="es. 333 1234567">
+                    </div>
+                    <fieldset class="merc-field merc-field-wide merc-channels">
+                        <legend>Come far arrivare il regalo (almeno un contatto)</legend>
+                        <label><input type="checkbox" id="send-email"> Per email</label>
+                        <label><input type="checkbox" id="send-whatsapp"> Per WhatsApp</label>
+                    </fieldset>
+                    <div class="merc-field merc-field-wide">
+                        <label class="merc-consent"><input type="checkbox" id="privacy-consent"> Ho letto l'<a href="/natale-avvento.html#informativa-natale" target="_blank" rel="noopener">informativa sulla privacy</a> e acconsento al trattamento di nome e contatti di chi riceve, solo per consegnare la gift card.</label>
                     </div>
                     <div class="merc-field merc-field-wide">
                         <label for="message">Messaggio di auguri (facoltativo)</label>
@@ -69,7 +81,7 @@
                         <p id="sale-error" class="merc-error" hidden></p>
                         <p id="sale-ok" class="merc-ok" hidden></p>
                         <button type="submit" class="merc-btn merc-btn-big" id="sale-submit">Salva</button>
-                        <p class="merc-note">Prima vedi fronte e retro della gift card. Consegna per email il 25 dicembre alle 00:00.</p>
+                        <p class="merc-note">Prima vedi fronte e retro della gift card. Si apre il 24 dicembre alle 00:00, l'email arriva il 25.</p>
                     </div>
                 </form>
             </section>
@@ -79,6 +91,14 @@
                 <p class="merc-total" id="sum-total">Caricamento…</p>
                 <ul class="merc-list" id="sum-list"></ul>
                 <button type="button" class="merc-btn merc-btn-small" id="sum-refresh">Aggiorna</button>
+            </section>
+
+            <section class="merc-card merc-invii" aria-labelledby="invii-title">
+                <h2 id="invii-title">Lista di invio WhatsApp</h2>
+                <p class="merc-note">Ogni riga apre WhatsApp con numero e messaggio già pronti: premi invio su WhatsApp, poi segna "Inviato".</p>
+                <p class="merc-total" id="invii-total">Caricamento…</p>
+                <ul class="merc-list merc-invii-list" id="invii-list"></ul>
+                <button type="button" class="merc-btn merc-btn-small" id="invii-refresh">Aggiorna</button>
             </section>
             </div>
         </div>
@@ -128,6 +148,6 @@
         </div>
     </div>
     <script src="/js/vendor/qrcode.js"></script>
-    <script src="/js/mercatino.js?v=2026-10-17c"></script>
+    <script src="/js/mercatino.js?v=2026-10-18b"></script>
 </body>
 </html>

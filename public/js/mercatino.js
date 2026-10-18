@@ -179,12 +179,70 @@
         }
     }
 
+    // Lista di invio WhatsApp: "Apri WhatsApp" porta a WhatsApp con numero e testo già pronti,
+    // "Inviato" lo registra nel sistema dopo che chi invia ha premuto invio su WhatsApp
+    function formatSentAt(sqlTime) {
+        return formatTime(sqlTime.replace(' ', 'T') + 'Z');
+    }
+
+    function makeInvioRow(card) {
+        const li = document.createElement('li');
+        const label = document.createElement('span');
+        label.textContent = `#${card.id} · ${card.recipient_name} · +${card.recipient_phone}`;
+        li.appendChild(label);
+
+        const open = document.createElement('a');
+        open.className = 'merc-btn merc-btn-small';
+        open.href = card.whatsapp_url;
+        open.target = '_blank';
+        open.rel = 'noopener';
+        open.textContent = 'Apri WhatsApp';
+        li.appendChild(open);
+
+        const done = document.createElement('button');
+        done.type = 'button';
+        done.className = 'merc-btn merc-btn-small';
+        done.disabled = Boolean(card.sent_at);
+        done.textContent = card.sent_at ? `Inviato ${formatSentAt(card.sent_at)}` : 'Inviato';
+        done.addEventListener('click', async () => {
+            done.disabled = true;
+            try {
+                await api(`/api/mercatino/invii/${card.id}/inviato`, { method: 'POST' });
+                await loadInvii();
+            } catch (error) {
+                if (error.status === 401) {
+                    clearPin();
+                    location.reload();
+                    return;
+                }
+                done.disabled = false;
+                document.getElementById('invii-total').textContent = error.message;
+            }
+        });
+        li.appendChild(done);
+        return li;
+    }
+
+    async function loadInvii() {
+        const total = document.getElementById('invii-total');
+        const list = document.getElementById('invii-list');
+        try {
+            const data = await api('/api/mercatino/invii');
+            total.textContent = `${data.sent} inviati su ${data.count} messaggi WhatsApp`;
+            list.innerHTML = '';
+            data.cards.forEach(card => list.appendChild(makeInvioRow(card)));
+        } catch (error) {
+            total.textContent = error.message;
+        }
+    }
+
     async function unlock() {
         const app = document.getElementById('merc-app');
         const gate = document.getElementById('merc-gate');
         try {
             await loadDesigns();
             await loadSummary();
+            await loadInvii();
             gate.hidden = true;
             app.hidden = false;
             // Ora che la sezione è visibile si possono misurare le frecce
@@ -216,18 +274,25 @@
         const donorName = document.getElementById('donor-name').value.trim();
         const recipientName = document.getElementById('recipient-name').value.trim();
         const recipientEmail = document.getElementById('recipient-email').value.trim();
+        const recipientPhone = document.getElementById('recipient-phone').value.trim();
+        const sendEmail = document.getElementById('send-email').checked;
+        const sendWhatsapp = document.getElementById('send-whatsapp').checked;
 
         // Avviso chiaro: dice quale dato manca e porta il cursore sul primo campo vuoto
         const missing = [];
         if (!selectedDesign) missing.push('il disegno (tocca un disegno, poi "Scelgo questo disegno")');
         if (!donorName) missing.push('il nome di chi regala');
         if (!recipientName) missing.push('il nome di chi riceve');
-        if (!recipientEmail) missing.push("l'email di chi riceve");
+        if (!recipientEmail && !recipientPhone) missing.push("l'email o il telefono di chi riceve");
+        else if (!sendEmail && !sendWhatsapp) missing.push('come far arrivare il regalo (email, WhatsApp o entrambi)');
+        if (sendEmail && !recipientEmail) missing.push("l'email di chi riceve");
+        if (sendWhatsapp && !recipientPhone) missing.push('il telefono di chi riceve');
+        if (!document.getElementById('privacy-consent').checked) missing.push("il consenso all'informativa privacy");
         if (missing.length) {
             const message = `Manca: ${missing.join(', ')}.`;
             showError('sale-error', message);
             window.alert(message);
-            const firstEmpty = !donorName ? 'donor-name' : !recipientName ? 'recipient-name' : !recipientEmail ? 'recipient-email' : null;
+            const firstEmpty = !donorName ? 'donor-name' : !recipientName ? 'recipient-name' : (!recipientEmail && !recipientPhone) ? 'recipient-email' : null;
             if (firstEmpty) document.getElementById(firstEmpty).focus();
             return;
         }
@@ -249,13 +314,17 @@
                     donor_email: donorEmail || null,
                     recipient_name: document.getElementById('recipient-name').value.trim(),
                     recipient_email: document.getElementById('recipient-email').value.trim(),
+                    recipient_phone: document.getElementById('recipient-phone').value.trim(),
+                    send_email: document.getElementById('send-email').checked,
+                    send_whatsapp: document.getElementById('send-whatsapp').checked,
+                    privacy_consent: document.getElementById('privacy-consent').checked,
                     message: message || null,
                     card_design: selectedDesign
                 })
             });
             closePreview();
             const ok = document.getElementById('sale-ok');
-            ok.textContent = `Registrata la gift card n. ${data.id} in contanti. Consegna il ${formatTime(data.delivery_at)}.`;
+            ok.textContent = `Registrata la gift card n. ${data.id} in contanti. Si apre il ${formatTime(data.delivery_at)}.`;
             ok.hidden = false;
             document.getElementById('sale-form').reset();
             selectedDesign = null;
@@ -263,6 +332,7 @@
             document.querySelectorAll('.merc-design').forEach(b => b.setAttribute('aria-checked', 'false'));
             document.getElementById('merc-selected').textContent = 'nessuno';
             await loadSummary();
+            await loadInvii();
         } catch (error) {
             if (error.status === 401) {
                 clearPin();
@@ -292,6 +362,10 @@
                     donor_cf: document.getElementById('donor-cf').value.trim() || null,
                     recipient_name: document.getElementById('recipient-name').value.trim(),
                     recipient_email: document.getElementById('recipient-email').value.trim(),
+                    recipient_phone: document.getElementById('recipient-phone').value.trim(),
+                    send_email: document.getElementById('send-email').checked,
+                    send_whatsapp: document.getElementById('send-whatsapp').checked,
+                    privacy_consent: document.getElementById('privacy-consent').checked,
                     message: document.getElementById('message').value.trim() || null
                 })
             });
@@ -344,6 +418,15 @@
     });
 
     document.getElementById('sum-refresh').addEventListener('click', loadSummary);
+    document.getElementById('invii-refresh').addEventListener('click', loadInvii);
+
+    // Chi scrive un contatto vede subito il canale corrispondente già selezionato, ma può cambiarlo
+    document.getElementById('recipient-email').addEventListener('input', (e) => {
+        document.getElementById('send-email').checked = e.target.value.trim() !== '';
+    });
+    document.getElementById('recipient-phone').addEventListener('input', (e) => {
+        document.getElementById('send-whatsapp').checked = e.target.value.trim() !== '';
+    });
 
     // Se il PIN è già in questa scheda, si entra direttamente
     pin = readPin();

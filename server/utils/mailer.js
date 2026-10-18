@@ -909,11 +909,29 @@ ${imageTag}
 }
 
 /**
- * Link alla pagina di apertura della gift card di Natale (si apre dal 25 dicembre alle 00:00)
+ * Link alla pagina di apertura della gift card di Natale (si apre dal 24 dicembre alle 00:00)
  */
 function nataleCardUrl(card) {
     const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
     return `${baseUrl}/natale-card.html?id=${encodeURIComponent(card.payment_id)}`;
+}
+
+/**
+ * Testo WhatsApp per la gift card di Natale: stesso contenuto dell'email, senza HTML
+ * @param {Object} card - Riga della tabella natale_gift_cards
+ */
+function nataleWhatsappText(card) {
+    const donorName = card.donor_name || 'Un amico generoso';
+    const messageText = card.message ? `"${card.message}"\n\n` : '';
+    return `🎄 Buon Natale, ${card.recipient_name}!
+
+${donorName} ti ha regalato una gift card di Natale del Calendario Solidale Effatà.
+
+${messageText}Questa gift card sostiene i bambini della Casa Famiglia Effatà in Uganda: cibo, istruzione e cure.
+Grazie di cuore da parte dei nostri bambini.
+
+🎁 Apri il tuo regalo:
+${nataleCardUrl(card)}`;
 }
 
 /**
@@ -926,12 +944,11 @@ async function sendNataleDonorConfirmation(card) {
     if (!card.donor_email) return null;
 
     const link = nataleCardUrl(card);
-    const whatsappText = `🎄 Ti ho regalato una gift card di Natale per la Casa Famiglia Effatà in Uganda. Apri qui il tuo regalo: ${link}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(nataleWhatsappText(card))}`;
     const html = `<div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
 <h2 style="color: #b22222;">Grazie, ${(card.donor_name || '').replace(/</g, '&lt;')}!</h2>
 <p>La tua gift card di Natale per <strong>${card.recipient_name.replace(/</g, '&lt;')}</strong> è stata pagata.</p>
-<p>Arriverà per email al destinatario il <strong>25 dicembre alle 00:00</strong>. Se vuoi, puoi anche inoltrargli subito il link di apertura:</p>
+<p>${card.send_email ? 'Arriverà per email al destinatario il <strong>25 dicembre alle 00:00</strong>. ' : ''}Il destinatario potrà aprire la gift card dal <strong>24 dicembre alle 00:00</strong>. Se vuoi, puoi anche inoltrargli subito il link di apertura:</p>
 <p style="text-align: center; margin: 24px 0;"><a href="${whatsappUrl}" style="background: #25D366; color: #fff; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">Condividi su WhatsApp</a></p>
 <p style="font-size: 12px; color: #777;">Link diretto: ${link}</p>
 </div>`;
@@ -949,6 +966,7 @@ async function sendNataleDonorConfirmation(card) {
 module.exports = {
     sendNataleDonorConfirmation,
     sendNataleGiftCard,
+    nataleWhatsappText,
     sendGiftCard,
     sendAssociationReport,
     sendScheduledGiftCard,
