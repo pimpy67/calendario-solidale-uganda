@@ -261,14 +261,14 @@
     // Tasto "Ascolta" nel pop-up: se la porta ha un testo, parte subito all'apertura
     function setupSpeech(door) {
         const btn = document.getElementById('speak-toggle');
-        // Porta con solo il disegno: legge il testo della porta successiva
-        const successiva = doors.find((d) => d.day === door.day + 1);
-        const text = door.audio || door.filastrocca || door.text || (successiva && successiva.text) || '';
+        // Porta con solo il disegno: legge il verso della porta successiva, che ha il file audio
+        const fonte = door.text ? door : doors.find((d) => d.day === door.day + 1);
+        const text = (fonte && fonte.text) || '';
         stopSpeech();
         btn.dataset.text = text;
-        btn.dataset.day = door.day;
+        btn.dataset.day = fonte ? fonte.day : door.day;
         btn.hidden = !text;
-        if (!btn.hidden) speak(text, door.day);
+        if (!btn.hidden) speak(text, fonte.day);
         const storyBtn = document.getElementById('story-toggle');
         storyBtn.dataset.day = door.day;
         storyBtn.hidden = storyDays(door.day).length === 0;
