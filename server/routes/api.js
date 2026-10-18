@@ -522,6 +522,11 @@ router.post('/mercatino/cash', (req, res) => {
             ...contacts.data
         });
         console.log(`[Mercatino] Gift card di Natale ${card.id} registrata in contanti (consegna ${card.delivery_at})`);
+        // Conferma a chi paga in contanti, se ha lasciato l'email (stesso messaggio dei pagamenti online)
+        if (card.donor_email) {
+            sendNataleDonorConfirmation(card)
+                .catch(err => console.error('Errore conferma gift card di Natale (contanti):', err));
+        }
         res.status(201).json({ success: true, id: card.id, delivery_at: card.delivery_at });
     } catch (error) {
         console.error('Errore registrazione contanti mercatino:', error);
@@ -621,7 +626,7 @@ router.post('/natale/checkout', async (req, res) => {
         return res.status(503).json({ error: true, message: 'Pagamenti non disponibili al momento' });
     }
 
-    const { donor_name, donor_email, recipient_name, message, card_design } = req.body;
+    const { donor_name, donor_email, donor_cf, recipient_name, message, card_design } = req.body;
     if (!donor_name || !recipient_name) {
         return res.status(400).json({ error: true, message: 'Compila il tuo nome e il nome di chi riceve' });
     }
@@ -631,6 +636,11 @@ router.post('/natale/checkout', async (req, res) => {
     const contacts = checkNataleContacts(req.body);
     if (contacts.error) {
         return res.status(400).json({ error: true, message: contacts.error });
+    }
+    // Codice fiscale facoltativo: serve solo per la ricevuta fiscale
+    const cleanCf = (donor_cf || '').toString().trim().toUpperCase();
+    if (cleanCf && !/^[A-Z0-9]{16}$/.test(cleanCf)) {
+        return res.status(400).json({ error: true, message: 'Codice fiscale non valido (16 caratteri)' });
     }
     const design = isNataleDesign(card_design) ? card_design : 'card1';
     const cleanMessage = (message || '').toString().substring(0, 490);
@@ -642,6 +652,7 @@ router.post('/natale/checkout', async (req, res) => {
             amount: NATALE_PRICE_CENTS / 100,
             donor_name: donor_name.toString().substring(0, 100),
             donor_email: donor_email || null,
+            donor_cf: cleanCf || null,
             recipient_name: recipient_name.toString().substring(0, 100),
             message: cleanMessage || null,
             card_design: design,
@@ -652,7 +663,8 @@ router.post('/natale/checkout', async (req, res) => {
 
         const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
+            // Carta e Satispay (Satispay compare solo se è attivo nel dashboard Stripe)
+            payment_method_types: ['card', 'satispay'],
             line_items: [{
                 price_data: {
                     currency: 'eur',

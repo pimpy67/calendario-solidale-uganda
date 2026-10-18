@@ -58,7 +58,7 @@
     }
 
     async function loadDesigns() {
-        const response = await fetch('/data/avvento.json?v=2026-10-16ae');
+        const response = await fetch('/data/avvento.json?v=2026-10-17c');
         const data = await response.json();
         const doors = data.doors || [];
         const grid = document.getElementById('merc-designs');
@@ -68,27 +68,32 @@
         doors.filter(d => d.disegno).forEach(door => {
             makeTile(`porta${door.day}`, `Finestra ${door.day}`, door.miniatura || door.disegno, door.disegno, grid);
         });
+        // Disegni del carosello che non sono su nessuna finestra
+        (data.disegni_mercatino || []).forEach(extra => {
+            makeTile(extra.code, extra.label, extra.file, extra.file, grid);
+        });
         doors.filter(d => d.disegno_retro).forEach(door => {
             makeTile(`porta${door.day}r`, `Finestra ${door.day}, retro`, door.disegno_retro, door.disegno_retro, strip);
         });
         updateStripArrows();
     }
 
-    // Frecce del carosello dei retro: scorrono di due disegni alla volta
+    // Frecce del carosello dei retro (due righe): ogni freccia sposta di due colonne di disegni
     function scrollStrip(direction) {
         const strip = document.getElementById('merc-strip');
-        const step = (strip.querySelector('.merc-design')?.offsetWidth || 150) * 2 + 16;
-        strip.scrollBy({ left: direction * step, behavior: 'smooth' });
+        const column = (strip.querySelector('.merc-design')?.offsetWidth || 150) + 8;
+        strip.scrollBy({ left: direction * column * 2, behavior: 'smooth' });
     }
     document.getElementById('strip-prev').addEventListener('click', () => scrollStrip(-1));
     document.getElementById('strip-next').addEventListener('click', () => scrollStrip(1));
-    // Le frecce compaiono solo se i disegni del retro non entrano tutti nella barra
+    // Le frecce restano sempre visibili; si spengono quando non c'è altro da scorrere
     function updateStripArrows() {
         const strip = document.getElementById('merc-strip');
-        const overflow = strip.scrollWidth > strip.clientWidth + 1;
-        document.getElementById('strip-prev').hidden = !overflow;
-        document.getElementById('strip-next').hidden = !overflow;
+        const maxLeft = strip.scrollWidth - strip.clientWidth;
+        document.getElementById('strip-prev').disabled = strip.scrollLeft <= 1;
+        document.getElementById('strip-next').disabled = strip.scrollLeft >= maxLeft - 1;
     }
+    document.getElementById('merc-strip').addEventListener('scroll', updateStripArrows);
     window.addEventListener('resize', updateStripArrows);
 
     // Ingrandimento del disegno: si sceglie con il tasto al centro, come nel calendario
@@ -120,7 +125,7 @@
         if (e.target.id === 'zoom') closeZoom();
     });
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') { closeZoom(); closePreview(); }
+        if (e.key === 'Escape') { closeZoom(); closePayQr(); closePreview(); }
     });
 
     function selectDesign(design, label, btn, src) {
@@ -149,6 +154,14 @@
         return isNaN(date) ? '' : date.toLocaleString('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
     }
 
+    // Nome leggibile del disegno: "finestra 15", "finestra 15 retro" o "disegno 16"
+    function designLabel(design) {
+        const door = /^porta(\d+)(r?)$/.exec(design);
+        if (door) return `finestra ${door[1]}${door[2] ? ' retro' : ''}`;
+        const extra = /^extra-(\d+)$/.exec(design);
+        return extra ? `disegno ${Number(extra[1])}` : String(design);
+    }
+
     async function loadSummary() {
         const total = document.getElementById('sum-total');
         const list = document.getElementById('sum-list');
@@ -158,7 +171,7 @@
             list.innerHTML = '';
             data.cards.forEach(card => {
                 const li = document.createElement('li');
-                li.textContent = `#${card.id} · da ${card.donor_name} a ${card.recipient_name} · finestra ${String(card.card_design).replace('porta', '').replace('r', ' retro')} · consegna ${formatTime(card.delivery_at)}`;
+                li.textContent = `#${card.id} · da ${card.donor_name} a ${card.recipient_name} · ${designLabel(card.card_design)} · consegna ${formatTime(card.delivery_at)}`;
                 list.appendChild(li);
             });
         } catch (error) {
@@ -232,6 +245,8 @@
             await loadInvii();
             gate.hidden = true;
             app.hidden = false;
+            // Ora che la sezione è visibile si possono misurare le frecce
+            updateStripArrows();
         } catch (error) {
             clearPin();
             pin = '';
@@ -263,13 +278,24 @@
         const sendEmail = document.getElementById('send-email').checked;
         const sendWhatsapp = document.getElementById('send-whatsapp').checked;
 
-        if (!selectedDesign) return showError('sale-error', 'Scegli prima un disegno');
-        if (!donorName || !recipientName) return showError('sale-error', 'Compila nome di chi regala e nome di chi riceve');
-        if (!sendEmail && !sendWhatsapp) return showError('sale-error', 'Scegli come far arrivare il regalo: per email, per WhatsApp o per entrambi');
-        if (sendEmail && !recipientEmail) return showError('sale-error', "Per l'invio via email serve l'email di chi riceve");
-        if (sendWhatsapp && !recipientPhone) return showError('sale-error', 'Per WhatsApp serve il telefono di chi riceve');
-        if (!recipientEmail && !recipientPhone) return showError('sale-error', 'Inserisci almeno un contatto di chi riceve: email o telefono');
-        if (!document.getElementById('privacy-consent').checked) return showError('sale-error', "Serve il consenso all'informativa privacy");
+        // Avviso chiaro: dice quale dato manca e porta il cursore sul primo campo vuoto
+        const missing = [];
+        if (!selectedDesign) missing.push('il disegno (tocca un disegno, poi "Scelgo questo disegno")');
+        if (!donorName) missing.push('il nome di chi regala');
+        if (!recipientName) missing.push('il nome di chi riceve');
+        if (!recipientEmail && !recipientPhone) missing.push("l'email o il telefono di chi riceve");
+        else if (!sendEmail && !sendWhatsapp) missing.push('come far arrivare il regalo (email, WhatsApp o entrambi)');
+        if (sendEmail && !recipientEmail) missing.push("l'email di chi riceve");
+        if (sendWhatsapp && !recipientPhone) missing.push('il telefono di chi riceve');
+        if (!document.getElementById('privacy-consent').checked) missing.push("il consenso all'informativa privacy");
+        if (missing.length) {
+            const message = `Manca: ${missing.join(', ')}.`;
+            showError('sale-error', message);
+            window.alert(message);
+            const firstEmpty = !donorName ? 'donor-name' : !recipientName ? 'recipient-name' : (!recipientEmail && !recipientPhone) ? 'recipient-email' : null;
+            if (firstEmpty) document.getElementById(firstEmpty).focus();
+            return;
+        }
 
         openPreview(recipientName);
     });
@@ -319,6 +345,71 @@
         }
     }
 
+    // Pagamento con QR: il cliente paga dal suo telefono, con carta o Satispay (pagina Stripe).
+    // Il codice fiscale serve solo qui, per la ricevuta: i contanti non lo chiedono.
+    async function showPayQr() {
+        const button = document.getElementById('preview-qr');
+        button.disabled = true;
+        showError('preview-error', '');
+        try {
+            const response = await fetch('/api/natale/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    card_design: selectedDesign,
+                    donor_name: document.getElementById('donor-name').value.trim(),
+                    donor_email: document.getElementById('donor-email').value.trim() || null,
+                    donor_cf: document.getElementById('donor-cf').value.trim() || null,
+                    recipient_name: document.getElementById('recipient-name').value.trim(),
+                    recipient_email: document.getElementById('recipient-email').value.trim(),
+                    recipient_phone: document.getElementById('recipient-phone').value.trim(),
+                    send_email: document.getElementById('send-email').checked,
+                    send_whatsapp: document.getElementById('send-whatsapp').checked,
+                    privacy_consent: document.getElementById('privacy-consent').checked,
+                    message: document.getElementById('message').value.trim() || null
+                })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.stripe_url) throw new Error(data.message || 'Errore nella creazione del pagamento');
+            drawQr(data.stripe_url);
+            document.getElementById('pay-qr').hidden = false;
+        } catch (error) {
+            showError('preview-error', error.message);
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    // Disegna il QR del link di pagamento nel canvas (libreria qrcode-generator, caricata in pagina)
+    function drawQr(text) {
+        const generator = qrcode(0, 'M');
+        generator.addData(text);
+        generator.make();
+        const canvas = document.getElementById('pay-qr-canvas');
+        const size = 360;
+        const cells = generator.getModuleCount();
+        const scale = Math.floor(size / (cells + 8)) || 1;
+        canvas.width = canvas.height = (cells + 8) * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#000';
+        for (let r = 0; r < cells; r++) {
+            for (let c = 0; c < cells; c++) {
+                if (generator.isDark(r, c)) ctx.fillRect((c + 4) * scale, (r + 4) * scale, scale, scale);
+            }
+        }
+    }
+    function closePayQr() {
+        document.getElementById('pay-qr').hidden = true;
+    }
+
+    document.getElementById('preview-qr').addEventListener('click', showPayQr);
+    document.getElementById('pay-qr-close').addEventListener('click', closePayQr);
+    document.getElementById('pay-qr-done').addEventListener('click', closePayQr);
+    document.getElementById('pay-qr').addEventListener('click', (e) => {
+        if (e.target.id === 'pay-qr') closePayQr();
+    });
     document.getElementById('preview-confirm').addEventListener('click', registerSale);
     document.getElementById('preview-back').addEventListener('click', closePreview);
     document.getElementById('preview-close').addEventListener('click', closePreview);

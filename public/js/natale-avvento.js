@@ -14,6 +14,7 @@
 
     let doors = [];
     let selectedDay = 1;
+    let selectedDesign = 'porta1';
 
     // Data di oggi in Europe/Rome: { year, month, day }
     function todayInRome() {
@@ -306,8 +307,29 @@
             label.textContent = `Finestra ${door.day}`;
             slide.appendChild(label);
 
+            slide.dataset.design = `porta${door.day}`;
             slide.addEventListener('click', () => openZoom(door));
             track.appendChild(slide);
+            // Retro con un disegno proprio: una tessera a parte, subito dopo il davanti
+            if (door.disegno_retro) {
+                const back = document.createElement('button');
+                back.type = 'button';
+                back.className = 'slide';
+                back.dataset.day = door.day;
+                back.dataset.design = `porta${door.day}r`;
+                back.setAttribute('aria-label', `Scegli il retro della finestra ${door.day}`);
+                const backImg = document.createElement('img');
+                backImg.src = door.disegno_retro;
+                backImg.alt = `Retro della finestra ${door.day}`;
+                backImg.loading = 'lazy';
+                back.appendChild(backImg);
+                const backLabel = document.createElement('span');
+                backLabel.className = 'slide-label';
+                backLabel.textContent = `Finestra ${door.day} retro`;
+                back.appendChild(backLabel);
+                back.addEventListener('click', () => openZoom(door, 'r'));
+                track.appendChild(back);
+            }
         });
         // Porte senza ancora un disegno: segnaposto, non si può scegliere
         doors.filter(d => !d.disegno && !d.text).forEach(door => {
@@ -335,11 +357,15 @@
 
     // Ingrandimento del disegno dal carosello: si sceglie con il tasto dentro la finestra
     let zoomDay = null;
-    function openZoom(door) {
+    let zoomFace = '';
+    // face: '' per il davanti, 'r' per il retro con un disegno proprio
+    function openZoom(door, face = '') {
         zoomDay = door.day;
-        document.getElementById('zoom-img').src = door.miniatura || door.disegno;
-        document.getElementById('zoom-img').alt = `Disegno della finestra ${door.day}`;
-        document.getElementById('zoom-label').textContent = `Finestra ${door.day}`;
+        zoomFace = face;
+        const label = `Finestra ${door.day}${face ? ', retro' : ''}`;
+        document.getElementById('zoom-img').src = face ? door.disegno_retro : (door.miniatura || door.disegno);
+        document.getElementById('zoom-img').alt = label;
+        document.getElementById('zoom-label').textContent = label;
         document.getElementById('zoom').hidden = false;
         document.getElementById('zoom-choose').focus();
     }
@@ -348,14 +374,15 @@
     }
 
     // Sceglie un disegno: aggiorna la scritta e l'anteprima nel modulo
-    function selectDay(day) {
+    function selectDay(day, face = '') {
         selectedDay = day;
+        selectedDesign = `porta${day}${face}`;
         const door = doors.find(d => d.day === day);
-        document.getElementById('selected-label').textContent = `Finestra ${day}`;
+        document.getElementById('selected-label').textContent = `Finestra ${day}${face ? ', retro' : ''}`;
         const preview = document.getElementById('gift-preview');
-        preview.src = door ? (door.miniatura || door.disegno) : '';
+        preview.src = door ? (face ? door.disegno_retro : (door.miniatura || door.disegno)) || '' : '';
         document.querySelectorAll('.slide').forEach(s => {
-            s.classList.toggle('selected', Number(s.dataset.day) === day);
+            s.classList.toggle('selected', s.dataset.design === selectedDesign);
         });
         // Il disegno scelto va al centro del carosello (scorre solo il carosello, non la pagina)
         const track = document.getElementById('carousel-track');
@@ -390,9 +417,10 @@
             document.getElementById('gift-error').hidden = true;
 
             const body = {
-                card_design: `porta${selectedDay}`,
+                card_design: selectedDesign,
                 donor_name: document.getElementById('gift-donor-name').value.trim(),
                 donor_email: document.getElementById('gift-donor-email').value.trim(),
+                donor_cf: document.getElementById('gift-donor-cf').value.trim(),
                 recipient_name: document.getElementById('gift-recipient-name').value.trim(),
                 recipient_email: document.getElementById('gift-recipient-email').value.trim(),
                 recipient_phone: document.getElementById('gift-recipient-phone').value.trim(),
@@ -448,7 +476,7 @@
             if (e.target.id === 'zoom') closeZoom();
         });
         document.getElementById('zoom-choose').addEventListener('click', () => {
-            selectDay(zoomDay);
+            selectDay(zoomDay, zoomFace);
             closeZoom();
         });
         document.getElementById('flip-toggle').addEventListener('click', (e) => {
@@ -482,7 +510,7 @@
         });
 
         try {
-            const response = await fetch('/data/avvento.json?v=2026-10-16ae');
+            const response = await fetch('/data/avvento.json?v=2026-10-17c');
             const data = await response.json();
             doors = data.doors;
             renderDoors(today);

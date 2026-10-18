@@ -13,7 +13,6 @@
     <main class="wrap merc">
         <header class="merc-head">
             <h1>Mercatino · gift card di Natale</h1>
-            <p class="merc-lead">Vendita in contanti. Solo per i volontari: serve il PIN.</p>
         </header>
 
         <section id="merc-gate" class="merc-card" aria-labelledby="gate-title">
@@ -49,6 +48,10 @@
                     <div class="merc-field">
                         <label for="donor-email">Email di chi regala (facoltativa)</label>
                         <input type="email" id="donor-email" maxlength="255" placeholder="es. mario@email.com">
+                    </div>
+                    <div class="merc-field">
+                        <label for="donor-cf">Codice fiscale di chi regala (solo con QR, per la ricevuta)</label>
+                        <input type="text" id="donor-cf" maxlength="16" autocomplete="off" placeholder="es. RSSMRA80A01H501U">
                     </div>
                     <div class="merc-field">
                         <label for="recipient-name">Nome di chi riceve</label>
@@ -130,10 +133,21 @@
             <p id="preview-error" class="merc-error" hidden></p>
             <div class="merc-preview-actions">
                 <button type="button" class="merc-btn merc-btn-big" id="preview-confirm">Registra vendita in contanti · 20 €</button>
+                <button type="button" class="merc-btn" id="preview-qr">Mostra QR per pagare con carta o Satispay</button>
                 <button type="button" class="merc-btn" id="preview-back">Torna indietro</button>
             </div>
         </div>
     </div>
+    <div class="zoom" id="pay-qr" hidden>
+        <div class="zoom-box merc-qr-box" role="dialog" aria-modal="true" aria-labelledby="pay-qr-title">
+            <button type="button" class="modal-close" id="pay-qr-close" aria-label="Chiudi">×</button>
+            <h2 id="pay-qr-title">Inquadra per pagare · 20 €</h2>
+            <canvas id="pay-qr-canvas" class="merc-qr-canvas"></canvas>
+            <p class="merc-qr-note">Il cliente inquadra il codice con il suo telefono e paga con carta o Satispay. Non inserire i dati della carta sul tuo dispositivo.</p>
+            <button type="button" class="merc-btn" id="pay-qr-done">Chiudi</button>
+        </div>
+    </div>
+    <script src="/js/vendor/qrcode.js"></script>
     <script src="/js/mercatino.js?v=2026-10-18b"></script>
 </body>
 </html>

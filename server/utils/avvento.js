@@ -27,9 +27,20 @@ function loadDoors() {
 
 // "porta7" = disegno davanti della finestra 7; "porta15r" = disegno del retro della finestra 15
 const DESIGN_RE = /^porta(\d{1,2})(r?)$/;
+// "extra-16" = disegno del carosello del mercatino che non è su nessuna porta (elenco "disegni_mercatino")
+const EXTRA_RE = /^extra-\d{2}$/;
+
+function loadExtras() {
+    try {
+        return JSON.parse(fs.readFileSync(DATA_PATH, 'utf8')).disegni_mercatino || [];
+    } catch (e) {
+        return [];
+    }
+}
 
 function isNataleDesign(design) {
     if (LEGACY_DESIGNS.includes(design)) return true;
+    if (EXTRA_RE.test(design || '')) return loadExtras().some(e => e.code === design);
     const match = DESIGN_RE.exec(design || '');
     if (!match) return false;
     const door = loadDoors().find(d => d.day === Number(match[1]));
@@ -41,6 +52,10 @@ function isNataleDesign(design) {
  * URL pubblico dell'immagine del design, es. "/images/gift_card/3.webp"
  */
 function designImageUrl(design) {
+    if (EXTRA_RE.test(design || '')) {
+        const extra = loadExtras().find(e => e.code === design);
+        return extra ? extra.file : null;
+    }
     const match = DESIGN_RE.exec(design || '');
     if (match) {
         const door = loadDoors().find(d => d.day === Number(match[1]));

@@ -2,6 +2,7 @@
   "year": 2026,
   "month": 12,
   "vendita_attiva": true,
+  "disegni_mercatino": [],
   "doors": [
     {
       "day": 1,
@@ -44,7 +45,8 @@
       "text": "",
       "placeholder": true,
       "disegno": "/images/gift_card/web/05_Filastrocca per l_Uganda.jpg",
-      "miniatura": "/images/gift_card/miniature/porta-05.webp"
+      "miniatura": "/images/gift_card/miniature/porta-05.webp",
+      "disegno_retro": "/images/gift_card/miniature/retro-05.webp"
     },
     {
       "day": 6,
@@ -157,7 +159,7 @@
       "image": null,
       "text": "",
       "placeholder": true,
-      "disegno": "/images/gift_card/web/011_Filastrocca per l_Uganda.jpg",
+      "disegno": "/images/gift_card/18-Disegno natalizio a cera con bambino.webp",
       "miniatura": "/images/gift_card/miniature/porta-18.webp"
     },
     {
