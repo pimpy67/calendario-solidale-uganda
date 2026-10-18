@@ -1,0 +1,20 @@
+# Ambiente di prova: stesso codice del sito, orologio al 25 dicembre 2026, nessun pagamento e nessuna email reale
+services:
+  app:
+    build: ..
+    container_name: calendario-prova
+    restart: unless-stopped
+    ports:
+      - "3100:3000"
+    volumes:
+      - prova_data:/data
+      - ./fake-date.js:/fake-date.js:ro
+    env_file:
+      - prova.env
+    environment:
+      - NODE_ENV=production
+      - DATABASE_PATH=/data/calendario.db
+    command: ["node", "-r", "/fake-date.js", "server/server.js"]
+
+volumes:
+  prova_data:
