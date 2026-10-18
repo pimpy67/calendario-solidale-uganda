@@ -15,7 +15,7 @@ const { sendNataleGiftCard } = require('../utils/mailer');
  * Ritorna true se l'invio è partito in questa chiamata.
  */
 async function deliverNataleCardIfDue(card, nowIso = new Date().toISOString()) {
-    if (card.delivery_at > nowIso) return false;
+    if (card.email_at > nowIso) return false;
     if (!db.claimNataleGiftCard(card.id)) return false;
 
     try {

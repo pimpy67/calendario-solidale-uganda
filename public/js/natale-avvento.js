@@ -377,6 +377,14 @@
         const form = document.getElementById('gift-form');
         const submitBtn = document.getElementById('gift-submit');
 
+        // Chi scrive un contatto vede subito il canale corrispondente già selezionato, ma può cambiarlo
+        document.getElementById('gift-recipient-email').addEventListener('input', (e) => {
+            document.getElementById('gift-send-email').checked = e.target.value.trim() !== '';
+        });
+        document.getElementById('gift-recipient-phone').addEventListener('input', (e) => {
+            document.getElementById('gift-send-whatsapp').checked = e.target.value.trim() !== '';
+        });
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             document.getElementById('gift-error').hidden = true;
@@ -387,11 +395,18 @@
                 donor_email: document.getElementById('gift-donor-email').value.trim(),
                 recipient_name: document.getElementById('gift-recipient-name').value.trim(),
                 recipient_email: document.getElementById('gift-recipient-email').value.trim(),
+                recipient_phone: document.getElementById('gift-recipient-phone').value.trim(),
+                send_email: document.getElementById('gift-send-email').checked,
+                send_whatsapp: document.getElementById('gift-send-whatsapp').checked,
+                privacy_consent: document.getElementById('gift-privacy').checked,
                 message: document.getElementById('gift-message').value.trim()
             };
 
-            if (!body.donor_name || !body.recipient_name || !body.recipient_email) {
-                return showGiftError('Compila il tuo nome, il nome di chi riceve e la sua email.');
+            if (!body.donor_name || !body.recipient_name) {
+                return showGiftError('Compila il tuo nome e il nome di chi riceve.');
+            }
+            if (!body.privacy_consent) {
+                return showGiftError("Accetta l'informativa sulla privacy per continuare.");
             }
 
             submitBtn.disabled = true;

@@ -6,14 +6,59 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../database/db');
-const { sendGiftCard, sendDonationNotification, sendDonorGiftCard, sendNataleDonorConfirmation } = require('../utils/mailer');
+const { sendGiftCard, sendDonationNotification, sendDonorGiftCard, sendNataleDonorConfirmation, nataleWhatsappText } = require('../utils/mailer');
 const { deliverNataleCardIfDue } = require('../jobs/natale');
 
 // Gift card di Natale: prezzo e design ammessi decisi dal server, non dal browser
 const NATALE_PRICE_CENTS = 2000; // 20,00 €
-// Orario di consegna al destinatario: 25 dicembre 2026 alle 09:00 di Roma (UTC+1)
-const NATALE_DELIVERY_AT = process.env.NATALE_DELIVERY_AT || '2026-12-24T23:00:00.000Z';
+// Apertura della gift card: 24 dicembre 2026 alle 00:00 di Roma (UTC+1)
+const NATALE_DELIVERY_AT = process.env.NATALE_DELIVERY_AT || '2026-12-23T23:00:00.000Z';
+// Email al destinatario: 25 dicembre 2026 alle 00:00 di Roma (UTC+1)
+const NATALE_EMAIL_AT = process.env.NATALE_EMAIL_AT || '2026-12-24T23:00:00.000Z';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Telefono in formato internazionale, solo cifre (es. 393331234567).
+ * Ritorna '' se manca, null se non valido. Senza prefisso si aggiunge il 39: i cellulari sono italiani.
+ */
+function normalizePhone(raw) {
+    const text = (raw || '').toString().trim();
+    const hasPrefix = /^(\+|00)/.test(text);
+    const digits = text.replace(/[\s().-]/g, '').replace(/^(\+|00)/, '');
+    if (!digits) return '';
+    const full = !hasPrefix && !digits.startsWith('39') ? `39${digits}` : digits;
+    if (!/^\d{8,15}$/.test(full)) return null;
+    return full;
+}
+
+/**
+ * Contatti e canali di invio della gift card di Natale, più il consenso privacy.
+ * Chi regala sceglie email, WhatsApp o entrambi: il canale scelto deve avere il suo contatto.
+ * Ritorna { error } oppure { data } con i campi da salvare.
+ */
+function checkNataleContacts(body) {
+    const email = (body.recipient_email || '').toString().trim();
+    const phone = normalizePhone(body.recipient_phone);
+    const sendEmail = body.send_email === true;
+    const sendWhatsapp = body.send_whatsapp === true;
+
+    if (email && !EMAIL_RE.test(email)) return { error: 'Email di chi riceve non valida' };
+    if (phone === null) return { error: 'Numero di telefono di chi riceve non valido' };
+    if (sendEmail && !email) return { error: "Per l'invio via email serve l'email di chi riceve" };
+    if (sendWhatsapp && !phone) return { error: "Per l'invio via WhatsApp serve il telefono di chi riceve" };
+    if (!sendEmail && !sendWhatsapp) return { error: 'Scegli almeno un canale di invio: email o WhatsApp' };
+    if (body.privacy_consent !== true) return { error: "Serve l'accettazione dell'informativa privacy" };
+
+    return {
+        data: {
+            recipient_email: email,
+            recipient_phone: phone,
+            send_email: sendEmail ? 1 : 0,
+            send_whatsapp: sendWhatsapp ? 1 : 0,
+            privacy_consent_at: new Date().toISOString()
+        }
+    };
+}
 const { isNataleDesign, designImageUrl } = require('../utils/avvento');
 
 // Configurazione Satispay
@@ -449,12 +494,16 @@ router.post('/mercatino/cash', (req, res) => {
     if (process.env.NATALE_VENDITA_ATTIVA !== 'true') {
         return res.status(403).json({ error: true, message: 'Le gift card di Natale non sono ancora in vendita' });
     }
-    const { donor_name, donor_email, recipient_name, recipient_email, message, card_design } = req.body || {};
-    if (!donor_name || !recipient_name || !recipient_email || !EMAIL_RE.test(recipient_email)) {
-        return res.status(400).json({ error: true, message: 'Compila nome di chi regala, nome di chi riceve ed email valida del destinatario' });
+    const { donor_name, donor_email, recipient_name, message, card_design } = req.body || {};
+    if (!donor_name || !recipient_name) {
+        return res.status(400).json({ error: true, message: 'Compila il nome di chi regala e il nome di chi riceve' });
     }
     if (donor_email && !EMAIL_RE.test(donor_email)) {
         return res.status(400).json({ error: true, message: 'Email di chi regala non valida' });
+    }
+    const contacts = checkNataleContacts(req.body || {});
+    if (contacts.error) {
+        return res.status(400).json({ error: true, message: contacts.error });
     }
     if (!isNataleDesign(card_design)) {
         return res.status(400).json({ error: true, message: 'Disegno non valido' });
@@ -466,10 +515,11 @@ router.post('/mercatino/cash', (req, res) => {
             donor_name: donor_name.toString().substring(0, 100),
             donor_email: donor_email || null,
             recipient_name: recipient_name.toString().substring(0, 100),
-            recipient_email,
             message: (message || '').toString().substring(0, 490) || null,
             card_design,
-            delivery_at: NATALE_DELIVERY_AT
+            delivery_at: NATALE_DELIVERY_AT,
+            email_at: NATALE_EMAIL_AT,
+            ...contacts.data
         });
         console.log(`[Mercatino] Gift card di Natale ${card.id} registrata in contanti (consegna ${card.delivery_at})`);
         res.status(201).json({ success: true, id: card.id, delivery_at: card.delivery_at });
@@ -498,6 +548,40 @@ router.get('/mercatino/riepilogo', (req, res) => {
     }));
     const total = cards.reduce((sum, c) => sum + Number(c.amount), 0);
     res.json({ count: cards.length, total, cards });
+});
+
+/**
+ * GET /api/mercatino/invii
+ * Lista di invio WhatsApp: una riga per gift card con il telefono. Il link apre WhatsApp
+ * con il numero e il testo già compilati, chi invia preme solo "invia" su WhatsApp.
+ */
+router.get('/mercatino/invii', (req, res) => {
+    if (!mercatinoAuthorized(req)) {
+        return res.status(401).json({ error: true, message: 'PIN non valido' });
+    }
+    const cards = db.getNataleWhatsappList().map(card => ({
+        id: card.id,
+        recipient_name: card.recipient_name,
+        recipient_phone: card.recipient_phone,
+        donor_name: card.donor_name,
+        sent_at: card.whatsapp_sent_at,
+        whatsapp_url: `https://wa.me/${card.recipient_phone}?text=${encodeURIComponent(nataleWhatsappText(card))}`
+    }));
+    res.json({ count: cards.length, sent: cards.filter(c => c.sent_at).length, cards });
+});
+
+/**
+ * POST /api/mercatino/invii/:id/inviato
+ * Segna la gift card come inviata su WhatsApp, dopo che chi invia ha premuto "invia".
+ */
+router.post('/mercatino/invii/:id/inviato', (req, res) => {
+    if (!mercatinoAuthorized(req)) {
+        return res.status(401).json({ error: true, message: 'PIN non valido' });
+    }
+    if (!db.markNataleWhatsappSent(Number(req.params.id))) {
+        return res.status(404).json({ error: true, message: 'Gift card non trovata' });
+    }
+    res.json({ success: true });
 });
 
 /**
@@ -537,12 +621,16 @@ router.post('/natale/checkout', async (req, res) => {
         return res.status(503).json({ error: true, message: 'Pagamenti non disponibili al momento' });
     }
 
-    const { donor_name, donor_email, recipient_name, recipient_email, message, card_design } = req.body;
-    if (!donor_name || !recipient_name || !recipient_email || !EMAIL_RE.test(recipient_email)) {
-        return res.status(400).json({ error: true, message: 'Compila nome di chi regala, nome di chi riceve ed email valida del destinatario' });
+    const { donor_name, donor_email, recipient_name, message, card_design } = req.body;
+    if (!donor_name || !recipient_name) {
+        return res.status(400).json({ error: true, message: 'Compila il tuo nome e il nome di chi riceve' });
     }
     if (donor_email && !EMAIL_RE.test(donor_email)) {
         return res.status(400).json({ error: true, message: 'Email di chi regala non valida' });
+    }
+    const contacts = checkNataleContacts(req.body);
+    if (contacts.error) {
+        return res.status(400).json({ error: true, message: contacts.error });
     }
     const design = isNataleDesign(card_design) ? card_design : 'card1';
     const cleanMessage = (message || '').toString().substring(0, 490);
@@ -555,10 +643,11 @@ router.post('/natale/checkout', async (req, res) => {
             donor_name: donor_name.toString().substring(0, 100),
             donor_email: donor_email || null,
             recipient_name: recipient_name.toString().substring(0, 100),
-            recipient_email,
             message: cleanMessage || null,
             card_design: design,
-            delivery_at: NATALE_DELIVERY_AT
+            delivery_at: NATALE_DELIVERY_AT,
+            email_at: NATALE_EMAIL_AT,
+            ...contacts.data
         });
 
         const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
