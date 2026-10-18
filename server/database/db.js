@@ -666,11 +666,11 @@ function getNataleGiftCardByPaymentId(paymentId) {
 function createCashNataleGiftCard(data) {
     const info = db.prepare(`
         INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at, payment_status, payment_method, paid_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', 'cash', CURRENT_TIMESTAMP)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', 'cash', ?)
     `).run(
         data.payment_id, data.amount, data.donor_name, data.donor_email,
         data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at, data.email_at,
-        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at
+        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at, data.paid_at
     );
     return db.prepare('SELECT * FROM natale_gift_cards WHERE id = ?').get(info.lastInsertRowid);
 }
@@ -688,7 +688,8 @@ function getCashNataleGiftCardsToday() {
     `).all();
     const dayKey = (d) => `${d.year}-${d.month}-${d.day}`;
     return rows.filter(row => {
-        const paid = new Date(row.paid_at.replace(' ', 'T') + 'Z');
+        // Date nuove in ISO (con T e Z), date vecchie di SQLite (con spazio, in UTC)
+        const paid = new Date(row.paid_at.includes('T') ? row.paid_at : row.paid_at.replace(' ', 'T') + 'Z');
         const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Rome', year: 'numeric', month: 'numeric', day: 'numeric' }).formatToParts(paid);
         const get = (type) => Number(parts.find(p => p.type === type).value);
         return dayKey({ year: get('year'), month: get('month'), day: get('day') }) === dayKey(today);

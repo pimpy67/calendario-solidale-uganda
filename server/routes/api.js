@@ -519,6 +519,7 @@ router.post('/mercatino/cash', (req, res) => {
             card_design,
             delivery_at: NATALE_DELIVERY_AT,
             email_at: NATALE_EMAIL_AT,
+            paid_at: new Date().toISOString(),
             ...contacts.data
         });
         console.log(`[Mercatino] Gift card di Natale ${card.id} registrata in contanti (consegna ${card.delivery_at})`);
