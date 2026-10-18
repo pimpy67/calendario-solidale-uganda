@@ -103,6 +103,7 @@
             toggle.setAttribute('aria-pressed', 'false');
             toggle.hidden = !door.filastrocca;
             modal.hidden = false;
+            setupSpeech(door);
             fitModalText();
             document.getElementById('modal-close').focus();
             return;
@@ -137,6 +138,7 @@
             toggle.hidden = !(door.filastrocca || door.disegno_retro) || String(door.day) === '1';
             modal.classList.add('cardview');
             modal.hidden = false;
+            setupSpeech(door);
             document.getElementById('modal-close').focus();
             return;
         }
@@ -159,11 +161,117 @@
             img.hidden = true;
         }
         modal.hidden = false;
+        setupSpeech(door);
         document.getElementById('modal-close').focus();
     }
 
     function closeModal() {
+        stopSpeech();
         document.getElementById('modal').hidden = true;
+    }
+
+    // Lettura ad alta voce della porta (sintesi vocale del browser)
+    function speechSupported() {
+        return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+    }
+
+    function setSpeakLabel(playing) {
+        const btn = document.getElementById('speak-toggle');
+        btn.textContent = playing ? 'Ferma' : 'Ascolta';
+        btn.setAttribute('aria-pressed', String(playing));
+    }
+
+    let audioPlayer = null;
+    let storyPlaying = false;
+    let storyRun = 0;
+
+    function setStoryLabel(playing) {
+        const btn = document.getElementById('story-toggle');
+        btn.textContent = playing ? 'Ferma la storia' : 'Ascolta tutta la storia';
+        btn.setAttribute('aria-pressed', String(playing));
+    }
+
+    function stopSpeech() {
+        storyRun++;
+        storyPlaying = false;
+        if (audioPlayer) {
+            audioPlayer.pause();
+            audioPlayer = null;
+        }
+        if (speechSupported()) speechSynthesis.cancel();
+        setSpeakLabel(false);
+        setStoryLabel(false);
+    }
+
+    // Giorni dei versi da far sentire: le porte di testo fino a quella aperta.
+    // Una porta con solo il disegno legge anche il testo della successiva.
+    function storyDays(day) {
+        const porta = doors.find((d) => d.day === day);
+        const ultimo = porta && !porta.text ? day + 1 : day;
+        return doors.filter((d) => d.text && d.day <= ultimo).map((d) => d.day);
+    }
+
+    // Riproduce in fila i file audio dei giorni indicati; un file mancante viene saltato
+    function playStory(giorni) {
+        stopSpeech();
+        const run = storyRun;
+        storyPlaying = true;
+        setStoryLabel(true);
+        const files = giorni.map((g) => `/audio/porta-${String(g).padStart(2, '0')}.mp3`);
+        let i = 0;
+        const next = () => {
+            if (run !== storyRun) return;
+            if (i >= files.length) {
+                stopSpeech();
+                return;
+            }
+            audioPlayer = new Audio(files[i++]);
+            audioPlayer.onended = next;
+            audioPlayer.play().catch(next);
+        };
+        next();
+    }
+
+    // Audio registrato della porta (public/audio/porta-NN.mp3); se non c'è, la voce del browser
+    function speak(text, day) {
+        if (!text) return;
+        audioPlayer = new Audio(`/audio/porta-${String(day).padStart(2, '0')}.mp3`);
+        audioPlayer.onended = () => setSpeakLabel(false);
+        audioPlayer.play()
+            .then(() => setSpeakLabel(true))
+            .catch(() => {
+                audioPlayer = null;
+                speakWithVoice(text);
+            });
+    }
+
+    function speakWithVoice(text) {
+        if (!speechSupported()) return;
+        speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'it-IT';
+        utter.rate = 0.9;
+        const voice = speechSynthesis.getVoices().find((v) => v.lang.startsWith('it'));
+        if (voice) utter.voice = voice;
+        utter.onend = () => setSpeakLabel(false);
+        speechSynthesis.speak(utter);
+        setSpeakLabel(true);
+    }
+
+    // Tasto "Ascolta" nel pop-up: se la porta ha un testo, parte subito all'apertura
+    function setupSpeech(door) {
+        const btn = document.getElementById('speak-toggle');
+        // Porta con solo il disegno: legge il verso della porta successiva, che ha il file audio
+        const fonte = door.text ? door : doors.find((d) => d.day === door.day + 1);
+        const text = (fonte && fonte.text) || '';
+        stopSpeech();
+        btn.dataset.text = text;
+        btn.dataset.day = fonte ? fonte.day : door.day;
+        btn.hidden = !text;
+        if (!btn.hidden) speak(text, fonte.day);
+        const storyBtn = document.getElementById('story-toggle');
+        storyBtn.dataset.day = door.day;
+        storyBtn.hidden = storyDays(door.day).length === 0;
     }
 
     function renderDoors(today) {
@@ -478,6 +586,15 @@
         document.getElementById('zoom-choose').addEventListener('click', () => {
             selectDay(zoomDay, zoomFace);
             closeZoom();
+        });
+        document.getElementById('speak-toggle').addEventListener('click', () => {
+            const btn = document.getElementById('speak-toggle');
+            if (audioPlayer || (speechSupported() && speechSynthesis.speaking)) stopSpeech();
+            else speak(btn.dataset.text, btn.dataset.day);
+        });
+        document.getElementById('story-toggle').addEventListener('click', (e) => {
+            if (storyPlaying) stopSpeech();
+            else playStory(storyDays(Number(e.currentTarget.dataset.day)));
         });
         document.getElementById('flip-toggle').addEventListener('click', (e) => {
             const modal = document.getElementById('modal');
