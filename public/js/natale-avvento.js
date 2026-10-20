@@ -363,7 +363,8 @@
         zoomDay = door.day;
         zoomFace = face;
         const label = `Finestra ${door.day}${face ? ', retro' : ''}`;
-        document.getElementById('zoom-img').src = face ? door.disegno_retro : (door.miniatura || door.disegno);
+        // Il disegno intero, non la miniatura: stessa immagine della finestra, a pieno schermo
+        document.getElementById('zoom-img').src = face ? door.disegno_retro : (door.disegno || door.miniatura);
         document.getElementById('zoom-img').alt = label;
         document.getElementById('zoom-label').textContent = label;
         document.getElementById('zoom').hidden = false;
