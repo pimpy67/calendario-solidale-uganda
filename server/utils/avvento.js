@@ -81,8 +81,22 @@ function designImageFile(design) {
     return fs.existsSync(filePath) ? filePath : null;
 }
 
+/**
+ * Canale da cui arriva chi compra una gift card di Natale (parametro ?da= dei link).
+ * Lista chiusa: un valore sconosciuto diventa "altro", nessun valore diventa null ("diretto").
+ */
+const NATALE_CANALI = ['fb', 'fb-storia', 'ig', 'ig-storia', 'ig-bio', 'email', 'whatsapp', 'blog', 'ads', 'altro'];
+
+function normalizeCanale(value) {
+    const v = (value || '').toString().trim().toLowerCase();
+    if (!v) return null;
+    return NATALE_CANALI.includes(v) ? v : 'altro';
+}
+
 module.exports = {
     isNataleDesign,
     designImageUrl,
-    designImageFile
+    designImageFile,
+    NATALE_CANALI,
+    normalizeCanale
 };

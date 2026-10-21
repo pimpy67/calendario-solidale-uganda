@@ -59,7 +59,7 @@ function checkNataleContacts(body) {
         }
     };
 }
-const { isNataleDesign, designImageUrl } = require('../utils/avvento');
+const { isNataleDesign, designImageUrl, normalizeCanale } = require('../utils/avvento');
 
 // Configurazione Satispay
 const SATISPAY_ENABLED = process.env.SATISPAY_API_KEY ? true : false;
@@ -466,6 +466,16 @@ router.get('/stats', (req, res) => {
 });
 
 /**
+ * GET /api/natale/stato
+ * Se la vendita delle gift card di Natale è aperta. Unico interruttore: NATALE_VENDITA_ATTIVA,
+ * lo stesso che blocca il checkout, così pagina e pagamento non vanno mai fuori sincrono.
+ */
+router.get('/natale/stato', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json({ vendita_attiva: process.env.NATALE_VENDITA_ATTIVA === 'true' });
+});
+
+/**
  * GET /api/natale/count
  * Numero di gift card di Natale pagate (per il contatore della pagina)
  */
@@ -645,6 +655,8 @@ router.post('/natale/checkout', async (req, res) => {
     }
     const design = isNataleDesign(card_design) ? card_design : 'card1';
     const cleanMessage = (message || '').toString().substring(0, 490);
+    // Canale di provenienza (?da= del link con cui si è arrivati): solo per le statistiche
+    const canale = normalizeCanale(req.body.canale);
 
     try {
         const paymentId = uuidv4();
@@ -659,6 +671,7 @@ router.post('/natale/checkout', async (req, res) => {
             card_design: design,
             delivery_at: NATALE_DELIVERY_AT,
             email_at: NATALE_EMAIL_AT,
+            canale,
             ...contacts.data
         });
 
@@ -684,6 +697,7 @@ router.post('/natale/checkout', async (req, res) => {
                 type: 'natale_gift_card',
                 natale_id: String(cardId),
                 payment_id: paymentId,
+                canale: canale || 'diretto',
             },
         });
 

@@ -128,6 +128,10 @@ function init() {
             db.exec(`ALTER TABLE natale_gift_cards ADD COLUMN ${name} ${type}`);
         }
     }
+    // Migrazione: canale di provenienza dell'acquisto (parametro ?da= dei link: fb, ig-storia, email...)
+    if (!nataleColumns.some(c => c.name === 'canale')) {
+        db.exec('ALTER TABLE natale_gift_cards ADD COLUMN canale VARCHAR(20)');
+    }
     // Le gift card create prima dello spostamento hanno un solo orario: email e apertura coincidono
     db.exec('UPDATE natale_gift_cards SET email_at = delivery_at WHERE email_at IS NULL');
 
@@ -561,15 +565,44 @@ function close() {
  */
 function createNataleGiftCard(data) {
     const stmt = db.prepare(`
-        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at, canale)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const info = stmt.run(
         data.payment_id, data.amount, data.donor_name, data.donor_email, data.donor_cf || null,
         data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at, data.email_at,
-        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at
+        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at, data.canale || null
     );
     return info.lastInsertRowid;
+}
+
+// Canale mostrato nei conteggi: i contanti vengono dal mercatino, chi non ha un canale è arrivato "diretto"
+const CANALE_SQL = "COALESCE(canale, CASE WHEN payment_method = 'cash' THEN 'mercatino' ELSE 'diretto' END)";
+
+/**
+ * Gift card di Natale pagate, raggruppate per canale di provenienza
+ */
+function countNataleGiftCardsByCanale() {
+    return db.prepare(`
+        SELECT ${CANALE_SQL} AS canale, COUNT(*) AS n, SUM(amount) AS totale
+        FROM natale_gift_cards
+        WHERE payment_status = 'completed'
+        GROUP BY 1
+        ORDER BY n DESC
+    `).all();
+}
+
+/**
+ * Gift card di Natale pagate, per l'export dell'amministrazione
+ */
+function exportNataleGiftCards() {
+    return db.prepare(`
+        SELECT id, paid_at, amount, payment_method, ${CANALE_SQL} AS canale, card_design,
+               donor_name, donor_email, donor_cf, recipient_name, send_email, send_whatsapp
+        FROM natale_gift_cards
+        WHERE payment_status = 'completed'
+        ORDER BY paid_at
+    `).all();
 }
 
 /**
@@ -706,6 +739,8 @@ module.exports = {
     releaseNataleGiftCard,
     getNataleGiftCardByPaymentId,
     createNataleGiftCard,
+    countNataleGiftCardsByCanale,
+    exportNataleGiftCards,
     setNataleGiftCardSession,
     completeNataleGiftCardBySession,
     countNataleGiftCards,

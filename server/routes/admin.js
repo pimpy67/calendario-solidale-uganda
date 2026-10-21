@@ -174,6 +174,46 @@ router.get('/export', authMiddleware, (req, res) => {
 });
 
 /**
+ * GET /api/admin/natale/canali
+ * Gift card di Natale pagate per canale di provenienza (?da= dei link)
+ */
+router.get('/natale/canali', authMiddleware, (req, res) => {
+    try {
+        const rows = db.countNataleGiftCardsByCanale();
+        const total = rows.reduce((sum, r) => sum + r.n, 0);
+        res.json({ total, canali: rows });
+    } catch (error) {
+        console.error('Errore admin natale canali:', error);
+        res.status(500).json({ error: true, message: 'Errore nel conteggio' });
+    }
+});
+
+/**
+ * GET /api/admin/natale/export
+ * CSV delle gift card di Natale pagate, con il canale di provenienza
+ */
+router.get('/natale/export', authMiddleware, (req, res) => {
+    try {
+        const cards = db.exportNataleGiftCards();
+        const headers = ['ID', 'Pagata il', 'Importo', 'Metodo', 'Canale', 'Disegno', 'Chi regala', 'Email chi regala', 'Codice fiscale', 'Chi riceve', 'Invio email', 'Invio WhatsApp'];
+        const rows = cards.map(c => [
+            c.id, c.paid_at, c.amount, c.payment_method, c.canale, c.card_design,
+            c.donor_name, c.donor_email, c.donor_cf, c.recipient_name,
+            c.send_email ? 'sì' : 'no', c.send_whatsapp ? 'sì' : 'no'
+        ]);
+        const csv = [headers, ...rows]
+            .map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename=gift_card_natale.csv');
+        res.send('﻿' + csv); // BOM: Excel apre correttamente gli accenti
+    } catch (error) {
+        console.error('Errore admin natale export:', error);
+        res.status(500).json({ error: true, message: "Errore nell'esportazione" });
+    }
+});
+
+/**
  * DELETE /api/admin/donations/:id
  * Cancella una donazione (solo pending)
  */

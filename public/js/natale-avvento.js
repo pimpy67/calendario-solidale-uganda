@@ -5,6 +5,10 @@
  * - Il carosello mostra tutti i 25 disegni solo come immagine, per scegliere il regalo.
  * - Il modulo acquista la gift card di Natale (20 €) con il disegno scelto.
  * Per le prove si può simulare un giorno con ?oggi=2026-12-10.
+ *
+ * Parametri dei link (social, email, video):
+ * - ?disegno=7 (o 15r per il retro) apre la pagina con quel disegno già scelto nel modulo.
+ * - ?da=fb / ig-storia / email ... canale di provenienza, va con l'acquisto fino a Stripe.
  */
 (function () {
     const YEAR = 2026;
@@ -15,6 +19,41 @@
     let doors = [];
     let selectedDay = 1;
     let selectedDesign = 'porta1';
+
+    // Canale di provenienza (?da=): resta per la visita anche se si cambia pagina e si torna.
+    // Il server accetta solo una lista chiusa di valori; qui si scarta solo ciò che non ha la forma giusta.
+    const CANALE_KEY = 'avvento-da';
+    function readCanale() {
+        const fromUrl = (new URLSearchParams(window.location.search).get('da') || '').trim().toLowerCase();
+        if (/^[a-z0-9-]{1,30}$/.test(fromUrl)) {
+            try { sessionStorage.setItem(CANALE_KEY, fromUrl); } catch (e) { /* storage non disponibile */ }
+            return fromUrl;
+        }
+        try { return sessionStorage.getItem(CANALE_KEY) || ''; } catch (e) { return ''; }
+    }
+    const canale = readCanale();
+
+    // ?disegno=7 o ?disegno=15r: { day, face } se la porta ha davvero quel disegno, altrimenti null
+    function designFromUrl() {
+        const m = /^(\d{1,2})(r?)$/i.exec((new URLSearchParams(window.location.search).get('disegno') || '').trim());
+        if (!m) return null;
+        const day = Number(m[1]);
+        const face = m[2] ? 'r' : '';
+        const door = doors.find(d => d.day === day);
+        if (!door || !(face ? door.disegno_retro : door.disegno)) return null;
+        return { day, face };
+    }
+
+    // Vendita aperta? Lo decide il server (stesso interruttore del pagamento). Se non risponde: chiusa.
+    async function fetchVenditaAttiva() {
+        try {
+            const response = await fetch('/api/natale/stato', { cache: 'no-store' });
+            if (!response.ok) return false;
+            return (await response.json()).vendita_attiva === true;
+        } catch (e) {
+            return false;
+        }
+    }
 
     // Data di oggi in Europe/Rome: { year, month, day }
     function todayInRome() {
@@ -428,7 +467,8 @@
                 send_email: document.getElementById('gift-send-email').checked,
                 send_whatsapp: document.getElementById('gift-send-whatsapp').checked,
                 privacy_consent: document.getElementById('gift-privacy').checked,
-                message: document.getElementById('gift-message').value.trim()
+                message: document.getElementById('gift-message').value.trim(),
+                canale: canale || undefined
             };
 
             if (!body.donor_name || !body.recipient_name) {
@@ -510,22 +550,35 @@
             document.getElementById('gift-back-name').textContent = e.target.value.trim() || 'nome';
         });
 
+        const venditaPromise = fetchVenditaAttiva();
         try {
-            const response = await fetch('/data/avvento.json?v=2026-10-17c');
+            const response = await fetch('/data/avvento.json?v=2026-10-21');
             const data = await response.json();
             doors = data.doors;
             renderDoors(today);
             scrollToToday(today, 'auto');
             document.getElementById('go-today').addEventListener('click', () => scrollToToday(today, 'smooth'));
-            // Con la vendita spenta (contenuti non ancora pronti) si nascondono carosello e modulo
+            // Con la vendita spenta (NATALE_VENDITA_ATTIVA sul server) si nascondono carosello e modulo
             // Anteprima (?anteprima=1): mostra carosello e modulo; il pagamento resta bloccato dal server
             const anteprima = new URLSearchParams(window.location.search).get('anteprima') === '1';
-            if (data.vendita_attiva !== true && !anteprima) {
+            const venditaAttiva = await venditaPromise;
+            if (!venditaAttiva && !anteprima) {
                 document.getElementById('choose-section').hidden = true;
                 document.getElementById('gift-section').hidden = true;
             } else {
                 renderCarousel();
-                selectDay(1);
+                const chosen = designFromUrl();
+                if (chosen) {
+                    // Link diretto a un disegno: già scelto nel modulo, e la pagina scende fino al regalo
+                    selectDay(chosen.day, chosen.face);
+                    requestAnimationFrame(() => {
+                        document.getElementById('choose-section').scrollIntoView({
+                            behavior: reducedMotion ? 'auto' : 'smooth', block: 'start'
+                        });
+                    });
+                } else {
+                    selectDay(1);
+                }
             }
         } catch (e) {
             document.getElementById('today-line').textContent = 'Il calendario non è disponibile in questo momento.';
