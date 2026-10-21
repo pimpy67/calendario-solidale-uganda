@@ -38,6 +38,11 @@ jobs:
             exit 1
           fi
 
+      - name: Scarica gli script del workflow
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
       - name: Prepara la chiave SSH
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
@@ -46,9 +51,8 @@ jobs:
           VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
         run: |
           install -m 700 -d ~/.ssh
-          # Copiando dal terminale capita che restino \r o spazi a fine riga: la chiave diventa illeggibile
-          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' | sed 's/[[:space:]]*$//' > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
+          # Ricostruisce la chiave anche se incollata male (a capo persi, spazi, \r) o in base64
+          python3 .github/scripts/normalizza-chiave.py ~/.ssh/deploy_key
           # Impronta (pubblica, non segreta) da confrontare con quella sul VPS
           if ! ssh-keygen -lf ~/.ssh/deploy_key; then
             echo "::error::VPS_SSH_KEY non è una chiave privata valida: ricopiala intera, righe BEGIN ed END comprese"
