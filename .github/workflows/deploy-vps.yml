@@ -46,8 +46,14 @@ jobs:
           VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
         run: |
           install -m 700 -d ~/.ssh
-          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          # Copiando dal terminale capita che restino \r o spazi a fine riga: la chiave diventa illeggibile
+          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' | sed 's/[[:space:]]*$//' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+          # Impronta (pubblica, non segreta) da confrontare con quella sul VPS
+          if ! ssh-keygen -lf ~/.ssh/deploy_key; then
+            echo "::error::VPS_SSH_KEY non è una chiave privata valida: ricopiala intera, righe BEGIN ed END comprese"
+            exit 1
+          fi
           # Più sicuro: impronta del server salvata nel segreto VPS_KNOWN_HOSTS (vedi DEPLOY.md).
           # Se manca, la si legge dal server a ogni deploy.
           if [ -n "$VPS_KNOWN_HOSTS" ]; then
@@ -65,7 +71,7 @@ jobs:
           VPS_RESTART_CMD: ${{ secrets.VPS_RESTART_CMD || 'docker compose up -d --build' }}
         run: |
           # ssh unisce gli argomenti in una sola riga: printf %q li protegge (percorsi o comandi con spazi)
-          ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" -o BatchMode=yes "$VPS_USER@$VPS_HOST" \
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "$VPS_PORT" -o BatchMode=yes "$VPS_USER@$VPS_HOST" \
             "bash -s -- $(printf '%q ' "$VPS_APP_DIR" "$VPS_RESTART_CMD")" <<'REMOTE'
           set -euo pipefail
           cd "$1"
