@@ -39,7 +39,7 @@ jobs:
           fi
 
       - name: Scarica gli script del workflow
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           sparse-checkout: .github/scripts
 
@@ -51,19 +51,26 @@ jobs:
           VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
         run: |
           install -m 700 -d ~/.ssh
+          # Ogni problema diventa un'annotazione leggibile nel riepilogo del run (mai il contenuto della chiave)
           # Ricostruisce la chiave anche se incollata male (a capo persi, spazi, \r) o in base64
-          python3 .github/scripts/normalizza-chiave.py ~/.ssh/deploy_key
-          # Impronta (pubblica, non segreta) da confrontare con quella sul VPS
-          if ! ssh-keygen -lf ~/.ssh/deploy_key; then
-            echo "::error::VPS_SSH_KEY non è una chiave privata valida: ricopiala intera, righe BEGIN ed END comprese"
+          if ! python3 .github/scripts/normalizza-chiave.py ~/.ssh/deploy_key 2> /tmp/norm.err; then
+            echo "::error::Lettura di VPS_SSH_KEY fallita: $(tail -n 1 /tmp/norm.err)"
             exit 1
           fi
+          # Impronta (pubblica, non segreta) da confrontare con quella sul VPS
+          if ! FP=$(ssh-keygen -lf ~/.ssh/deploy_key 2>&1); then
+            echo "::error::VPS_SSH_KEY non è una chiave privata valida ($FP). Ricopiala intera o usa la versione base64"
+            exit 1
+          fi
+          echo "::notice::Impronta della chiave usata: $FP"
           # Più sicuro: impronta del server salvata nel segreto VPS_KNOWN_HOSTS (vedi DEPLOY.md).
           # Se manca, la si legge dal server a ogni deploy.
           if [ -n "$VPS_KNOWN_HOSTS" ]; then
             printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          else
-            ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          elif ! ssh-keyscan -T 15 -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts 2> /tmp/keyscan.err \
+               || [ ! -s ~/.ssh/known_hosts ]; then
+            echo "::error::Il server $VPS_HOST:$VPS_PORT non risponde a SSH da GitHub: $(tail -n 1 /tmp/keyscan.err). Controlla VPS_HOST, la porta e il firewall del VPS"
+            exit 1
           fi
 
       - name: Aggiorna il codice e riavvia
@@ -75,8 +82,9 @@ jobs:
           VPS_RESTART_CMD: ${{ secrets.VPS_RESTART_CMD || 'docker compose up -d --build' }}
         run: |
           # ssh unisce gli argomenti in una sola riga: printf %q li protegge (percorsi o comandi con spazi)
-          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "$VPS_PORT" -o BatchMode=yes "$VPS_USER@$VPS_HOST" \
-            "bash -s -- $(printf '%q ' "$VPS_APP_DIR" "$VPS_RESTART_CMD")" <<'REMOTE'
+          set +e
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o ConnectTimeout=20 -p "$VPS_PORT" -o BatchMode=yes "$VPS_USER@$VPS_HOST" \
+            "bash -s -- $(printf '%q ' "$VPS_APP_DIR" "$VPS_RESTART_CMD")" 2> >(tee /tmp/ssh.err >&2) <<'REMOTE'
           set -euo pipefail
           cd "$1"
           echo "Versione prima: $(git rev-parse --short HEAD)"
@@ -100,6 +108,13 @@ jobs:
           if [[ "$2" == docker* ]]; then docker compose logs --tail=50 app || true; fi
           exit 1
           REMOTE
+          rc=$?
+          if [ $rc -eq 255 ]; then
+            echo "::error::Collegamento SSH rifiutato: $(grep -v '^Warning' /tmp/ssh.err | tail -n 1). Controlla che la chiave pubblica sia in authorized_keys sul VPS"
+          elif [ $rc -ne 0 ]; then
+            echo "::error::Aggiornamento sul VPS fallito (codice $rc): $(tail -n 1 /tmp/ssh.err)"
+          fi
+          exit $rc
 
       - name: Pulisci la chiave
         if: always()
