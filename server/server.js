@@ -44,6 +44,14 @@ app.use('/api/webhook/stripe', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Indirizzo corto per social, video ed email: /natale e /avvento portano alla pagina
+// dell'Avvento mantenendo i parametri (es. /natale?disegno=5&da=fb).
+// 302 e non 301: se un giorno l'indirizzo cambia, i browser non restano legati al vecchio.
+app.get(['/natale', '/avvento'], (req, res) => {
+    const q = req.originalUrl.indexOf('?');
+    res.redirect(302, '/natale-avvento.html' + (q >= 0 ? req.originalUrl.slice(q) : ''));
+});
+
 // Serve static files
 app.use(express.static(path.join(__dirname, '../public')));
 

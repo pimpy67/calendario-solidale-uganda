@@ -366,6 +366,28 @@
                 </table>
             </div>
         </div>
+
+        <!-- Gift card di Natale per canale di provenienza (?da= dei link) -->
+        <div class="table-section">
+            <div class="table-header">
+                <h2>Gift card di Natale per canale</h2>
+                <a href="#" class="export-btn" id="nataleExportBtn">Esporta CSV</a>
+            </div>
+            <div class="donations-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Canale</th>
+                            <th>Gift card</th>
+                            <th>Totale</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nataleCanaliTable">
+                        <!-- Popolato da JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -435,7 +457,63 @@
             dashboard.classList.add('active');
             loadStats();
             loadDonations();
+            loadNataleCanali();
         }
+
+        // Nomi leggibili dei canali (?da= dei link)
+        const CANALI = {
+            'fb': 'Facebook, post', 'fb-storia': 'Facebook, storia', 'ig': 'Instagram, post',
+            'ig-storia': 'Instagram, storia', 'ig-bio': 'Instagram, bio', 'email': 'Email',
+            'whatsapp': 'WhatsApp', 'blog': 'Blog', 'ads': 'Sponsorizzate', 'altro': 'Altro',
+            'mercatino': 'Mercatino (contanti)', 'diretto': 'Diretto / sconosciuto'
+        };
+
+        // Gift card di Natale per canale
+        async function loadNataleCanali() {
+            try {
+                const response = await fetch('/api/admin/natale/canali', {
+                    headers: { 'Authorization': `Basic ${authToken}` }
+                });
+                if (!response.ok) return;
+                const data = await response.json();
+                const table = document.getElementById('nataleCanaliTable');
+                table.textContent = '';
+                if (data.canali.length === 0) {
+                    table.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #7f8c8d;">Nessuna gift card di Natale ancora</td></tr>';
+                    return;
+                }
+                for (const r of data.canali) {
+                    const tr = document.createElement('tr');
+                    for (const text of [CANALI[r.canale] || r.canale, String(r.n), `${Number(r.totale).toLocaleString('it-IT')} EUR`]) {
+                        const td = document.createElement('td');
+                        td.textContent = text;
+                        tr.appendChild(td);
+                    }
+                    table.appendChild(tr);
+                }
+            } catch (error) {
+                console.error('Error loading natale canali:', error);
+            }
+        }
+
+        // Export gift card di Natale: con fetch, perché il CSV richiede la password
+        document.getElementById('nataleExportBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                const response = await fetch('/api/admin/natale/export', {
+                    headers: { 'Authorization': `Basic ${authToken}` }
+                });
+                if (!response.ok) return;
+                const url = URL.createObjectURL(await response.blob());
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'gift_card_natale.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error exporting natale:', error);
+            }
+        });
 
         // Load stats
         async function loadStats() {
@@ -502,6 +580,7 @@
             if (authToken) {
                 loadStats();
                 loadDonations();
+                loadNataleCanali();
             }
         }, 30000);
     </script>
