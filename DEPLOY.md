@@ -36,6 +36,12 @@ ssh-keyscan -H localhost 2>/dev/null | sed "s/^[^ ]*/$(hostname -I | awk '{print
 
 > La chiave privata non va mai incollata in chat, email o file del repository: solo nei segreti di GitHub.
 
+**Se copiare la chiave su più righe dà problemi** (terminale web, a capo persi), copiala in versione base64, che sta su **una sola riga**, e incolla quella in `VPS_SSH_KEY`: il workflow la riconosce da solo.
+
+```bash
+base64 -w0 ~/.ssh/deploy_calendario; echo
+```
+
 Controlla anche che, nella cartella del sito sul VPS, `git fetch origin main` funzioni senza chiedere password
 (il repository è pubblico, quindi basta che `origin` sia l'indirizzo `https://github.com/pimpy67/calendario-solidale-uganda.git`):
 
