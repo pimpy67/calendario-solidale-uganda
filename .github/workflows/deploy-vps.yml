@@ -1,0 +1,96 @@
+# Aggiorna il sito sul VPS a ogni unione su main (e a mano da "Run workflow").
+# Segreti richiesti (Settings → Secrets and variables → Actions), vedi DEPLOY.md:
+#   VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_APP_DIR
+# Facoltativi: VPS_PORT (default 22), VPS_KNOWN_HOSTS, VPS_RESTART_CMD (default "docker compose up -d --build")
+name: Deploy sul VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Un deploy alla volta; se ne arriva uno nuovo mentre l'altro gira, il nuovo aspetta
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Controlla che i segreti ci siano
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_APP_DIR: ${{ secrets.VPS_APP_DIR }}
+        run: |
+          missing=""
+          for v in VPS_HOST VPS_USER VPS_SSH_KEY VPS_APP_DIR; do
+            [ -z "${!v}" ] && missing="$missing $v"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Mancano i segreti:$missing (vedi DEPLOY.md)"
+            exit 1
+          fi
+
+      - name: Prepara la chiave SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Più sicuro: impronta del server salvata nel segreto VPS_KNOWN_HOSTS (vedi DEPLOY.md).
+          # Se manca, la si legge dal server a ogni deploy.
+          if [ -n "$VPS_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+
+      - name: Aggiorna il codice e riavvia
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_APP_DIR: ${{ secrets.VPS_APP_DIR }}
+          VPS_RESTART_CMD: ${{ secrets.VPS_RESTART_CMD || 'docker compose up -d --build' }}
+        run: |
+          # ssh unisce gli argomenti in una sola riga: printf %q li protegge (percorsi o comandi con spazi)
+          ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" -o BatchMode=yes "$VPS_USER@$VPS_HOST" \
+            "bash -s -- $(printf '%q ' "$VPS_APP_DIR" "$VPS_RESTART_CMD")" <<'REMOTE'
+          set -euo pipefail
+          cd "$1"
+          echo "Versione prima: $(git rev-parse --short HEAD)"
+          # Solo avanzamento lineare: se sul VPS ci sono modifiche locali o un altro ramo, si ferma senza toccare niente
+          git fetch origin main
+          git checkout main
+          git merge --ff-only origin/main
+          echo "Versione dopo:  $(git rev-parse --short HEAD)"
+          echo "Riavvio: $2"
+          bash -c "$2"
+          if [[ "$2" == docker* ]]; then docker image prune -f >/dev/null || true; fi
+          # Aspetta che il server risponda (fino a 60 secondi)
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/api/stats >/dev/null; then
+              echo "Il sito risponde."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Il sito non risponde dopo il riavvio:"
+          if [[ "$2" == docker* ]]; then docker compose logs --tail=50 app || true; fi
+          exit 1
+          REMOTE
+
+      - name: Pulisci la chiave
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
