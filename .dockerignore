@@ -1,8 +1,19 @@
 node_modules
+# Nessun file .env (né le sue copie di backup) dentro l'immagine: le variabili arrivano da env_file
 .env
+.env.*
+!.env.example
+*.bak
 .git
 .gitignore
 *.md
 server/database/*.db
 server/database/*.db-shm
 server/database/*.db-wal
+
+# Copie sparse e cartelle locali che non servono nell'immagine
+/server.js
+/db.js
+/mailer.js
+gift-originals
+.github
