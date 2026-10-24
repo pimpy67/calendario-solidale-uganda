@@ -32,6 +32,10 @@ startStripeReconciliation();
 const { startNataleDelivery } = require('./jobs/natale');
 startNataleDelivery();
 
+// Email quotidiana dell'Avvento alle 07:00, dal 1° al 25 dicembre (interruttore: AVVENTO_EMAIL_ATTIVA)
+const { startAvventoEmail } = require('./jobs/avventoEmail');
+startAvventoEmail();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
