@@ -8,7 +8,7 @@
  *   AVVENTO_EMAIL_ATTIVA=true      unico interruttore (spento di default, come NATALE_VENDITA_ATTIVA)
  *   BREVO_API_KEY                  già usata per le gift card
  *   BREVO_AVVENTO_LIST_ID          numero della lista Brevo degli iscritti all'Avvento
- *   AVVENTO_EMAIL_MITTENTE         facoltativa: indirizzo mittente (verificato su Brevo); default GMAIL_USER
+ *   AVVENTO_EMAIL_MITTENTE         facoltativa: mittente verificato su Brevo; default info@effataitalia.it
  *
  * Non manda mai due volte la stessa email: prima di creare la campagna controlla su Brevo se quella
  * del giorno esiste già (dal nome). Se il server riparte dopo le 07:00, recupera l'invio entro le 12:00.
@@ -46,8 +46,9 @@ function emailDelGiorno(data) {
 }
 
 function mittente() {
-    return { name: 'Effatà · Calendario dell\'Avvento',
-             email: process.env.AVVENTO_EMAIL_MITTENTE || process.env.GMAIL_USER || 'effataitalia@gmail.com' };
+    // Su Brevo l'unico mittente verificato è info@effataitalia.it (dominio autenticato): un Gmail verrebbe rifiutato
+    return { name: 'Effatà Italia ODV',
+             email: process.env.AVVENTO_EMAIL_MITTENTE || 'info@effataitalia.it' };
 }
 
 async function brevo(metodo, percorso, corpo) {
