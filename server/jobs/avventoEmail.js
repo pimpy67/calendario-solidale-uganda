@@ -6,7 +6,9 @@
  *
  * Variabili d'ambiente:
  *   AVVENTO_EMAIL_ATTIVA=true      unico interruttore (spento di default, come NATALE_VENDITA_ATTIVA)
- *   BREVO_API_KEY                  già usata per le gift card
+ *   BREVO_AVVENTO_API_KEY          chiave API Brevo solo per l'Avvento (permessi: campagne email + email transazionali).
+ *                                  Volutamente NON si chiama BREVO_API_KEY: quella farebbe passare anche le gift card
+ *                                  da Brevo (vedi utils/mailer.js), che invece partono dall'SMTP di Hostinger.
  *   BREVO_AVVENTO_LIST_ID          numero della lista Brevo degli iscritti all'Avvento
  *   AVVENTO_EMAIL_MITTENTE         facoltativa: mittente verificato su Brevo; default info@effataitalia.it
  *
@@ -51,10 +53,14 @@ function mittente() {
              email: process.env.AVVENTO_EMAIL_MITTENTE || 'info@effataitalia.it' };
 }
 
+function chiave() {
+    return process.env.BREVO_AVVENTO_API_KEY;
+}
+
 async function brevo(metodo, percorso, corpo) {
     const res = await fetch(BREVO + percorso, {
         method: metodo,
-        headers: { 'api-key': process.env.BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' },
+        headers: { 'api-key': chiave(), 'content-type': 'application/json', accept: 'application/json' },
         body: corpo ? JSON.stringify(corpo) : undefined
     });
     const testo = await res.text();
@@ -81,8 +87,8 @@ async function campagnaEsistente(data) {
 /** Crea e invia la campagna del giorno. Ritorna una descrizione di cosa è successo. */
 async function inviaEmailDelGiorno(data) {
     if (!attiva()) return 'spenta (AVVENTO_EMAIL_ATTIVA non è true)';
-    if (!process.env.BREVO_API_KEY || !process.env.BREVO_AVVENTO_LIST_ID) {
-        throw new Error('Mancano BREVO_API_KEY o BREVO_AVVENTO_LIST_ID');
+    if (!chiave() || !process.env.BREVO_AVVENTO_LIST_ID) {
+        throw new Error('Mancano BREVO_AVVENTO_API_KEY o BREVO_AVVENTO_LIST_ID');
     }
     const email = emailDelGiorno(data);
     if (!email) return `nessuna email per il ${data}`;
