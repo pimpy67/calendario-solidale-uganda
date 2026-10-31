@@ -33,3 +33,4 @@ coverage/
 .claude/settings.local.json
 .DS_Store
 *.bak
+public/images/gift_card/
