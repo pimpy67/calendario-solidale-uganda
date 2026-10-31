@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Flusso Email — Calendario Solidale Effatà</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f0eb; padding: 40px; color: #333; }
+  h1 { text-align: center; color: #2e7d32; font-size: 22px; margin-bottom: 6px; }
+  .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 36px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 960px; margin: 0 auto; }
+  .card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .card-header { padding: 16px 20px; color: #fff; }
+  .card-header h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .card-header .badge { display: inline-block; font-size: 11px; background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 20px; }
+  .card-body { padding: 18px 20px; }
+
+  /* Colori header per tipo */
+  .anonima .card-header  { background: #607d8b; }
+  .normale .card-header  { background: #2e7d32; }
+  .regalo-email .card-header { background: #1565c0; }
+  .regalo-nomail .card-header { background: #6a1b9a; }
+
+  .step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .step:last-child { margin-bottom: 0; }
+  .step-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+  .step-icon.green  { background: #e8f5e9; }
+  .step-icon.blue   { background: #e3f2fd; }
+  .step-icon.purple { background: #f3e5f5; }
+  .step-icon.gray   { background: #eceff1; }
+  .step-icon.orange { background: #fff8e1; }
+  .step-icon.red    { background: #fce4ec; }
+
+  .step-content .label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 3px; }
+  .step-content .desc  { font-size: 13px; color: #444; line-height: 1.5; }
+  .step-content .desc strong { color: #222; }
+  .step-content .tag  { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 10px; margin-top: 4px; font-weight: 600; }
+  .tag.green  { background: #e8f5e9; color: #2e7d32; }
+  .tag.blue   { background: #e3f2fd; color: #1565c0; }
+  .tag.purple { background: #f3e5f5; color: #6a1b9a; }
+  .tag.orange { background: #fff8e1; color: #e65100; }
+  .tag.red    { background: #fce4ec; color: #c62828; }
+  .tag.gray   { background: #eceff1; color: #546e7a; }
+
+  .divider { border: none; border-top: 1px dashed #e0e0e0; margin: 12px 0; }
+
+  .none-box { background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 12px 16px; text-align: center; color: #aaa; font-size: 13px; }
+
+  .legend { max-width: 960px; margin: 28px auto 0; background: #fff; border-radius: 12px; padding: 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .legend h3 { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .legend-items { display: flex; gap: 20px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  @media print {
+    body { background: white; padding: 20px; }
+    .card { box-shadow: none; border: 1px solid #ddd; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Flusso Email — Calendario Solidale Effatà</h1>
+<p class="subtitle">Schema dei casi di invio email al donante · aggiornato 2026</p>
+
+<div class="grid">
+
+  <!-- CASO 1: ANONIMA -->
+  <div class="card anonima">
+    <div class="card-header">
+      <h2>👤 Donazione Anonima</h2>
+      <span class="badge">is_anonymous = true</span>
+    </div>
+    <div class="card-body">
+      <div class="none-box">
+        🚫 Nessuna email inviata al donante<br>
+        <small style="color:#bbb; font-size:11px;">Il donante ha scelto l'anonimato</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASO 2: NORMALE NON ANONIMA -->
+  <div class="card normale">
+    <div class="card-header">
+      <h2>🟢 Donazione Personale senza regalo</h2>
+      <span class="badge">is_anonymous = false · is_gift = false</span>
+    </div>
+    <div class="card-body">
+
+      <div class="step">
+        <div class="step-icon green">📧</div>
+        <div class="step-content">
+          <div class="label">Subito dopo il pagamento</div>
+          <div class="desc">
+            Email a <strong>donor_email</strong><br>
+            Oggetto: <em>"Grazie! Hai adottato il {data} — ecco la tua gift card"</em><br>
+            Body: riepilogo donazione (giorno, importo, nome, CF)<br>
+            <span class="tag green">📎 Gift card allegata (.webp)</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div class="none-box" style="font-size:12px;">
+        Nessun reminder programmato<br>
+        <small style="color:#bbb;">Il cron job è riservato ai regali</small>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CASO 3: REGALO + EMAIL DESTINATARIO -->
+  <div class="card regalo-email">
+    <div class="card-header">
+      <h2>🎁 Regalo — con email destinatario</h2>
+      <span class="badge">is_gift = true · email destinatario presente</span>
+    </div>
+    <div class="card-body">
+
+      <div class="step">
+        <div class="step-icon blue">📧</div>
+        <div class="step-content">
+          <div class="label">Subito dopo il pagamento</div>
+          <div class="desc">
+            Email a <strong>donor_email</strong> (donante)<br>
+            Oggetto: <em>"Hai adottato il {data} per {nome}! Ecco la tua gift card"</em><br>
+            Body: gift card con bottoni condivisione<br>
+            <span class="tag blue">💬 Auguri su WhatsApp</span>
+            <span class="tag blue">✉️ Auguri via Email</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="step">
+        <div class="step-icon orange">⏰</div>
+        <div class="step-content">
+          <div class="label">Promemoria · ore 08:00 del giorno adottato</div>
+          <div class="desc">
+            Reminder a <strong>donor_email</strong> (donante)<br>
+            Oggetto: <em>"Oggi è il compleanno di {nome}! Manda gli auguri"</em><br>
+            <span class="tag orange">💬 Auguri su WhatsApp</span>
+            <span class="tag orange">✉️ Auguri via Email</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="step">
+        <div class="step-icon blue">👆</div>
+        <div class="step-content">
+          <div class="label">Manuale (facoltativo)</div>
+          <div class="desc">
+            Il donante clicca "Invia per Email" dalla pagina gift-card<br>
+            Email inviata direttamente a <strong>gift_email</strong> (destinatario)
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CASO 4: REGALO SENZA EMAIL DESTINATARIO -->
+  <div class="card regalo-nomail">
+    <div class="card-header">
+      <h2>🎁 Regalo — senza email destinatario</h2>
+      <span class="badge">is_gift = true · email destinatario assente</span>
+    </div>
+    <div class="card-body">
+
+      <div class="step">
+        <div class="step-icon purple">📧</div>
+        <div class="step-content">
+          <div class="label">Subito dopo il pagamento</div>
+          <div class="desc">
+            Email a <strong>donor_email</strong> (donante)<br>
+            Oggetto: <em>"Hai adottato il {data} per {nome}! Ecco la tua gift card"</em><br>
+            Body: gift card con solo bottone WhatsApp<br>
+            <span class="tag purple">💬 Auguri su WhatsApp</span>
+            <span class="tag gray">✉️ Auguri via Email — nascosto</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="step">
+        <div class="step-icon orange">⏰</div>
+        <div class="step-content">
+          <div class="label">Promemoria · ore 08:00 del giorno adottato</div>
+          <div class="desc">
+            Reminder a <strong>donor_email</strong> (donante)<br>
+            <span class="tag purple">💬 Auguri su WhatsApp</span>
+            <span class="tag gray">✉️ Auguri via Email — nascosto</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="none-box" style="font-size:12px;">
+        Invio manuale via email non disponibile<br>
+        <small style="color:#bbb;">Nessuna gift_email registrata</small>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="legend">
+  <h3>Legenda destinatari</h3>
+  <div class="legend-items">
+    <div class="legend-item"><div class="legend-dot" style="background:#2e7d32"></div> <strong>donor_email</strong> — email del donante (chi ha pagato)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1565c0"></div> <strong>gift_email</strong> — email del destinatario del regalo (opzionale)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e65100"></div> <strong>Promemoria</strong> — alle ore 8:00 del giorno adottato arriva una email di promemoria</div>
+  </div>
+</div>
+
+</body>
+</html>

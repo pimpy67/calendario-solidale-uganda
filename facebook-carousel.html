@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carosello Facebook — Effatà Calendario Solidale 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a0a;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            min-height: 100vh;
+        }
+
+        /* ── TOP BAR ── */
+        .topbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(10,10,10,0.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #1e1e1e;
+            display: flex; align-items: center; justify-content: center;
+            gap: 14px; padding: 10px 24px; flex-wrap: wrap;
+        }
+        .tb-label { font-size: 12px; color: #555; }
+        .nav-btn {
+            background: #1a2f1a; color: #4CAF50;
+            border: 1px solid #2d6a2d; padding: 7px 20px; border-radius: 6px;
+            cursor: pointer; font-family: 'Poppins', sans-serif;
+            font-size: 13px; font-weight: 600; transition: all 0.2s;
+        }
+        .nav-btn:hover:not(:disabled) { background: #2d6a2d; color: white; }
+        .nav-btn:disabled { opacity: 0.25; cursor: default; }
+        .save-btn {
+            background: #1a1a2e; color: #fff;
+            border: 1px solid #4CAF50; padding: 7px 20px; border-radius: 6px;
+            cursor: pointer; font-family: 'Poppins', sans-serif;
+            font-size: 13px; font-weight: 700; transition: all 0.2s;
+        }
+        .save-btn:hover:not(:disabled) { background: #4CAF50; color: white; }
+        .save-btn:disabled { opacity: 0.5; cursor: default; }
+        .slide-info {
+            font-size: 13px; color: #4CAF50; font-weight: 700;
+            min-width: 220px; text-align: center;
+        }
+        .tb-hint { font-size: 11px; color: #444; }
+
+        /* ── MAIN ── */
+        main {
+            padding-top: 72px;
+            display: flex; flex-direction: column; align-items: center; padding-bottom: 60px;
+        }
+
+        /* ── SLIDE WRAPPER (scales 1080×1080 to 648×648) ── */
+        .slide-outer { display: none; flex-direction: column; align-items: center; gap: 10px; padding: 20px; }
+        .slide-outer.active { display: flex; }
+        .scale-wrap {
+            width: 648px; height: 648px; overflow: hidden;
+            position: relative; border-radius: 3px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+        }
+        .slide {
+            width: 1080px; height: 1080px;
+            position: absolute; top: 0; left: 0;
+            transform: scale(0.6); transform-origin: top left;
+            overflow: hidden;
+        }
+        .slide-caption { color: #333; font-size: 11px; text-align: center; }
+
+        /* ── ANIMATIONS ── */
+        @keyframes pulseGlow {
+            0%,100% { filter: drop-shadow(0 0 18px rgba(240,165,0,0.4)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 45px rgba(240,165,0,1)) drop-shadow(0 0 80px rgba(240,165,0,0.5)); transform: scale(1.035); }
+        }
+        @keyframes floatUp {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-9px); }
+        }
+        @keyframes gradShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes starSpin {
+            0%,100% { transform: scale(1) rotate(0deg); opacity: 0.7; }
+            50% { transform: scale(1.3) rotate(15deg); opacity: 1; }
+        }
+
+        /* ══════════════════════════════════════
+           SLIDE 1 — HERO APRILE
+        ══════════════════════════════════════ */
+        .s1 {
+            background-image: linear-gradient(rgba(5,15,10,0.30), rgba(5,10,20,0.36)),
+                              url('public/images/months/mobile_2026/04_2026 verticale.jpeg');
+            background-size: cover;
+            background-position: center;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between;
+            padding: 62px 72px 52px; position: relative; overflow: hidden;
+        }
+        .s1::before {
+            content: ''; position: absolute;
+            top: -80px; right: -80px; width: 520px; height: 520px;
+            background: radial-gradient(circle, rgba(76,175,80,0.10) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .s1::after {
+            content: ''; position: absolute;
+            bottom: -60px; left: -60px; width: 450px; height: 450px;
+            background: radial-gradient(circle, rgba(240,165,0,0.06) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .s1-header { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .s1-logo-ring {
+            width: 90px; height: 90px; border-radius: 50%;
+            background: white;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border: 3px solid rgba(255,255,255,0.5);
+            box-shadow: 0 0 32px rgba(76,175,80,0.55);
+        }
+        .s1-logo-ring img { width: 80%; height: 80%; object-fit: contain; }
+        .s1-brand { font-size: 20px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: white; }
+        .s1-brand-sub { font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 4px; text-transform: uppercase; }
+
+        .s1-hero { text-align: center; animation: floatUp 4.5s ease-in-out infinite; }
+        .s1-over { font-size: 14px; color: rgba(255,255,255,0.45); letter-spacing: 5px; text-transform: uppercase; margin-bottom: 12px; }
+        .s1-title {
+            font-size: 86px; font-weight: 900; line-height: 0.95;
+            letter-spacing: -3px; display: block;
+            background: linear-gradient(135deg, #f5b400 0%, #fce47a 35%, #f0a000 65%, #e68200 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+            animation: pulseGlow 3s ease-in-out infinite, gradShift 4s ease infinite;
+        }
+        .s1-title-2 { font-size: 86px; font-weight: 900; line-height: 0.95; letter-spacing: -3px; display: block;
+            background: linear-gradient(135deg, #f5b400 0%, #fce47a 35%, #f0a000 65%, #e68200 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+            animation: pulseGlow 3s ease-in-out infinite 0.5s, gradShift 4s ease infinite 0.5s;
+        }
+        .s1-sub { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.7); margin-top: 14px; letter-spacing: 2px; }
+        .s1-star { font-size: 42px; display: block; margin-top: 8px; animation: starSpin 2.5s ease-in-out infinite; }
+
+        /* Mini Calendar */
+        .s1-cal { width: 100%; }
+        .s1-cal-title {
+            font-size: 68px; font-weight: 900; letter-spacing: -3px; line-height: 1;
+            color: #a0f0a4; text-align: right; width: 100%; margin-bottom: 10px;
+        }
+        .s1-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .s1-wday { text-align: center; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.25); letter-spacing: 1px; padding-bottom: 5px; text-transform: uppercase; }
+        .s1-day { aspect-ratio: 1; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; position: relative; }
+        .s1-day.empty { background: rgba(0,0,0,0.22); border-radius: 7px; }
+        .s1-day.avail { background: rgba(76,175,80,0.65); color: #7dde82; border: 1px solid rgba(76,175,80,0.75); }
+        .s1-day.adopt { background: rgba(192,57,43,0.72); color: #e57373; border: 1px solid rgba(231,76,60,0.80); }
+        .s1-day.adopt::after { content: '♥'; font-size: 7px; position: absolute; top: 2px; right: 3px; color: #e74c3c; opacity: 0.7; }
+        .s1-day.today { background: rgba(240,165,0,0.22); color: #f0c040; border: 2px solid rgba(240,165,0,0.45); font-weight: 800; }
+
+        /* Footer pills */
+        .s1-footer { display: flex; gap: 16px; align-items: center; }
+        .s1-pill {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px; padding: 9px 22px; font-size: 14px; color: rgba(255,255,255,0.65);
+            display: flex; align-items: center; gap: 7px;
+        }
+        .s1-pill b { color: #4CAF50; font-weight: 700; }
+
+        /* ══════════════════════════════════════
+           SLIDE 2 — IL PROGETTO
+        ══════════════════════════════════════ */
+        .s2 {
+            background: #12122a;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .s2-top {
+            background-image: linear-gradient(rgba(0,8,25,0.42), rgba(0,8,25,0.55)),
+                              url('public/images/bambini_casafamiglia.jpeg');
+            background-size: cover;
+            background-position: center 65%;
+            padding: 24px 70px 40px;
+            min-height: 580px;
+            border-bottom: 2px solid rgba(76,175,80,0.25);
+            flex-shrink: 0;
+            position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+        }
+        .s2-logo-row { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; justify-content: center; }
+        .s2-ring {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: white;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; box-shadow: 0 0 30px rgba(76,175,80,0.4);
+            border: 3px solid rgba(255,255,255,0.4); flex-shrink: 0;
+        }
+        .s2-ring img { width: 80%; height: 80%; object-fit: contain; }
+        .s2-ring-text h2 { font-size: 38px; font-weight: 800; color: white; }
+        .s2-ring-text p { font-size: 13px; color: rgba(255,255,255,0.4); letter-spacing: 3px; text-transform: uppercase; }
+        .s2-headline { font-size: 44px; font-weight: 800; line-height: 1.2; text-align: center; }
+        .s2-headline span { color: #4CAF50; }
+
+        .s2-body { padding: 30px 70px 28px; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+
+        .s2-steps-label { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.25); letter-spacing: 4px; text-transform: uppercase; }
+        .s2-steps { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+        .s2-step {
+            flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px; padding: 0 32px; display: flex; flex-direction: row; align-items: center; gap: 28px;
+        }
+        .s2-step-n {
+            width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+            background: linear-gradient(135deg, #4CAF50, #2a7d2e);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 700;
+        }
+        .s2-step p { font-size: 20px; color: rgba(255,255,255,0.65); line-height: 1.3; }
+        .s2-step p strong { color: white; display: block; font-size: 22px; margin-bottom: 3px; }
+
+        /* Stats row */
+        .s2-stats {
+            display: flex; gap: 14px;
+        }
+        .s2-stat {
+            flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px; padding: 18px 12px; text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+        }
+        .s2-stat-n {
+            font-size: 38px; font-weight: 800; line-height: 1;
+            background: linear-gradient(135deg, #4CAF50, #a0e0a4);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .s2-stat-l {
+            font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.3;
+        }
+
+        /* Gift cards preview */
+        .s2-gc { display: flex; flex-direction: column; gap: 12px; }
+        .s2-gc-lbl { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.25); letter-spacing: 4px; text-transform: uppercase; }
+        .s2-gc-row { display: flex; gap: 14px; }
+        .s2-gc-row img {
+            flex: 1; border-radius: 12px; object-fit: cover;
+            aspect-ratio: 4/3; border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+
+        .s2-foot {
+            padding: 22px 70px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .s2-url { font-size: 17px; font-weight: 600; color: rgba(255,255,255,0.35); }
+        .s2-url span { color: #4CAF50; }
+        .s2-badge {
+            background: linear-gradient(135deg, #4CAF50, #2a7d2e);
+            padding: 11px 26px; border-radius: 50px; font-size: 15px; font-weight: 700; letter-spacing: 0.5px;
+        }
+
+        /* ══════════════════════════════════════
+           SLIDES 3-6 — MESI (generated by JS)
+        ══════════════════════════════════════ */
+        .month-slide {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: space-between; padding: 52px 62px 46px;
+            position: relative; overflow: hidden;
+        }
+        .month-slide::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            opacity: 0.025;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 36px, rgba(255,255,255,1) 36px, rgba(255,255,255,1) 37px),
+                              repeating-linear-gradient(90deg, transparent, transparent 36px, rgba(255,255,255,1) 36px, rgba(255,255,255,1) 37px);
+        }
+        .ms-toprow { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+        .ms-brand { display: flex; align-items: center; gap: 16px; }
+        .ms-brand-dot {
+            width: 64px; height: 64px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 15px;
+        }
+        .ms-brand-lbl { font-size: 22px; font-weight: 700; color: white; letter-spacing: 1px; }
+        .ms-avail-badge { border-radius: 50px; padding: 7px 18px; font-size: 13px; font-weight: 700; }
+        .ms-big-month { font-size: 96px; font-weight: 900; letter-spacing: -4px; line-height: 1; text-align: right; width: 100%; }
+        .ms-cal { width: 100%; }
+        .ms-wdays { display: grid; grid-template-columns: repeat(7,1fr); gap: 7px; margin-bottom: 8px; }
+        .ms-wday { text-align: center; font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.22); letter-spacing: 1px; text-transform: uppercase; }
+        .ms-daygrid { display: grid; grid-template-columns: repeat(7,1fr); gap: 7px; }
+        .ms-day { aspect-ratio: 1; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 500; position: relative; }
+        .ms-day.empty { }
+        .ms-day.avail { background: rgba(76,175,80,0.45); color: rgba(255,255,255,0.9); border: 1px solid rgba(76,175,80,0.55); }
+        .ms-day.adopt { background: rgba(192,57,43,0.55); color: rgba(255,255,255,0.75); border: 1px solid rgba(231,76,60,0.60); }
+        .ms-day.adopt::before { content: '♥'; position: absolute; font-size: 7px; top: 3px; right: 4px; color: #e74c3c; opacity: 0.65; }
+        .ms-legend { display: flex; align-items: center; justify-content: center; gap: 28px; }
+        .ms-leg-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,0.38); }
+        .ms-leg-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .ms-watermark { font-size: 12px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,0.1); }
+
+        /* ══════════════════════════════════════
+           SLIDE 4b — GIFT CARD SOLIDALE
+        ══════════════════════════════════════ */
+        .sgc {
+            background: radial-gradient(ellipse at 20% 25%, #0f1a0f 0%, #080e18 55%, #050810 100%);
+            display: flex; flex-direction: column;
+            padding: 50px 64px 46px; gap: 16px;
+            position: relative; overflow: hidden;
+        }
+        .sgc::before {
+            content: ''; position: absolute;
+            bottom: -80px; right: -80px; width: 650px; height: 650px;
+            background: radial-gradient(circle, rgba(240,165,0,0.07) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .sgc-toprow { display: flex; align-items: center; gap: 16px; }
+        .sgc-ring {
+            width: 58px; height: 58px; border-radius: 50%;
+            background: white; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; flex-shrink: 0;
+            box-shadow: 0 0 22px rgba(76,175,80,0.45); border: 2px solid rgba(255,255,255,0.4);
+        }
+        .sgc-ring img { width: 80%; height: 80%; object-fit: contain; }
+        .sgc-brand { display: flex; flex-direction: column; gap: 3px; }
+        .sgc-brand-name { font-size: 28px; font-weight: 800; color: white; line-height: 1; }
+        .sgc-brand-sub { font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 3px; text-transform: uppercase; }
+        .sgc-brand-tag { font-size: 14px; font-weight: 600; color: #4CAF50; }
+        .sgc-headline { font-size: 62px; font-weight: 900; line-height: 1.0; letter-spacing: -2px; color: white; }
+        .sgc-headline em {
+            background: linear-gradient(135deg, #f0a500, #fce47a, #f0a500);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+            font-style: normal;
+        }
+        .sgc-text { font-size: 17px; color: rgba(255,255,255,0.62); line-height: 1.55; }
+        .sgc-text strong { color: rgba(255,255,255,0.9); }
+        .sgc-cta-row { display: flex; align-items: center; gap: 12px; }
+        .sgc-cta-lbl { font-size: 22px; font-weight: 700; color: #4CAF50; }
+        .sgc-cards {
+            flex: 5; display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: 1fr 1fr;
+            gap: 9px; min-height: 0;
+        }
+        .sgc-cards img {
+            width: 100%; height: 100%; object-fit: cover;
+            border-radius: 10px; border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 4px 18px rgba(0,0,0,0.45);
+        }
+        .sgc-bottom { flex: 3; display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 0; }
+        .sgc-bottom-intro { font-size: 24px; font-weight: 700; color: #4CAF50; line-height: 1.2; }
+        .sgc-bottom-text { font-size: 25px; color: rgba(255,255,255,0.68); line-height: 1.5; }
+        .sgc-bottom-text strong { color: rgba(255,255,255,0.92); }
+
+        /* ══════════════════════════════════════
+           SLIDE 8 — CTA FINALE
+        ══════════════════════════════════════ */
+        .s7 {
+            background-image: linear-gradient(rgba(5,20,10,0.45), rgba(5,15,25,0.52)),
+                              url('public/images/months/mobile_2026/06_2026%20verticale.jpeg');
+            background-size: cover;
+            background-position: center;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 48px; padding: 80px; position: relative; overflow: hidden;
+        }
+        .s7::before {
+            content: ''; position: absolute;
+            top: -150px; left: 50%; transform: translateX(-50%);
+            width: 900px; height: 900px;
+            background: radial-gradient(circle, rgba(76,175,80,0.07) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .s7-topbrand {
+            position: absolute; top: 52px; left: 62px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .s7-topbrand-ring {
+            width: 68px; height: 68px; border-radius: 50%;
+            background: white; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; box-shadow: 0 0 28px rgba(76,175,80,0.45);
+            border: 2px solid rgba(255,255,255,0.4);
+        }
+        .s7-topbrand-ring img { width: 80%; height: 80%; object-fit: contain; }
+        .s7-topbrand-text { display: flex; flex-direction: column; gap: 3px; }
+        .s7-topbrand-name { font-size: 24px; font-weight: 800; color: white; line-height: 1; }
+        .s7-topbrand-sub { font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 3px; text-transform: uppercase; }
+        .s7-main { text-align: center; }
+        .s7-urgency { font-size: 14px; color: #f0a500; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 18px; }
+        .s7-title { font-size: 64px; font-weight: 900; line-height: 1.1; margin-bottom: 14px; }
+        .s7-title span { background: linear-gradient(135deg, #4CAF50, #81d98a); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .s7-sub { font-size: 22px; color: rgba(255,255,255,0.45); font-weight: 300; }
+        .s7-cards { display: flex; gap: 18px; }
+        .s7-card {
+            flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 18px; padding: 26px 20px; text-align: center;
+        }
+        .s7-card.feat { background: rgba(76,175,80,0.1); border-color: rgba(76,175,80,0.25); }
+        .s7-card-lbl { font-size: 12px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        .s7-card-val { font-size: 44px; font-weight: 800; color: white; display: block; line-height: 1; }
+        .s7-card-val.green { color: #4CAF50; }
+        .s7-card-detail { font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 6px; }
+        .s7-cta { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+        .s7-btn {
+            background: linear-gradient(135deg, #4CAF50, #2a7d2e);
+            color: white; padding: 22px 64px; border-radius: 60px;
+            font-size: 22px; font-weight: 700; letter-spacing: 0.5px;
+            box-shadow: 0 12px 40px rgba(76,175,80,0.45);
+            animation: pulseGlow 3s ease-in-out infinite;
+            border: none;
+        }
+        .s7-url { font-size: 15px; color: rgba(255,255,255,0.28); letter-spacing: 2px; }
+        .s7-url strong { color: rgba(255,255,255,0.55); }
+
+        /* ── BOX DIDASCALIA POST ── */
+        .post-caption-box {
+            max-width: 700px; margin: 36px auto 60px;
+            background: #fff; border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            overflow: hidden; font-family: 'Poppins', sans-serif;
+        }
+        .post-caption-header {
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
+            padding: 14px 24px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .post-caption-header span { color: white; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+        .copy-btn {
+            background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 16px; border-radius: 20px; cursor: pointer;
+            font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.3); }
+        .post-caption-body { padding: 24px 28px; color: #333; }
+        .post-caption-text {
+            font-size: 15px; line-height: 1.75; color: #333;
+            white-space: pre-wrap; margin: 0 0 20px 0;
+        }
+        .post-caption-url {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #f0f9f0; border: 1px solid #c8e6c9;
+            border-radius: 10px; padding: 12px 18px;
+            color: #2e7d32; font-size: 14px; font-weight: 700;
+            text-decoration: none; transition: background 0.2s;
+        }
+        .post-caption-url:hover { background: #e8f5e9; }
+    </style>
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<div class="topbar">
+    <span class="tb-label">Carosello Facebook — Effatà 2026</span>
+    <button class="nav-btn" id="prevBtn" onclick="go(-1)" disabled>◀ Precedente</button>
+    <span class="slide-info" id="slideInfo">1 / 7 — Aprile (Hero)</span>
+    <button class="nav-btn" id="nextBtn" onclick="go(1)">Successiva ▶</button>
+    <button class="save-btn" id="saveBtn" onclick="saveSlide()">📸 Salva PNG</button>
+</div>
+
+<main>
+
+    <!-- ══════ SLIDE 1: HERO APRILE ══════ -->
+    <div class="slide-outer active" id="so-1">
+        <div class="scale-wrap">
+            <div class="slide s1">
+                <div class="s1-header">
+                    <div class="s1-logo-ring"><img src="public/images/logo.png" alt="Effatà"></div>
+                    <span class="s1-brand">Effatà</span>
+                    <span class="s1-brand-sub">Children's Home · Uganda</span>
+                </div>
+                <div class="s1-hero">
+                    <div class="s1-over">Calendario Solidale 2026</div>
+                    <span class="s1-title">Regala un</span>
+                    <span class="s1-title-2">Domani</span>
+                    <div class="s1-sub">Adotta un giorno · Cambia una vita</div>
+                    <span class="s1-star">✨</span>
+                </div>
+                <div class="s1-cal">
+                    <div class="s1-cal-title">Aprile 2026</div>
+                    <div class="s1-grid" id="cal-hero"></div>
+                </div>
+                <div class="s1-footer">
+                    <div class="s1-pill">🍽️ Cibo</div>
+                    <div class="s1-pill">📚 Scuola</div>
+                    <div class="s1-pill">💊 Cure</div>
+                    <div class="s1-pill"><b>50€</b> / giorno</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-caption">Card 1/7 · Hero Aprile — Screenshot per Facebook Carosello</div>
+    </div>
+
+    <!-- ══════ SLIDE 2: IL PROGETTO ══════ -->
+    <div class="slide-outer" id="so-2">
+        <div class="scale-wrap">
+            <div class="slide s2">
+                <div class="s2-top">
+                    <div class="s2-logo-row">
+                        <div class="s2-ring"><img src="public/images/logo.png" alt="Effatà"></div>
+                        <div class="s2-ring-text">
+                            <h2>Effatà</h2>
+                            <p>Children's Home · Uganda</p>
+                        </div>
+                    </div>
+                    <div class="s2-headline">
+                        Un progetto di cuore<br>per <span>bambini in Uganda</span>
+                    </div>
+                </div>
+                <div class="s2-body">
+                    <span class="s2-steps-label">Come funziona</span>
+                    <div class="s2-steps">
+                        <div class="s2-step">
+                            <div class="s2-step-n">1</div>
+                            <p><strong>Scegli un giorno</strong>del calendario 2026</p>
+                        </div>
+                        <div class="s2-step">
+                            <div class="s2-step-n">2</div>
+                            <p><strong>Dona 50€</strong>detraibili al 35%</p>
+                        </div>
+                        <div class="s2-step">
+                            <div class="s2-step-n">3</div>
+                            <p><strong>Ricevi la Gift Card</strong>solidale per te o da regalare</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="s2-foot">
+                    <div class="s2-url">calendario<span>.effataitalia.it</span></div>
+                    <div class="s2-badge">Adotta un giorno →</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-caption">Card 2/7 · Il Progetto</div>
+    </div>
+
+    <!-- ══════ SLIDES 3, 5-7: MESI (generati da JS) ══════ -->
+
+    <!-- ══════ SLIDE 4: GIFT CARD SOLIDALE ══════ -->
+    <div class="slide-outer" id="so-4">
+        <div class="scale-wrap">
+            <div class="slide sgc">
+                <div class="sgc-toprow">
+                    <div class="sgc-ring"><img src="public/images/logo.png" alt="Effatà"></div>
+                    <div class="sgc-brand">
+                        <span class="sgc-brand-name">Effatà</span>
+                        <span class="sgc-brand-sub">Calendario Solidale 2026/2027</span>
+                        <span class="sgc-brand-tag">Effatà Children's Home</span>
+                    </div>
+                </div>
+                <div class="sgc-headline">Scegli la tua<br><em>Gift Card Solidale</em></div>
+                <div class="sgc-cards">
+                    <img src="public/images/gift_card/1.webp" style="grid-column:1/3" alt="">
+                    <img src="public/images/gift_card/2.webp" style="grid-column:3/5" alt="">
+                    <img src="public/images/gift_card/3.webp" style="grid-column:5/7" alt="">
+                    <img src="public/images/gift_card/4.webp" style="grid-column:2/4" alt="">
+                    <img src="public/images/gift_card/5.webp" style="grid-column:4/6" alt="">
+                </div>
+                <div class="sgc-bottom">
+                    <p class="sgc-bottom-intro">Vuoi fare un regalo indimenticabile?</p>
+                    <p class="sgc-bottom-text">Regala un giorno del calendario con una donazione di <strong>50€</strong> per sostenere la Casa Famiglia Effatà in Uganda. Ogni giorno adottato aiuta a garantire <strong>cibo, istruzione e cure</strong> ai bambini della casa famiglia.</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-caption">Card 4/8 · Gift Card Solidale</div>
+    </div>
+
+    <!-- ══════ SLIDE 5: CTA FINALE ══════ -->
+    <div class="slide-outer" id="so-5">
+        <div class="scale-wrap">
+            <div class="slide s7">
+                <div class="s7-topbrand">
+                    <div class="s7-topbrand-ring"><img src="public/images/logo.png" alt="Effatà"></div>
+                    <div class="s7-topbrand-text">
+                        <span class="s7-topbrand-name">Effatà</span>
+                        <span class="s7-topbrand-sub">Children's Home · Uganda</span>
+                    </div>
+                </div>
+                <div class="s7-main">
+                    <div class="s7-urgency">🎁 Regala ora</div>
+                    <div class="s7-title">Scegli il tuo<br><span>giorno</span> oggi</div>
+                    <div class="s7-sub">Un gesto semplice. Un impatto reale.</div>
+                </div>
+                <div class="s7-cards">
+                    <div class="s7-card">
+                        <div class="s7-card-lbl">Donazione</div>
+                        <span class="s7-card-val">50€</span>
+                        <div class="s7-card-detail">per adottare un giorno</div>
+                    </div>
+                    <div class="s7-card feat">
+                        <div class="s7-card-lbl">Ti costa davvero</div>
+                        <span class="s7-card-val green">32,50€</span>
+                        <div class="s7-card-detail">detrazione fiscale 35%</div>
+                    </div>
+                    <div class="s7-card">
+                        <div class="s7-card-lbl">Ricevi</div>
+                        <span class="s7-card-val" style="font-size:40px">🎁</span>
+                        <div class="s7-card-detail">Gift Card solidale</div>
+                    </div>
+                </div>
+                <div class="s7-cta">
+                    <div class="s7-btn">👉 Adotta un giorno</div>
+                    <div class="s7-url"><strong>calendario.effataitalia.it</strong></div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-caption">Card 5/5 · CTA Finale</div>
+    </div>
+
+</main>
+
+<!-- ── BOX TESTO POST FACEBOOK ── -->
+<div class="post-caption-box">
+    <div class="post-caption-header">
+        <span>📋 Testo del post Facebook</span>
+        <button class="copy-btn" onclick="copyCaption()">Copia testo</button>
+    </div>
+    <div class="post-caption-body">
+        <p class="post-caption-text" id="captionText">Un giorno speciale per te, un futuro intero per loro. ✨
+
+Quest'anno non regalare un oggetto, regala un domani. Con le nostre Gift Card solidali, puoi adottare un giorno del calendario con una donazione di 50€: un gesto che garantisce cibo, scuola e cure ai bambini della Casa Famiglia Effatà in Uganda.
+
+👇 Scegli il tuo giorno e adottalo ora:</p>
+        <a class="post-caption-url" href="https://calendario.effataitalia.it" target="_blank">
+            🌍 calendario.effataitalia.it
+        </a>
+    </div>
+</div>
+
+<script>
+    // ── Navigazione ──
+    const NAMES = ['Aprile — Hero','Il Progetto','Maggio','Gift Card Solidale','CTA Finale'];
+    let cur = 1, tot = 5;
+    function go(d) {
+        document.getElementById('so-' + cur).classList.remove('active');
+        cur += d;
+        document.getElementById('so-' + cur).classList.add('active');
+        document.getElementById('slideInfo').textContent = cur + ' / ' + tot + ' — ' + NAMES[cur-1];
+        document.getElementById('prevBtn').disabled = cur === 1;
+        document.getElementById('nextBtn').disabled = cur === tot;
+    }
+
+    // ── Dati calendari ──
+    // offset: 0=Lun, 1=Mar … 6=Dom
+    const MONTHS = [
+        { name:'Aprile',  year:2026, offset:2, days:30, adopt:[1,5,8,12,15,19,23,27], today:3,
+          img:'public/images/months/mobile_2026/04_2026%20verticale.jpeg', col:'#a0f0a4', acc:'#4CAF50' },
+        { name:'Maggio',  year:2026, offset:4, days:31, adopt:[3,7,10,15,22,28],       today:null,
+          img:'public/images/months/mobile_2026/05_2026%20verticale.jpeg', col:'#b8f0a0', acc:'#6aaf30' },
+        { name:'Giugno',  year:2026, offset:0, days:30, adopt:[1,8,14,20,25],          today:null,
+          img:'public/images/months/mobile_2026/06_2026%20verticale.jpeg', col:'#a8d0ff', acc:'#5090e0' },
+        { name:'Luglio',  year:2026, offset:2, days:31, adopt:[4,11,14,25],            today:null,
+          img:'public/images/months/mobile_2026/07_2026%20verticale.jpeg', col:'#ffd0a0', acc:'#e07030' },
+        { name:'Agosto',  year:2026, offset:5, days:31, adopt:[1,15,20],               today:null,
+          img:'public/images/months/mobile_2026/08_2026%20verticale.jpeg', col:'#ffb8a0', acc:'#d04040' },
+    ];
+    const WDAYS = ['LUN','MAR','MER','GIO','VEN','SAB','DOM'];
+
+    // ── Genera calendar hero (aprile) ──
+    function buildMiniCal(containerId, m) {
+        const c = document.getElementById(containerId);
+        if (!c) return;
+        WDAYS.forEach(w => { const el=document.createElement('div'); el.className='s1-wday'; el.textContent=w; c.appendChild(el); });
+        for (let i=0;i<m.offset;i++) { const el=document.createElement('div'); el.className='s1-day empty'; c.appendChild(el); }
+        for (let d=1;d<=m.days;d++) {
+            const el = document.createElement('div');
+            if (m.today && d===m.today) el.className='s1-day today';
+            else if (m.adopt.includes(d)) el.className='s1-day adopt';
+            else el.className='s1-day avail';
+            el.textContent = d; c.appendChild(el);
+        }
+    }
+    buildMiniCal('cal-hero', MONTHS[0]);
+
+    // ── Genera slide mesi 3,5-7 ──
+    function buildMonthSlide(m, slideNum, insertBeforeId) {
+        const avail = m.days - m.adopt.length;
+
+        let wdHTML = WDAYS.map(w=>`<div class="ms-wday">${w}</div>`).join('');
+        let emptyHTML = Array(m.offset).fill('<div class="ms-day empty"></div>').join('');
+        let daysHTML = Array.from({length:m.days},(_,i)=>i+1).map(d=>{
+            const cls = m.adopt.includes(d) ? 'ms-day adopt' : 'ms-day avail';
+            return `<div class="${cls}">${d}</div>`;
+        }).join('');
+
+        const outer = document.createElement('div');
+        outer.className = 'slide-outer';
+        outer.id = 'so-' + slideNum;
+        outer.innerHTML = `
+            <div class="scale-wrap">
+                <div class="slide month-slide" style="background-image: linear-gradient(rgba(5,15,10,0.44), rgba(5,10,20,0.50)), url('${m.img}'); background-size: cover; background-position: center;">
+                    <div class="ms-toprow">
+                        <div class="ms-brand">
+                            <div class="ms-brand-dot" style="background:white;border:1px solid ${m.acc}66;overflow:hidden;display:flex;align-items:center;justify-content:center;"><img src="public/images/logo.png" alt="Effatà" style="width:80%;height:80%;object-fit:contain;"></div>
+                            <span class="ms-brand-lbl">Effatà · 2026</span>
+                        </div>
+                        <div class="ms-avail-badge" style="color:${m.acc};border:1px solid ${m.acc}44;background:${m.acc}18;">
+                            ${avail} giorni disponibili
+                        </div>
+                    </div>
+                    <div class="ms-big-month" style="color:${m.col};">${m.name}</div>
+                    <div class="ms-cal">
+                        <div class="ms-wdays">${wdHTML}</div>
+                        <div class="ms-daygrid">${emptyHTML}${daysHTML}</div>
+                    </div>
+                    <div class="ms-legend">
+                        <div class="ms-leg-item"><div class="ms-leg-dot" style="background:${m.acc};"></div>Disponibile</div>
+                        <div class="ms-leg-item"><div class="ms-leg-dot" style="background:#e74c3c;"></div>Adottato</div>
+                    </div>
+                    <div class="ms-watermark">Regala un Domani · Effatà Calendario Solidale 2026</div>
+                </div>
+            </div>
+            <div class="slide-caption">Card ${slideNum}/8 · ${m.name} 2026 — ${avail} giorni liberi</div>
+        `;
+        document.getElementById(insertBeforeId).before(outer);
+    }
+    buildMonthSlide(MONTHS[1], 3, 'so-4'); // Maggio → prima della slide Gift Card
+
+    // ── Copia testo post Facebook ──
+    function copyCaption() {
+        const text = document.getElementById('captionText').textContent.trim()
+            + '\n\nhttps://calendario.effataitalia.it';
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = event.target;
+            btn.textContent = '✅ Copiato!';
+            setTimeout(() => btn.textContent = 'Copia testo', 2000);
+        });
+    }
+
+    // ── Salva slide corrente come PNG 1080×1080 ──
+    async function saveSlide() {
+        const btn = document.getElementById('saveBtn');
+        btn.textContent = '⏳ Salvataggio...';
+        btn.disabled = true;
+
+        const activeOuter = document.querySelector('.slide-outer.active');
+        const slide = activeOuter.querySelector('.slide');
+
+        // Clona la slide fuori dallo schermo senza il transform scale
+        const clone = slide.cloneNode(true);
+        clone.style.cssText = `
+            position: fixed; top: -9999px; left: -9999px;
+            width: 1080px; height: 1080px;
+            transform: none; transform-origin: top left; z-index: -1;
+            font-family: 'Poppins', sans-serif;
+        `;
+        document.body.appendChild(clone);
+
+        try {
+            const canvas = await html2canvas(clone, {
+                width: 1080, height: 1080, scale: 1,
+                useCORS: true, allowTaint: true,
+                backgroundColor: '#000', logging: false
+            });
+            const link = document.createElement('a');
+            link.download = `effata-card-${cur}-${NAMES[cur-1].replace(/[^\w]/g, '-')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } catch(e) {
+            alert('Errore durante il salvataggio. Prova a usare Chrome.');
+            console.error(e);
+        } finally {
+            document.body.removeChild(clone);
+            btn.textContent = '📸 Salva PNG';
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
