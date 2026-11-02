@@ -723,8 +723,17 @@ router.post('/webhook/stripe', async (req, res) => {
 
     let event;
     try {
-        if (endpointSecret && sig) {
+        if (endpointSecret) {
+            // Con il segreto impostato si accettano solo eventi firmati da Stripe:
+            // senza firma chiunque potrebbe fingere un pagamento completato
+            if (!sig) {
+                console.error('Webhook Stripe rifiutato: firma mancante');
+                return res.status(400).json({ error: 'Firma mancante' });
+            }
             event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+        } else if (process.env.NODE_ENV === 'production') {
+            console.error('Webhook Stripe rifiutato: STRIPE_WEBHOOK_SECRET non impostato');
+            return res.status(400).json({ error: 'Webhook non configurato' });
         } else {
             // Senza webhook secret (dev/test)
             event = JSON.parse(req.body.toString());
