@@ -683,8 +683,8 @@ router.post('/natale/checkout', async (req, res) => {
                 price_data: {
                     currency: 'eur',
                     product_data: {
-                        name: 'Gift card di Natale - Calendario Solidale',
-                        description: 'Gift card di Natale a sostegno della Casa Famiglia Effatà in Uganda',
+                        name: 'Donazione liberale - Calendario Solidale Effatà',
+                        description: 'Donazione liberale a sostegno della Casa Famiglia Effatà in Uganda. In segno di ringraziamento, una gift card di Natale.',
                     },
                     unit_amount: NATALE_PRICE_CENTS,
                 },
@@ -879,8 +879,8 @@ async function createStripeCheckout(donation, paymentMethodTypes = ['card']) {
             price_data: {
                 currency: 'eur',
                 product_data: {
-                    name: `Adotta il ${donation.day}/${donation.month}/${donation.year}`,
-                    description: 'Donazione Calendario Solidale - Casa Famiglia Uganda',
+                    name: `Donazione liberale - Adotta il ${donation.day}/${donation.month}/${donation.year}`,
+                    description: 'Donazione liberale al Calendario Solidale a sostegno della Casa Famiglia Effatà in Uganda',
                 },
                 unit_amount: 5000, // 50,00 €
             },
