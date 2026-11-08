@@ -260,3 +260,6 @@
 .merc-whatsapp-quando { margin: 0 0 6px; padding: 10px 14px; border-radius: 10px; background: rgba(37, 211, 102, 0.18); border: 2px solid #25d366; color: #fff; font-size: 1.15rem; font-weight: 700; text-align: center; }
 /* Pulsante dello scorrimento automatico, sotto la striscia dei retro */
 .merc-strip-auto { margin: 8px 0 0; }
+
+/* Link al riepilogo pagamenti nel pannello admin: sta accanto ad Aggiorna */
+.merc-admin-link { margin-left: 8px; text-decoration: none; display: inline-block; }
