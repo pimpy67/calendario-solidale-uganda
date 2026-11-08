@@ -220,7 +220,8 @@
       "text": "",
       "placeholder": true,
       "disegno": "/images/gift_card/web/025_albero-natale.png",
-      "disegno_retro": "/images/gift_card/web/025b_presepe.jpeg"
+      "disegno_retro": "/images/gift_card/web/025b_presepe.jpeg",
+      "disegno_retro_mercatino": "/images/gift_card/web/025b_presepe_orizzontale.jpg"
     }
   ]
 }

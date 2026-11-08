@@ -25,8 +25,6 @@ const BONIFICO_IBAN_EFFATA = 'IT46W0200861720000106797497';
 const BONIFICO_IBAN = (process.env.BONIFICO_IBAN === 'off' ? '' : (process.env.BONIFICO_IBAN || BONIFICO_IBAN_EFFATA))
     .replace(/\s/g, '').toUpperCase();
 const BONIFICO_INTESTATARIO = process.env.BONIFICO_INTESTATARIO || 'Effatà Italia Charity Organisation ODV';
-// POS del banchetto (es. SumUp): pulsante "Pagato con POS" solo se MERCATINO_POS=true
-const MERCATINO_POS = process.env.MERCATINO_POS === 'true';
 
 function scadenzaLeggibile() {
     return new Date(NATALE_PAGAMENTO_SCADENZA).toLocaleDateString('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'long' });
@@ -537,14 +535,13 @@ router.get('/mercatino/config', (req, res) => {
         carta: STRIPE_ENABLED,
         link: STRIPE_ENABLED,
         bonifico: BONIFICO_IBAN !== '',
-        pos: MERCATINO_POS,
         scadenza: scadenzaLeggibile()
     });
 });
 
 /**
  * POST /api/mercatino/cash
- * Registra una gift card di Natale pagata in contanti, o con il POS del banchetto (metodo: 'pos').
+ * Registra una gift card di Natale pagata in contanti.
  * Consegna: all'orario di consegna, come le altre.
  */
 router.post('/mercatino/cash', (req, res) => {
@@ -554,16 +551,9 @@ router.post('/mercatino/cash', (req, res) => {
     if (process.env.NATALE_VENDITA_ATTIVA !== 'true') {
         return res.status(403).json({ error: true, message: 'Le gift card di Natale non sono ancora in vendita' });
     }
-    const { donor_name, donor_email, recipient_name, message, card_design, metodo } = req.body || {};
-    if (metodo === 'pos' && !MERCATINO_POS) {
-        return res.status(400).json({ error: true, message: 'Il pagamento con POS non è attivo' });
-    }
+    const { donor_name, donor_email, recipient_name, message, card_design } = req.body || {};
     if (!donor_name || !recipient_name) {
         return res.status(400).json({ error: true, message: 'Compila il nome di chi regala e il nome di chi riceve' });
-    }
-    const cashCf = checkCodiceFiscale(req.body.donor_cf);
-    if (cashCf.error) {
-        return res.status(400).json({ error: true, message: cashCf.error });
     }
     if (donor_email && !EMAIL_RE.test(donor_email)) {
         return res.status(400).json({ error: true, message: 'Email di chi regala non valida' });
@@ -584,8 +574,8 @@ router.post('/mercatino/cash', (req, res) => {
             recipient_name: recipient_name.toString().substring(0, 100),
             message: (message || '').toString().substring(0, 490) || null,
             card_design,
-            donor_cf: metodo === 'pos' ? cashCf.cf : null,
-            payment_method: metodo === 'pos' ? 'pos' : 'cash',
+            donor_cf: null,
+            payment_method: 'cash',
             delivery_at: NATALE_DELIVERY_AT,
             email_at: NATALE_EMAIL_AT,
             paid_at: new Date().toISOString(),
@@ -630,8 +620,7 @@ router.get('/mercatino/riepilogo', (req, res) => {
         total: somma(c => c.metodo === 'cash'),
         totali: {
             contanti: somma(c => c.metodo === 'cash'),
-            pos: somma(c => c.metodo === 'pos'),
-            online: somma(c => c.pagata && !['cash', 'pos'].includes(c.metodo)),
+            online: somma(c => c.pagata && c.metodo !== 'cash'),
             in_attesa: cards.filter(c => !c.pagata).length
         },
         cards

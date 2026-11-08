@@ -1,7 +1,7 @@
 /**
  * mercatino.js - Vendita delle gift card di Natale al banchetto, con PIN dei volontari.
  * Pagamenti: contanti, QR (carta o Satispay sul telefono del cliente), link "paga dopo",
- * bonifico (promessa) e POS, questi ultimi due solo se attivi sul server.
+ * bonifico (promessa), solo quelli attivi sul server.
  * Vetrina: a tablet fermo i disegni scorrono a tutto schermo; un tocco torna alla scelta.
  */
 (function () {
@@ -9,7 +9,7 @@
     let pin = '';
     let selectedDesign = null;
     let selectedSrc = null;
-    let config = { bonifico: false, pos: false, link: true, scadenza: '20 dicembre' };
+    let config = { bonifico: false, link: true, scadenza: '20 dicembre' };
     let doorsForVetrina = [];
     let payMethod = null;
     // Come vuole pagare: testo del pulsante di conferma e riga sopra, nel popup di controllo
@@ -18,8 +18,7 @@
         card: { label: 'Paga con carta, dal suo telefono', confirm: '📱 Mostra il QR per pagare con carta' },
         satispay: { label: 'Paga con Satispay, dal suo telefono', confirm: '🟥 Mostra il QR per pagare con Satispay' },
         link: { label: 'Paga dopo: gli arriva il link', confirm: '✉️ Salva e manda il link per pagare' },
-        bonifico: { label: 'Bonifico: promessa di pagamento', confirm: '🏦 Salva e mostra IBAN e causale' },
-        pos: { label: 'Paga con il POS del banchetto', confirm: '💳 Pagamento col POS riuscito · 20 €' }
+        bonifico: { label: 'Bonifico: promessa di pagamento', confirm: '🏦 Salva e mostra IBAN e causale' }
     };
 
     // Il PIN resta solo per questa scheda del browser (sessionStorage), se disponibile
@@ -143,6 +142,11 @@
         container.appendChild(btn);
     }
 
+    // Retro per il mercatino: versione orizzontale se c'è, come le altre
+    function retroSrc(door) {
+        return door.disegno_retro_mercatino || door.disegno_retro;
+    }
+
     async function loadDesigns() {
         const response = await fetch('/data/avvento.json?v=2026-10-17c');
         const data = await response.json();
@@ -155,23 +159,41 @@
             makeTile(`porta${door.day}`, `Finestra ${door.day}`, door.miniatura || door.disegno, door.disegno, grid);
         });
         doorsForVetrina = doors.filter(d => d.disegno).map(d => d.disegno)
-            .concat(doors.filter(d => d.disegno_retro).map(d => d.disegno_retro));
+            .concat(doors.filter(d => d.disegno_retro).map(d => retroSrc(d)));
         // Disegni del carosello che non sono su nessuna finestra
         (data.disegni_mercatino || []).forEach(extra => {
             makeTile(extra.code, extra.label, extra.file, extra.file, grid);
         });
         doors.filter(d => d.disegno_retro).forEach(door => {
-            makeTile(`porta${door.day}r`, `Finestra ${door.day}, retro`, door.disegno_retro, door.disegno_retro, strip);
+            makeTile(`porta${door.day}r`, `Finestra ${door.day}, retro`, retroSrc(door), retroSrc(door), strip);
         });
         updateStripArrows();
     }
 
     // Frecce del carosello dei retro (due righe): ogni freccia sposta di due colonne di disegni
     function scrollStrip(direction) {
+        setStripAuto(false);
         const strip = document.getElementById('merc-strip');
         const column = (strip.querySelector('.merc-design')?.offsetWidth || 150) + 8;
         strip.scrollBy({ left: direction * column * 2, behavior: 'smooth' });
     }
+    // Scorrimento automatico della striscia: lento, si ferma col tocco, con le frecce o col pulsante
+    let stripTimer = null;
+    function stripAutoStep() {
+        const strip = document.getElementById('merc-strip');
+        const column = (strip.querySelector('.merc-design')?.offsetWidth || 150) + 8;
+        if (strip.scrollLeft >= strip.scrollWidth - strip.clientWidth - 2) strip.scrollTo({ left: 0, behavior: 'smooth' });
+        else strip.scrollBy({ left: column, behavior: 'smooth' });
+    }
+    function setStripAuto(on) {
+        clearInterval(stripTimer);
+        stripTimer = on ? setInterval(stripAutoStep, 3500) : null;
+        const btn = document.getElementById('strip-auto');
+        btn.setAttribute('aria-pressed', String(on));
+        btn.textContent = on ? '⏸ Ferma lo scorrimento' : '▶ Scorri da solo';
+    }
+    document.getElementById('strip-auto').addEventListener('click', () => setStripAuto(!stripTimer));
+    document.getElementById('merc-strip').addEventListener('pointerdown', () => setStripAuto(false));
     document.getElementById('strip-prev').addEventListener('click', () => scrollStrip(-1));
     document.getElementById('strip-next').addEventListener('click', () => scrollStrip(1));
     // Le frecce restano sempre visibili; si spengono quando non c'è altro da scorrere
@@ -252,7 +274,7 @@
         return extra ? `disegno ${Number(extra[1])}` : String(design);
     }
 
-    const METODI = { cash: 'contanti', pos: 'POS', stripe: 'carta/Satispay', link: 'link', bonifico: 'bonifico' };
+    const METODI = { cash: 'contanti', stripe: 'carta/Satispay', link: 'link', bonifico: 'bonifico' };
     const euro = (n) => `${Number(n || 0).toFixed(2).replace('.', ',')} €`;
     async function loadSummary() {
         const total = document.getElementById('sum-total');
@@ -261,7 +283,6 @@
             const data = await api('/api/mercatino/riepilogo');
             const t = data.totali || { contanti: data.total };
             const parts = [`contanti ${euro(t.contanti)}`];
-            if (t.pos) parts.push(`POS ${euro(t.pos)}`);
             if (t.online) parts.push(`online ${euro(t.online)}`);
             if (t.in_attesa) parts.push(`⏳ ${t.in_attesa} in attesa`);
             total.textContent = `Oggi: ${data.count} pagate · ${parts.join(' · ')}`;
@@ -381,7 +402,7 @@
     // Primo passo: come vuole pagare. Si vedono solo i metodi attivi sul server,
     // e il modulo chiede solo i dati che servono per quel metodo.
     function applyConfig() {
-        const ok = { cash: true, card: config.carta, satispay: config.carta, link: config.link, bonifico: config.bonifico, pos: config.pos };
+        const ok = { cash: true, card: config.carta, satispay: config.carta, link: config.link, bonifico: config.bonifico };
         document.querySelectorAll('.merc-paybtn').forEach(b => { b.hidden = !ok[b.dataset.pay]; });
     }
     function choosePay(method) {
@@ -486,18 +507,18 @@
         showAlert('preview-alert', error.message);
     }
 
-    // Contanti o POS: la card è già pagata
-    async function registerSale(metodo) {
+    // Contanti: la card è già pagata
+    async function registerSale() {
         const button = document.getElementById('preview-confirm');
         button.disabled = true;
         showAlert('preview-alert', '');
         try {
             const data = await api('/api/mercatino/cash', {
                 method: 'POST',
-                body: JSON.stringify({ ...saleData(), metodo })
+                body: JSON.stringify({ ...saleData(), metodo: 'cash' })
             });
             closePreview();
-            showFatto(`Gift card NATALE-${String(data.id).padStart(4, '0')} registrata, pagata ${metodo === 'pos' ? 'con il POS' : 'in contanti'}. Si apre il ${formatTime(data.delivery_at)}.`);
+            showFatto(`Gift card NATALE-${String(data.id).padStart(4, '0')} registrata, pagata in contanti. Si apre il ${formatTime(data.delivery_at)}.`);
         } catch (error) {
             popupError(error);
         } finally {
@@ -648,7 +669,7 @@
     });
     // Un solo pulsante di conferma: fa quello che serve per il metodo scelto all'inizio
     document.getElementById('preview-confirm').addEventListener('click', () => {
-        if (payMethod === 'cash' || payMethod === 'pos') registerSale(payMethod);
+        if (payMethod === 'cash') registerSale();
         else if (payMethod === 'card' || payMethod === 'satispay') showPayQr(payMethod);
         else if (payMethod === 'link' || payMethod === 'bonifico') registerPromise(payMethod);
     });
