@@ -11,6 +11,16 @@
     let selectedSrc = null;
     let config = { bonifico: false, pos: false, link: true, scadenza: '20 dicembre' };
     let doorsForVetrina = [];
+    let payMethod = null;
+    // Come vuole pagare: testo del pulsante di conferma e riga sopra, nel popup di controllo
+    const PAY = {
+        cash: { label: 'Paga in contanti', confirm: '💶 Ho ricevuto 20 € in contanti' },
+        card: { label: 'Paga con carta, dal suo telefono', confirm: '📱 Mostra il QR per pagare con carta' },
+        satispay: { label: 'Paga con Satispay, dal suo telefono', confirm: '🟥 Mostra il QR per pagare con Satispay' },
+        link: { label: 'Paga dopo: gli arriva il link', confirm: '✉️ Salva e manda il link per pagare' },
+        bonifico: { label: 'Bonifico: promessa di pagamento', confirm: '🏦 Salva e mostra IBAN e causale' },
+        pos: { label: 'Paga con il POS del banchetto', confirm: '💳 Pagamento col POS riuscito · 20 €' }
+    };
 
     // Il PIN resta solo per questa scheda del browser (sessionStorage), se disponibile
     function readPin() {
@@ -102,7 +112,7 @@
             card_design: selectedDesign,
             donor_name: val('donor-name'),
             donor_email: val('donor-email') || null,
-            donor_cf: val('donor-cf').replace(/\s/g, '').toUpperCase() || null,
+            donor_cf: payMethod === 'cash' ? null : (val('donor-cf').replace(/\s/g, '').toUpperCase() || null),
             recipient_name: val('recipient-name'),
             recipient_email: val('recipient-email'),
             recipient_phone: val('recipient-phone'),
@@ -220,10 +230,8 @@
         front.src = selectedSrc;
         document.getElementById('preview-back-name').textContent = recipientName;
         showAlert('preview-alert', '');
-        document.getElementById('preview-bonifico').hidden = !config.bonifico;
-        document.getElementById('preview-pos').hidden = !config.pos;
-        document.getElementById('preview-link').hidden = !config.link;
-        document.getElementById('preview-qr').hidden = !config.carta;
+        document.getElementById('preview-paylabel').textContent = PAY[payMethod].label;
+        document.getElementById('preview-confirm').textContent = PAY[payMethod].confirm;
         document.getElementById('preview').hidden = false;
         document.getElementById('preview-confirm').focus();
     }
@@ -332,6 +340,7 @@
         const gate = document.getElementById('merc-gate');
         try {
             config = await api('/api/mercatino/config');
+            applyConfig();
             await loadDesigns();
             await loadSummary();
             await loadInvii();
@@ -362,6 +371,39 @@
         await unlock();
     });
 
+    // Primo passo: come vuole pagare. Si vedono solo i metodi attivi sul server,
+    // e il modulo chiede solo i dati che servono per quel metodo.
+    function applyConfig() {
+        const ok = { cash: true, card: config.carta, satispay: config.carta, link: config.link, bonifico: config.bonifico, pos: config.pos };
+        document.querySelectorAll('.merc-paybtn').forEach(b => { b.hidden = !ok[b.dataset.pay]; });
+    }
+    function choosePay(method) {
+        payMethod = method;
+        document.querySelectorAll('.merc-paybtn').forEach(b => b.setAttribute('aria-checked', String(b.dataset.pay === method)));
+        const form = document.getElementById('sale-form');
+        form.hidden = !method;
+        if (!method) {
+            document.getElementById('paynote').textContent = 'Tocca come vuole pagare: poi compili solo i dati che servono.';
+            return;
+        }
+        const promise = method === 'link' || method === 'bonifico';
+        // Contanti: niente codice fiscale. Cellulare di chi regala: solo per mandargli link o IBAN.
+        document.getElementById('field-donor-cf').hidden = method === 'cash';
+        document.getElementById('field-donor-phone').hidden = !promise;
+        document.getElementById('hint-donor-email').textContent = promise
+            ? `${method === 'link' ? 'per mandargli il link' : "per mandargli l'IBAN"}: serve l'email o il cellulare`
+            : 'facoltativa: per la ricevuta';
+        document.getElementById('paynote').textContent = `Scelto: ${PAY[method].label}. Puoi cambiarlo toccando un altro pulsante.`;
+        fieldError('donor-email', '');
+        showAlert('sale-alert', '');
+    }
+    document.getElementById('paychoice').addEventListener('click', (e) => {
+        const b = e.target.closest('.merc-paybtn');
+        if (!b) return;
+        choosePay(b.dataset.pay);
+        setTimeout(() => document.getElementById('sale-form').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    });
+
     // "Salva" controlla i dati e apre il popup: la vendita si registra solo dal tasto di pagamento nel popup.
     // Ogni errore compare sotto il suo campo, e in alto un avviso grande con l'elenco.
     document.getElementById('sale-form').addEventListener('submit', (e) => {
@@ -373,9 +415,14 @@
         const add = (id, message) => { errors.push({ id, message }); fieldError(id, message); };
 
         if (!selectedDesign) errors.push({ id: null, message: 'scegli il disegno (tocca un disegno, poi "Scelgo questo disegno")' });
+        if (!payMethod) errors.push({ id: null, message: 'scegli come vuole pagare' });
         if (!d.donor_name) add('donor-name', 'Scrivi nome e cognome di chi regala');
+        if ((payMethod === 'link' || payMethod === 'bonifico') && !d.donor_email && !val('donor-phone')) {
+            add('donor-email', `Per mandargli ${payMethod === 'link' ? 'il link' : "l'IBAN"} serve la sua email o il suo cellulare`);
+        }
         if (d.donor_email && !EMAIL_RE.test(d.donor_email)) add('donor-email', 'Email non valida: controlla @ e il punto (es. mario@gmail.com)');
         if (!cfOk(d.donor_cf)) add('donor-cf', 'Codice fiscale non valido: controlla lettere e numeri (16 caratteri)');
+        if (payMethod !== 'link' && payMethod !== 'bonifico') document.getElementById('donor-phone').value = '';
         if (!phoneOk(val('donor-phone'))) add('donor-phone', 'Numero non valido: solo cifre, es. 333 1234567');
         if (!d.recipient_name) add('recipient-name', 'Scrivi il nome di chi riceve');
         if (d.recipient_email && !EMAIL_RE.test(d.recipient_email)) add('recipient-email', 'Email non valida: controlla @ e il punto (es. anna@gmail.com)');
@@ -405,6 +452,7 @@
         selectedSrc = null;
         document.querySelectorAll('.merc-design').forEach(b => b.setAttribute('aria-checked', 'false'));
         document.getElementById('merc-selected').textContent = 'nessuno';
+        choosePay(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -433,7 +481,7 @@
 
     // Contanti o POS: la card è già pagata
     async function registerSale(metodo) {
-        const button = document.getElementById(metodo === 'pos' ? 'preview-pos' : 'preview-confirm');
+        const button = document.getElementById('preview-confirm');
         button.disabled = true;
         showAlert('preview-alert', '');
         try {
@@ -442,7 +490,7 @@
                 body: JSON.stringify({ ...saleData(), metodo })
             });
             closePreview();
-            showFatto(`Gift card n. ${data.id} registrata, pagata ${metodo === 'pos' ? 'con il POS' : 'in contanti'}. Si apre il ${formatTime(data.delivery_at)}.`);
+            showFatto(`Gift card NATALE-${String(data.id).padStart(4, '0')} registrata, pagata ${metodo === 'pos' ? 'con il POS' : 'in contanti'}. Si apre il ${formatTime(data.delivery_at)}.`);
         } catch (error) {
             popupError(error);
         } finally {
@@ -453,7 +501,7 @@
     // Promessa: link "paga dopo" o bonifico. La card resta in attesa finché il pagamento non arriva.
     let promessaText = '';
     async function registerPromise(metodo) {
-        const button = document.getElementById(metodo === 'bonifico' ? 'preview-bonifico' : 'preview-link');
+        const button = document.getElementById('preview-confirm');
         button.disabled = true;
         showAlert('preview-alert', '');
         try {
@@ -520,19 +568,20 @@
     // Pagamento con QR: il cliente paga dal suo telefono, con carta o Satispay (pagina Stripe).
     // Mentre il QR è aperto, ogni 3 secondi si chiede se il pagamento è arrivato.
     let qrPoll = null;
-    async function showPayQr() {
-        const button = document.getElementById('preview-qr');
+    async function showPayQr(tipo) {
+        const button = document.getElementById('preview-confirm');
         button.disabled = true;
         showAlert('preview-alert', '');
         try {
             const response = await fetch('/api/natale/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...saleData(), canale: 'mercatino' })
+                body: JSON.stringify({ ...saleData(), canale: 'mercatino', solo: tipo })
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok || !data.stripe_url) throw new Error(data.message || 'Errore nella creazione del pagamento');
             drawQr(data.stripe_url, document.getElementById('pay-qr-canvas'));
+            document.getElementById('pay-qr-title').textContent = tipo === 'satispay' ? 'Inquadra per pagare con Satispay · 20 €' : 'Inquadra per pagare con carta · 20 €';
             document.getElementById('pay-qr-wait').textContent = '⏳ In attesa del pagamento…';
             document.getElementById('pay-qr').hidden = false;
             startQrPoll(data);
@@ -555,7 +604,7 @@
                     clearInterval(qrPoll);
                     document.getElementById('pay-qr').hidden = true;
                     closePreview();
-                    showFatto(`Pagamento arrivato! Gift card n. ${data.id} pagata con carta o Satispay.`);
+                    showFatto(`Pagamento arrivato! Gift card NATALE-${String(data.id).padStart(4, '0')} pagata con carta o Satispay.`);
                 }
             } catch (e) { /* rete instabile: si riprova al giro dopo */ }
         }, 3000);
@@ -585,18 +634,23 @@
         document.getElementById('pay-qr').hidden = true;
     }
 
-    document.getElementById('preview-qr').addEventListener('click', showPayQr);
     document.getElementById('pay-qr-close').addEventListener('click', closePayQr);
     document.getElementById('pay-qr-done').addEventListener('click', closePayQr);
     document.getElementById('pay-qr').addEventListener('click', (e) => {
         if (e.target.id === 'pay-qr') closePayQr();
     });
-    document.getElementById('preview-confirm').addEventListener('click', () => registerSale('cash'));
-    document.getElementById('preview-pos').addEventListener('click', () => registerSale('pos'));
-    document.getElementById('preview-link').addEventListener('click', () => registerPromise('link'));
-    document.getElementById('preview-bonifico').addEventListener('click', () => registerPromise('bonifico'));
+    // Un solo pulsante di conferma: fa quello che serve per il metodo scelto all'inizio
+    document.getElementById('preview-confirm').addEventListener('click', () => {
+        if (payMethod === 'cash' || payMethod === 'pos') registerSale(payMethod);
+        else if (payMethod === 'card' || payMethod === 'satispay') showPayQr(payMethod);
+        else if (payMethod === 'link' || payMethod === 'bonifico') registerPromise(payMethod);
+    });
+    document.getElementById('preview-change').addEventListener('click', () => {
+        closePreview();
+        document.getElementById('paychoice').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
     // Il cliente non riesce a pagare col QR: stessa card, ma gli si manda il link (la vecchia pagina scade da sola)
-    document.getElementById('pay-qr-link').addEventListener('click', () => registerPromise('link'));
+    document.getElementById('pay-qr-link').addEventListener('click', () => { payMethod = 'link'; registerPromise('link'); });
     document.getElementById('preview-back').addEventListener('click', closePreview);
     document.getElementById('preview-close').addEventListener('click', closePreview);
     document.getElementById('preview').addEventListener('click', (e) => {

@@ -237,3 +237,21 @@
 .merc-vetrina-tap { margin: 12px 0 0; font-size: clamp(1rem, 2.2vw, 1.3rem); color: #fff; animation: merc-pulsa 2s ease-in-out infinite; }
 @keyframes merc-pulsa { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 @media (prefers-reduced-motion: reduce) { .merc-vetrina img { transition: none; } .merc-vetrina-tap { animation: none; } }
+
+/* Primo passo: "Come vuole pagare?" con pulsanti grandi (3 per riga sul tablet, 2 sul telefono) */
+.merc-paychoice { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+@media (min-width: 720px) { .merc-paychoice { grid-template-columns: repeat(3, 1fr); } }
+.merc-paybtn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 84px; padding: 10px; border-radius: 14px; cursor: pointer;
+    background: rgba(255, 255, 255, 0.06); color: var(--white); border: 2px solid rgba(245, 210, 122, 0.45);
+    font: inherit; font-size: 1.15rem; font-weight: 700;
+}
+.merc-paybtn span { font-size: 1.7rem; line-height: 1; }
+.merc-paybtn small { font-weight: 400; font-size: 0.82rem; color: var(--muted); }
+.merc-paybtn[aria-checked="true"] { background: var(--gold); color: #1f1f38; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245, 210, 122, 0.4); }
+.merc-paybtn[aria-checked="true"] small { color: #3a3a5a; }
+.merc-paybtn:focus-visible { outline: 3px solid var(--white); outline-offset: 2px; }
+.merc-paynote { margin: 10px 0 0; color: var(--muted); text-align: center; }
+.merc-step { margin: 18px 0 6px !important; }
+.merc-preview-actions { grid-template-columns: 1fr !important; }

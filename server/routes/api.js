@@ -511,12 +511,14 @@ router.get('/natale/count', (req, res) => {
 
 /**
  * Mercatino: vendita in contanti e riepilogo, protetti dal PIN unico dei volontari.
- * Il PIN sta in MERCATINO_PIN (solo sul server). Se non è impostato, il mercatino è chiuso.
+ * Il PIN sta in MERCATINO_PIN (solo sul server), anche più di uno separati da virgola.
+ * Se non è impostato, il mercatino è chiuso.
  */
-const MERCATINO_PIN = process.env.MERCATINO_PIN || '';
+// Più PIN separati da virgola (es. uno per tablet): se uno gira troppo, si toglie solo quello
+const MERCATINO_PINS = (process.env.MERCATINO_PIN || '').split(',').map(p => p.trim()).filter(Boolean);
 function mercatinoAuthorized(req) {
     const pin = req.headers['x-mercatino-pin'];
-    return MERCATINO_PIN !== '' && typeof pin === 'string' && pin === MERCATINO_PIN;
+    return typeof pin === 'string' && MERCATINO_PINS.includes(pin);
 }
 
 /**
@@ -671,11 +673,12 @@ router.post('/mercatino/invii/:id/inviato', (req, res) => {
  * Sessione Stripe per pagare una gift card di Natale già salvata (QR del sito, QR del banchetto, link "paga dopo").
  * Se chi regala ha lasciato l'email, Stripe la trova già compilata.
  */
-async function createNataleStripeSession(card, { successUrl, cancelUrl } = {}) {
+async function createNataleStripeSession(card, { successUrl, cancelUrl, solo } = {}) {
     const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
     const session = await stripe.checkout.sessions.create({
-        // Carta e Satispay (Satispay compare solo se è attivo nel dashboard Stripe)
-        payment_method_types: ['card', 'satispay'],
+        // Carta e Satispay (Satispay compare solo se è attivo nel dashboard Stripe).
+        // Dal mercatino si può chiedere un solo metodo: la pagina va dritta a carta o a Satispay.
+        payment_method_types: solo === 'card' ? ['card'] : solo === 'satispay' ? ['satispay'] : ['card', 'satispay'],
         ...(card.donor_email ? { customer_email: card.donor_email } : {}),
         locale: 'it',
         line_items: [{
@@ -917,7 +920,7 @@ router.post('/natale/checkout', async (req, res) => {
         });
 
         const card = db.getNataleGiftCardForPayment(paymentId);
-        const session = await createNataleStripeSession(card);
+        const session = await createNataleStripeSession(card, { solo: req.body.solo });
         // payment_id: il mercatino lo usa per vedere quando il pagamento con il QR è arrivato
         res.status(201).json({ stripe_url: session.url, payment_id: paymentId, id: card.id });
     } catch (error) {

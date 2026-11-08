@@ -40,9 +40,19 @@
 
             <div class="merc-side">
             <section class="merc-card merc-data" aria-labelledby="data-title">
-                <h2 id="data-title">2. Dati</h2>
+                <h2 id="data-title">2. Come vuole pagare?</h2>
                 <div id="sale-alert" class="merc-alert" role="alert" tabindex="-1" hidden></div>
-                <form id="sale-form" class="merc-form" novalidate>
+                <div class="merc-paychoice" id="paychoice" role="radiogroup" aria-labelledby="data-title">
+                    <button type="button" class="merc-paybtn" role="radio" aria-checked="false" data-pay="cash"><span>💶</span>Contanti</button>
+                    <button type="button" class="merc-paybtn" role="radio" aria-checked="false" data-pay="card"><span>📱</span>Carta<small>QR sul suo telefono</small></button>
+                    <button type="button" class="merc-paybtn" role="radio" aria-checked="false" data-pay="satispay"><span>🟥</span>Satispay<small>QR sul suo telefono</small></button>
+                    <button type="button" class="merc-paybtn" role="radio" aria-checked="false" data-pay="link"><span>✉️</span>Paga dopo<small>gli mando il link</small></button>
+                    <button type="button" class="merc-paybtn" role="radio" aria-checked="false" data-pay="bonifico"><span>🏦</span>Bonifico<small>promessa di pagamento</small></button>
+                    <button type="button" class="merc-paybtn" role="radio" aria-checked="false" data-pay="pos"><span>💳</span>POS<small>carta sul lettore</small></button>
+                </div>
+                <p class="merc-paynote" id="paynote">Tocca come vuole pagare: poi compili solo i dati che servono.</p>
+                <form id="sale-form" class="merc-form" novalidate hidden>
+                    <h2 class="merc-step">3. Dati</h2>
                     <div class="merc-people">
                         <fieldset class="merc-box">
                             <legend>🎁 Chi regala</legend>
@@ -52,17 +62,17 @@
                                 <p class="merc-field-error" id="err-donor-name" hidden></p>
                             </div>
                             <div class="merc-field">
-                                <label for="donor-email">Email <span class="merc-hint">facoltativa: per la ricevuta e per mandargli link o IBAN</span></label>
+                                <label for="donor-email">Email <span class="merc-hint" id="hint-donor-email">facoltativa: per la ricevuta</span></label>
                                 <input type="email" id="donor-email" maxlength="255" autocomplete="off" inputmode="email" placeholder="es. mario@email.com">
                                 <p class="merc-field-error" id="err-donor-email" hidden></p>
                             </div>
-                            <div class="merc-field">
-                                <label for="donor-cf">Codice fiscale <span class="merc-hint">facoltativo: solo se non paga in contanti, per la detrazione</span></label>
+                            <div class="merc-field" id="field-donor-cf">
+                                <label for="donor-cf">Codice fiscale <span class="merc-hint">facoltativo: per la ricevuta per la detrazione</span></label>
                                 <input type="text" id="donor-cf" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="es. RSSMRA80A01H501U">
                                 <p class="merc-field-error" id="err-donor-cf" hidden></p>
                             </div>
-                            <div class="merc-field">
-                                <label for="donor-phone">Cellulare <span class="merc-hint">facoltativo: solo per mandargli link o IBAN su WhatsApp, non viene salvato</span></label>
+                            <div class="merc-field" id="field-donor-phone">
+                                <label for="donor-phone">Cellulare <span class="merc-hint">facoltativo: solo per mandargli i dati su WhatsApp, non viene salvato</span></label>
                                 <input type="tel" id="donor-phone" maxlength="30" autocomplete="off" placeholder="es. 333 1234567">
                                 <p class="merc-field-error" id="err-donor-phone" hidden></p>
                             </div>
@@ -98,11 +108,11 @@
                         </fieldset>
                     </div>
                     <div class="merc-field">
-                        <label class="merc-consent merc-check"><input type="checkbox" id="privacy-consent"> Ho letto l'<a href="/natale-avvento.html#informativa-natale" target="_blank" rel="noopener">informativa sulla privacy</a> e acconsento al trattamento di nome e contatti di chi riceve, solo per consegnare la gift card.</label>
+                        <label class="merc-consent merc-check"><input type="checkbox" id="privacy-consent"> <span>Ho letto l'<a href="/natale-avvento.html#informativa-natale" target="_blank" rel="noopener">informativa sulla privacy</a> e acconsento al trattamento di nome e contatti di chi riceve, solo per consegnare la gift card.</span></label>
                         <p class="merc-field-error" id="err-privacy-consent" hidden></p>
                     </div>
                     <div class="merc-actions">
-                        <button type="submit" class="merc-btn merc-btn-big" id="sale-submit">Salva e scegli come paga</button>
+                        <button type="submit" class="merc-btn merc-btn-big" id="sale-submit">Salva e controlla la gift card</button>
                         <p class="merc-note">Prima vedi fronte e retro della gift card. Si apre il 24 dicembre alle 00:00, l'email arriva il 25.</p>
                     </div>
                 </form>
@@ -153,13 +163,10 @@
                 </aside>
             </div>
             <div id="preview-alert" class="merc-alert" role="alert" tabindex="-1" hidden></div>
-            <h3 class="merc-pay-title">Come paga?</h3>
+            <p class="merc-pay-title" id="preview-paylabel"></p>
             <div class="merc-preview-actions">
-                <button type="button" class="merc-btn merc-pay" id="preview-confirm"><span>💶</span> Contanti · 20 €</button>
-                <button type="button" class="merc-btn merc-pay" id="preview-qr"><span>📱</span> Carta o Satispay, adesso<small>il cliente inquadra il QR col suo telefono</small></button>
-                <button type="button" class="merc-btn merc-pay" id="preview-link"><span>✉️</span> Paga dopo, con il link<small>gli arriva il link per email o WhatsApp</small></button>
-                <button type="button" class="merc-btn merc-pay" id="preview-bonifico" hidden><span>🏦</span> Bonifico<small>promessa: la card parte quando arriva il bonifico</small></button>
-                <button type="button" class="merc-btn merc-pay" id="preview-pos" hidden><span>💳</span> Pagato con il POS · 20 €</button>
+                <button type="button" class="merc-btn merc-btn-big merc-pay" id="preview-confirm">Conferma</button>
+                <button type="button" class="merc-btn merc-btn-ghost" id="preview-change">Cambia pagamento</button>
             </div>
             <button type="button" class="merc-btn merc-btn-ghost" id="preview-back">Torna indietro e correggi</button>
         </div>
