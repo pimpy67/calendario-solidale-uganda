@@ -975,10 +975,24 @@ async function sendNataleDonorConfirmation(card) {
 
     const link = nataleCardUrl(card);
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(nataleWhatsappText(card))}`;
+    const { imagePath, imageBase64, imageMime } = loadCardImage({ gift_card_design: card.card_design }, provider);
+    let fronteTag = '';
+    if (imagePath && imageBase64) {
+        fronteTag = `<img src="data:${imageMime};base64,${imageBase64}" alt="Gift Card di Natale" style="width: 100%; height: auto; border-radius: 12px; display: block;">`;
+    } else if (imagePath) {
+        fronteTag = `<img src="cid:giftcard" alt="Gift Card di Natale" style="width: 100%; height: auto; border-radius: 12px; display: block;">`;
+    }
+    const retro = await nataleRetroBlock(card, provider);
+    const augurioHtml = !retro.isImage && card.message
+        ? `<p style="font-style: italic;">"${card.message.replace(/</g, '&lt;')}"</p>`
+        : '';
     const html = `<div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
 <h2 style="color: #b22222;">Grazie, ${(card.donor_name || '').replace(/</g, '&lt;')}!</h2>
 <p>La tua gift card di Natale per <strong>${card.recipient_name.replace(/</g, '&lt;')}</strong> è stata pagata.</p>
 <p>${card.send_email ? 'Arriverà per email al destinatario il <strong>25 dicembre alle 00:00</strong>. ' : ''}Il destinatario potrà aprire la gift card dal <strong>24 dicembre alle 00:00</strong>. Se vuoi, puoi anche inoltrargli subito il link di apertura:</p>
+${fronteTag}
+${augurioHtml}
+${retro.html}
 <p style="text-align: center; margin: 24px 0;"><a href="${whatsappUrl}" style="background: #25D366; color: #fff; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">Condividi su WhatsApp</a></p>
 <p style="font-size: 12px; color: #777;">Link diretto: ${link}</p>
 </div>`;
@@ -987,8 +1001,9 @@ async function sendNataleDonorConfirmation(card) {
         from: getFromAddress(provider),
         to: card.donor_email,
         subject: `🎄 Gift card di Natale pagata per ${card.recipient_name}`,
-        html
-    }, null);
+        html,
+        extraAttachments: retro.attachments
+    }, imagePath);
     console.log(`Conferma gift card di Natale ${card.id} inviata via ${provider} a ${card.donor_email}`);
     return result;
 }
