@@ -19,8 +19,11 @@ const NATALE_EMAIL_AT = process.env.NATALE_EMAIL_AT || '2026-12-24T23:00:00.000Z
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Promesse del mercatino (link "paga dopo" e bonifico): scadenza del pagamento, 20 dicembre 2026 alle 23:59 di Roma
 const NATALE_PAGAMENTO_SCADENZA = process.env.NATALE_PAGAMENTO_SCADENZA || '2026-12-20T22:59:59.000Z';
-// Bonifico: si offre solo se l'IBAN è impostato sul server
-const BONIFICO_IBAN = (process.env.BONIFICO_IBAN || '').replace(/\s/g, '').toUpperCase();
+// Bonifico: IBAN di Effatà (pubblico, sta anche sul sito). BONIFICO_IBAN sul server lo sostituisce;
+// BONIFICO_IBAN=off nasconde il bonifico nel mercatino.
+const BONIFICO_IBAN_EFFATA = 'IT46W0200861720000106797497';
+const BONIFICO_IBAN = (process.env.BONIFICO_IBAN === 'off' ? '' : (process.env.BONIFICO_IBAN || BONIFICO_IBAN_EFFATA))
+    .replace(/\s/g, '').toUpperCase();
 const BONIFICO_INTESTATARIO = process.env.BONIFICO_INTESTATARIO || 'Effatà Italia Charity Organisation ODV';
 // POS del banchetto (es. SumUp): pulsante "Pagato con POS" solo se MERCATINO_POS=true
 const MERCATINO_POS = process.env.MERCATINO_POS === 'true';
