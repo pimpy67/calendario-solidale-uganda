@@ -367,6 +367,31 @@
             </div>
         </div>
 
+        <!-- Promesse del mercatino: link "paga dopo" e bonifici in attesa -->
+        <div class="table-section">
+            <div class="table-header">
+                <h2>Gift card di Natale in attesa di pagamento</h2>
+            </div>
+            <p style="margin: 0 0 10px; color: #7f8c8d;">Promesse fatte al mercatino. Quando arriva il bonifico premi «Bonifico ricevuto»: la gift card si attiva. Quelle non pagate entro il 20 dicembre non partono: puoi annullarle.</p>
+            <div class="donations-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Codice</th>
+                            <th>Metodo</th>
+                            <th>Creata</th>
+                            <th>Chi regala</th>
+                            <th>Chi riceve</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="nataleAttesaTable">
+                        <!-- Popolato da JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Gift card di Natale per canale di provenienza (?da= dei link) -->
         <div class="table-section">
             <div class="table-header">
@@ -458,6 +483,7 @@
             loadStats();
             loadDonations();
             loadNataleCanali();
+            loadNataleAttesa();
         }
 
         // Nomi leggibili dei canali (?da= dei link)
@@ -465,8 +491,61 @@
             'fb': 'Facebook, post', 'fb-storia': 'Facebook, storia', 'ig': 'Instagram, post',
             'ig-storia': 'Instagram, storia', 'ig-bio': 'Instagram, bio', 'email': 'Email',
             'whatsapp': 'WhatsApp', 'blog': 'Blog', 'ads': 'Sponsorizzate', 'altro': 'Altro',
-            'mercatino': 'Mercatino (contanti)', 'diretto': 'Diretto / sconosciuto'
+            'mercatino': 'Mercatino', 'diretto': 'Diretto / sconosciuto'
         };
+
+        // Promesse del mercatino in attesa (link e bonifico)
+        async function loadNataleAttesa() {
+            const table = document.getElementById('nataleAttesaTable');
+            try {
+                const response = await fetch('/api/admin/natale/in-attesa', {
+                    headers: { 'Authorization': `Basic ${authToken}` }
+                });
+                if (!response.ok) return;
+                const data = await response.json();
+                table.textContent = '';
+                if (data.cards.length === 0) {
+                    table.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #7f8c8d;">Nessuna gift card in attesa</td></tr>';
+                    return;
+                }
+                for (const c of data.cards) {
+                    const tr = document.createElement('tr');
+                    const cells = [c.codice, c.metodo === 'bonifico' ? 'Bonifico' : 'Link paga dopo', c.creata,
+                        `${c.donor_name}${c.donor_email ? ' · ' + c.donor_email : ''}`, c.recipient_name];
+                    for (const text of cells) {
+                        const td = document.createElement('td');
+                        td.textContent = text || '';
+                        tr.appendChild(td);
+                    }
+                    const td = document.createElement('td');
+                    const paid = document.createElement('button');
+                    paid.type = 'button';
+                    paid.textContent = c.metodo === 'bonifico' ? 'Bonifico ricevuto' : 'Pagato';
+                    paid.style.cssText = 'margin: 2px; padding: 6px 10px; background: #27ae60; color: #fff; border: 0; border-radius: 6px; cursor: pointer;';
+                    const cancel = document.createElement('button');
+                    cancel.type = 'button';
+                    cancel.textContent = 'Annulla';
+                    cancel.style.cssText = 'margin: 2px; padding: 6px 10px; background: #c0392b; color: #fff; border: 0; border-radius: 6px; cursor: pointer;';
+                    const act = async (azione, conferma) => {
+                        if (!window.confirm(conferma)) return;
+                        const r = await fetch(`/api/admin/natale/${c.id}/${azione}`, {
+                            method: 'POST', headers: { 'Authorization': `Basic ${authToken}` }
+                        });
+                        if (!r.ok) window.alert('Operazione non riuscita: ricarica la pagina e riprova');
+                        loadNataleAttesa();
+                        loadNataleCanali();
+            loadNataleAttesa();
+                    };
+                    paid.addEventListener('click', () => act('pagato', `${c.codice}: confermi che il pagamento di 20 € è arrivato? La gift card si attiva.`));
+                    cancel.addEventListener('click', () => act('annulla', `${c.codice}: annullare? La gift card non verrà consegnata.`));
+                    td.append(paid, cancel);
+                    tr.appendChild(td);
+                    table.appendChild(tr);
+                }
+            } catch (error) {
+                console.error('Error loading natale attesa:', error);
+            }
+        }
 
         // Gift card di Natale per canale
         async function loadNataleCanali() {
@@ -581,6 +660,7 @@
                 loadStats();
                 loadDonations();
                 loadNataleCanali();
+            loadNataleAttesa();
             }
         }, 30000);
     </script>

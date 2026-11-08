@@ -963,7 +963,49 @@ async function sendNataleDonorConfirmation(card) {
     return result;
 }
 
+/**
+ * Promessa di pagamento dal mercatino: a chi regala arriva il link per pagare con carta o Satispay,
+ * oppure IBAN e causale del bonifico. La gift card parte solo quando il pagamento arriva.
+ * @param {Object} card - Riga della tabella natale_gift_cards
+ * @param {Object} info - { metodo: 'link'|'bonifico', payUrl, iban, intestatario, causale, scadenza }
+ */
+async function sendNatalePaymentRequest(card, info) {
+    if (!card.donor_email) return null;
+    const provider = getProvider();
+    const esc = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const intro = `<h2 style="color: #b22222;">Grazie, ${esc(card.donor_name)}!</h2>
+<p>Hai scelto al nostro banchetto una gift card di Natale da <strong>20 €</strong> per <strong>${esc(card.recipient_name)}</strong>.</p>`;
+    const corpo = info.metodo === 'bonifico'
+        ? `<p>Per completare il regalo fai un bonifico entro il <strong>${esc(info.scadenza)}</strong>:</p>
+<table style="border-collapse: collapse; margin: 12px 0;">
+<tr><td style="padding: 4px 12px 4px 0; color: #777;">Intestato a</td><td><strong>${esc(info.intestatario)}</strong></td></tr>
+<tr><td style="padding: 4px 12px 4px 0; color: #777;">IBAN</td><td><strong>${esc(info.iban)}</strong></td></tr>
+<tr><td style="padding: 4px 12px 4px 0; color: #777;">Importo</td><td><strong>20,00 €</strong></td></tr>
+<tr><td style="padding: 4px 12px 4px 0; color: #777;">Causale</td><td><strong>${esc(info.causale)}</strong></td></tr>
+</table>
+<p>Quando riceviamo il bonifico la gift card viene attivata e arriva a ${esc(card.recipient_name)} a Natale.</p>`
+        : `<p>Per completare il regalo paga con carta o Satispay entro il <strong>${esc(info.scadenza)}</strong>:</p>
+<p style="text-align: center; margin: 24px 0;"><a href="${info.payUrl}" style="background: #b22222; color: #fff; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">Paga 20 € e attiva il regalo</a></p>
+<p style="font-size: 12px; color: #777;">Link diretto: ${info.payUrl}</p>`;
+    const html = `<div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
+${intro}
+${corpo}
+<p style="font-size: 13px; color: #777;">Se il pagamento non arriva entro la scadenza, la gift card non viene consegnata. Codice del tuo regalo: <strong>${esc(info.causale)}</strong>.</p>
+</div>`;
+    const result = await sendEmail(provider, {
+        from: getFromAddress(provider),
+        to: card.donor_email,
+        subject: info.metodo === 'bonifico'
+            ? `🎄 Dati per il bonifico della gift card per ${card.recipient_name}`
+            : `🎄 Link per pagare la gift card per ${card.recipient_name}`,
+        html
+    }, null);
+    console.log(`Promessa di pagamento ${info.metodo} della gift card di Natale ${card.id} inviata a ${card.donor_email}`);
+    return result;
+}
+
 module.exports = {
+    sendNatalePaymentRequest,
     sendNataleDonorConfirmation,
     sendNataleGiftCard,
     nataleWhatsappText,

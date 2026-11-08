@@ -6,7 +6,8 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../database/db');
-const { sendGiftCard, sendDonationNotification, sendDonorGiftCard, sendNataleDonorConfirmation, nataleWhatsappText } = require('../utils/mailer');
+const { sendGiftCard, sendDonationNotification, sendDonorGiftCard, sendNataleDonorConfirmation, sendNatalePaymentRequest, nataleWhatsappText } = require('../utils/mailer');
+const { codiceFiscaleValido } = require('../utils/codiceFiscale');
 const { deliverNataleCardIfDue } = require('../jobs/natale');
 
 // Gift card di Natale: prezzo e design ammessi decisi dal server, non dal browser
@@ -16,6 +17,31 @@ const NATALE_DELIVERY_AT = process.env.NATALE_DELIVERY_AT || '2026-12-23T23:00:0
 // Email al destinatario: 25 dicembre 2026 alle 00:00 di Roma (UTC+1)
 const NATALE_EMAIL_AT = process.env.NATALE_EMAIL_AT || '2026-12-24T23:00:00.000Z';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Promesse del mercatino (link "paga dopo" e bonifico): scadenza del pagamento, 20 dicembre 2026 alle 23:59 di Roma
+const NATALE_PAGAMENTO_SCADENZA = process.env.NATALE_PAGAMENTO_SCADENZA || '2026-12-20T22:59:59.000Z';
+// Bonifico: si offre solo se l'IBAN è impostato sul server
+const BONIFICO_IBAN = (process.env.BONIFICO_IBAN || '').replace(/\s/g, '').toUpperCase();
+const BONIFICO_INTESTATARIO = process.env.BONIFICO_INTESTATARIO || 'Effatà Italia Charity Organisation ODV';
+// POS del banchetto (es. SumUp): pulsante "Pagato con POS" solo se MERCATINO_POS=true
+const MERCATINO_POS = process.env.MERCATINO_POS === 'true';
+
+function scadenzaLeggibile() {
+    return new Date(NATALE_PAGAMENTO_SCADENZA).toLocaleDateString('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'long' });
+}
+// Codice del regalo per la causale del bonifico e per ritrovarlo: NATALE-0042
+function codiceRegalo(id) {
+    return `NATALE-${String(id).padStart(4, '0')}`;
+}
+/**
+ * Codice fiscale facoltativo: se c'è deve essere giusto (carattere di controllo compreso).
+ * Ritorna { cf } pulito, oppure { error }.
+ */
+function checkCodiceFiscale(raw) {
+    const cf = (raw || '').toString().replace(/\s/g, '').toUpperCase();
+    if (!cf) return { cf: null };
+    if (!codiceFiscaleValido(cf)) return { error: 'Codice fiscale non valido: controlla lettere e numeri' };
+    return { cf };
+}
 
 /**
  * Telefono in formato internazionale, solo cifre (es. 393331234567).
@@ -494,8 +520,27 @@ function mercatinoAuthorized(req) {
 }
 
 /**
+ * GET /api/mercatino/config
+ * Quali pagamenti offre il mercatino: dipende da cosa è impostato sul server.
+ */
+router.get('/mercatino/config', (req, res) => {
+    if (!mercatinoAuthorized(req)) {
+        return res.status(401).json({ error: true, message: 'PIN non valido' });
+    }
+    res.json({
+        vendita_attiva: process.env.NATALE_VENDITA_ATTIVA === 'true',
+        carta: STRIPE_ENABLED,
+        link: STRIPE_ENABLED,
+        bonifico: BONIFICO_IBAN !== '',
+        pos: MERCATINO_POS,
+        scadenza: scadenzaLeggibile()
+    });
+});
+
+/**
  * POST /api/mercatino/cash
- * Registra una gift card di Natale pagata in contanti. Consegna: all'orario di consegna, come le altre.
+ * Registra una gift card di Natale pagata in contanti, o con il POS del banchetto (metodo: 'pos').
+ * Consegna: all'orario di consegna, come le altre.
  */
 router.post('/mercatino/cash', (req, res) => {
     if (!mercatinoAuthorized(req)) {
@@ -504,9 +549,16 @@ router.post('/mercatino/cash', (req, res) => {
     if (process.env.NATALE_VENDITA_ATTIVA !== 'true') {
         return res.status(403).json({ error: true, message: 'Le gift card di Natale non sono ancora in vendita' });
     }
-    const { donor_name, donor_email, recipient_name, message, card_design } = req.body || {};
+    const { donor_name, donor_email, recipient_name, message, card_design, metodo } = req.body || {};
+    if (metodo === 'pos' && !MERCATINO_POS) {
+        return res.status(400).json({ error: true, message: 'Il pagamento con POS non è attivo' });
+    }
     if (!donor_name || !recipient_name) {
         return res.status(400).json({ error: true, message: 'Compila il nome di chi regala e il nome di chi riceve' });
+    }
+    const cashCf = checkCodiceFiscale(req.body.donor_cf);
+    if (cashCf.error) {
+        return res.status(400).json({ error: true, message: cashCf.error });
     }
     if (donor_email && !EMAIL_RE.test(donor_email)) {
         return res.status(400).json({ error: true, message: 'Email di chi regala non valida' });
@@ -527,12 +579,14 @@ router.post('/mercatino/cash', (req, res) => {
             recipient_name: recipient_name.toString().substring(0, 100),
             message: (message || '').toString().substring(0, 490) || null,
             card_design,
+            donor_cf: metodo === 'pos' ? cashCf.cf : null,
+            payment_method: metodo === 'pos' ? 'pos' : 'cash',
             delivery_at: NATALE_DELIVERY_AT,
             email_at: NATALE_EMAIL_AT,
             paid_at: new Date().toISOString(),
             ...contacts.data
         });
-        console.log(`[Mercatino] Gift card di Natale ${card.id} registrata in contanti (consegna ${card.delivery_at})`);
+        console.log(`[Mercatino] Gift card di Natale ${card.id} registrata (${card.payment_method}, consegna ${card.delivery_at})`);
         // Conferma a chi paga in contanti, se ha lasciato l'email (stesso messaggio dei pagamenti online)
         if (card.donor_email) {
             sendNataleDonorConfirmation(card)
@@ -547,23 +601,36 @@ router.post('/mercatino/cash', (req, res) => {
 
 /**
  * GET /api/mercatino/riepilogo
- * Gift card vendute oggi in contanti, con il totale. Niente email nel riepilogo.
+ * Gift card del mercatino di oggi, con i totali per metodo. Niente email nel riepilogo.
  */
 router.get('/mercatino/riepilogo', (req, res) => {
     if (!mercatinoAuthorized(req)) {
         return res.status(401).json({ error: true, message: 'PIN non valido' });
     }
-    const cards = db.getCashNataleGiftCardsToday().map(c => ({
+    const cards = db.getMercatinoNataleGiftCardsToday().map(c => ({
         id: c.id,
+        codice: codiceRegalo(c.id),
         donor_name: c.donor_name,
         recipient_name: c.recipient_name,
         card_design: c.card_design,
         amount: c.amount,
+        metodo: c.payment_method,
+        pagata: c.payment_status === 'completed',
         delivery_at: c.delivery_at,
         paid_at: c.paid_at
     }));
-    const total = cards.reduce((sum, c) => sum + Number(c.amount), 0);
-    res.json({ count: cards.length, total, cards });
+    const somma = (filter) => cards.filter(filter).reduce((sum, c) => sum + Number(c.amount), 0);
+    res.json({
+        count: cards.filter(c => c.pagata).length,
+        total: somma(c => c.metodo === 'cash'),
+        totali: {
+            contanti: somma(c => c.metodo === 'cash'),
+            pos: somma(c => c.metodo === 'pos'),
+            online: somma(c => c.pagata && !['cash', 'pos'].includes(c.metodo)),
+            in_attesa: cards.filter(c => !c.pagata).length
+        },
+        cards
+    });
 });
 
 /**
@@ -598,6 +665,179 @@ router.post('/mercatino/invii/:id/inviato', (req, res) => {
         return res.status(404).json({ error: true, message: 'Gift card non trovata' });
     }
     res.json({ success: true });
+});
+
+/**
+ * Sessione Stripe per pagare una gift card di Natale già salvata (QR del sito, QR del banchetto, link "paga dopo").
+ * Se chi regala ha lasciato l'email, Stripe la trova già compilata.
+ */
+async function createNataleStripeSession(card, { successUrl, cancelUrl } = {}) {
+    const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
+    const session = await stripe.checkout.sessions.create({
+        // Carta e Satispay (Satispay compare solo se è attivo nel dashboard Stripe)
+        payment_method_types: ['card', 'satispay'],
+        ...(card.donor_email ? { customer_email: card.donor_email } : {}),
+        locale: 'it',
+        line_items: [{
+            price_data: {
+                currency: 'eur',
+                product_data: {
+                    name: 'Donazione liberale - Calendario Solidale Effatà',
+                    description: 'Donazione liberale a sostegno della Casa Famiglia Effatà in Uganda. In segno di ringraziamento, una gift card di Natale.',
+                },
+                unit_amount: NATALE_PRICE_CENTS,
+            },
+            quantity: 1,
+        }],
+        mode: 'payment',
+        success_url: successUrl || `${baseUrl}/natale-avvento.html?ok=1`,
+        cancel_url: cancelUrl || `${baseUrl}/natale-avvento.html`,
+        metadata: {
+            type: 'natale_gift_card',
+            natale_id: String(card.id),
+            payment_id: card.payment_id,
+            canale: card.canale || 'diretto',
+        },
+    });
+    db.setNataleGiftCardSession(card.id, session.id);
+    return session;
+}
+
+/**
+ * POST /api/mercatino/attesa
+ * Promessa di pagamento dal mercatino: la gift card si salva "in attesa" e parte solo quando arriva il pagamento.
+ *   metodo 'link'      chi regala riceve un link per pagare con carta o Satispay quando vuole
+ *   metodo 'bonifico'  chi regala riceve IBAN e causale; in admin si segna "Bonifico ricevuto"
+ * Scadenza: NATALE_PAGAMENTO_SCADENZA (20 dicembre). Dopo, il link non si apre più.
+ */
+router.post('/mercatino/attesa', async (req, res) => {
+    if (!mercatinoAuthorized(req)) {
+        return res.status(401).json({ error: true, message: 'PIN non valido' });
+    }
+    if (process.env.NATALE_VENDITA_ATTIVA !== 'true') {
+        return res.status(403).json({ error: true, message: 'Le gift card di Natale non sono ancora in vendita' });
+    }
+    const body = req.body || {};
+    const metodo = body.metodo;
+    if (!['link', 'bonifico'].includes(metodo)) {
+        return res.status(400).json({ error: true, message: 'Scegli come pagherà: link o bonifico' });
+    }
+    if (metodo === 'link' && !STRIPE_ENABLED) {
+        return res.status(503).json({ error: true, message: 'Pagamenti con carta non disponibili al momento' });
+    }
+    if (metodo === 'bonifico' && !BONIFICO_IBAN) {
+        return res.status(503).json({ error: true, message: "Bonifico non disponibile: manca l'IBAN sul server" });
+    }
+    if (new Date().toISOString() > NATALE_PAGAMENTO_SCADENZA) {
+        return res.status(400).json({ error: true, message: `Le promesse di pagamento si potevano fare fino al ${scadenzaLeggibile()}` });
+    }
+    const { donor_name, donor_email, recipient_name, message, card_design } = body;
+    if (!donor_name || !recipient_name) {
+        return res.status(400).json({ error: true, message: 'Compila il nome di chi regala e il nome di chi riceve' });
+    }
+    if (donor_email && !EMAIL_RE.test(donor_email)) {
+        return res.status(400).json({ error: true, message: 'Email di chi regala non valida' });
+    }
+    const contacts = checkNataleContacts(body);
+    if (contacts.error) {
+        return res.status(400).json({ error: true, message: contacts.error });
+    }
+    const cf = checkCodiceFiscale(body.donor_cf);
+    if (cf.error) {
+        return res.status(400).json({ error: true, message: cf.error });
+    }
+    if (!isNataleDesign(card_design)) {
+        return res.status(400).json({ error: true, message: 'Disegno non valido' });
+    }
+    try {
+        const paymentId = uuidv4();
+        const id = db.createNataleGiftCard({
+            payment_id: paymentId,
+            amount: NATALE_PRICE_CENTS / 100,
+            donor_name: donor_name.toString().substring(0, 100),
+            donor_email: donor_email || null,
+            donor_cf: cf.cf,
+            recipient_name: recipient_name.toString().substring(0, 100),
+            message: (message || '').toString().substring(0, 490) || null,
+            card_design,
+            delivery_at: NATALE_DELIVERY_AT,
+            email_at: NATALE_EMAIL_AT,
+            canale: 'mercatino',
+            payment_method: metodo,
+            ...contacts.data
+        });
+        const card = db.getNataleGiftCardForPayment(paymentId);
+        const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
+        const info = {
+            metodo,
+            codice: codiceRegalo(id),
+            causale: `${codiceRegalo(id)} gift card Natale ${card.donor_name}`.substring(0, 140),
+            scadenza: scadenzaLeggibile(),
+            payUrl: metodo === 'link' ? `${baseUrl}/api/natale/paga/${paymentId}` : null,
+            iban: metodo === 'bonifico' ? BONIFICO_IBAN : null,
+            intestatario: metodo === 'bonifico' ? BONIFICO_INTESTATARIO : null
+        };
+        let emailInviata = false;
+        if (card.donor_email) {
+            try {
+                await sendNatalePaymentRequest(card, info);
+                emailInviata = true;
+            } catch (err) {
+                console.error(`Errore invio promessa di pagamento ${id}:`, err.message);
+            }
+        }
+        console.log(`[Mercatino] Gift card di Natale ${id} in attesa di ${metodo} (scadenza ${info.scadenza})`);
+        res.status(201).json({ success: true, id, ...info, email_inviata: emailInviata, donor_email: card.donor_email || null });
+    } catch (error) {
+        console.error('Errore promessa di pagamento mercatino:', error);
+        res.status(500).json({ error: true, message: 'Errore nel salvataggio, riprova' });
+    }
+});
+
+/**
+ * GET /api/natale/paga/:paymentId
+ * Link "paga dopo": apre ogni volta una pagina Stripe nuova per la gift card in attesa.
+ * Già pagata: porta alla pagina di grazie. Scaduta o annullata: lo dice in chiaro.
+ */
+router.get('/natale/paga/:paymentId', async (req, res) => {
+    const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
+    const pagina = (titolo, testo) => res.status(200).send(`<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${titolo}</title></head>
+<body style="font-family: Arial, sans-serif; background: #15142e; color: #f1eff9; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 16px; text-align: center;">
+<div style="max-width: 460px;"><h1 style="color: #f5d27a;">${titolo}</h1><p style="font-size: 1.1rem; line-height: 1.5;">${testo}</p>
+<p><a href="${baseUrl}/natale-avvento.html" style="color: #f5d27a;">Vai al Calendario dell'Avvento</a></p></div></body></html>`);
+    const card = db.getNataleGiftCardForPayment(req.params.paymentId);
+    if (!card || card.payment_method !== 'link') {
+        return pagina('Link non valido', 'Questo link di pagamento non esiste. Controlla di averlo copiato per intero.');
+    }
+    if (card.payment_status === 'completed') {
+        return res.redirect(303, `${baseUrl}/natale-avvento.html?ok=1`);
+    }
+    if (card.payment_status !== 'pending') {
+        return pagina('Regalo annullato', 'Questa gift card è stata annullata. Per informazioni scrivi a info@effataitalia.it.');
+    }
+    if (new Date().toISOString() > NATALE_PAGAMENTO_SCADENZA) {
+        return pagina('Link scaduto', `Il pagamento si poteva fare fino al ${scadenzaLeggibile()}. Per informazioni scrivi a info@effataitalia.it.`);
+    }
+    if (!STRIPE_ENABLED) {
+        return pagina('Pagamenti non disponibili', 'Riprova tra qualche minuto.');
+    }
+    try {
+        const session = await createNataleStripeSession(card, { cancelUrl: `${baseUrl}/api/natale/paga/${card.payment_id}` });
+        res.redirect(303, session.url);
+    } catch (error) {
+        console.error('Errore link paga dopo:', error);
+        pagina('Errore', 'Non riusciamo ad aprire il pagamento. Riprova tra qualche minuto.');
+    }
+});
+
+/**
+ * GET /api/natale/pagata/:paymentId
+ * Solo sì o no: il mercatino lo chiede ogni pochi secondi mentre il cliente paga con il QR.
+ */
+router.get('/natale/pagata/:paymentId', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    const card = db.getNataleGiftCardForPayment(req.params.paymentId);
+    res.json({ pagata: Boolean(card && card.payment_status === 'completed') });
 });
 
 /**
@@ -648,11 +888,12 @@ router.post('/natale/checkout', async (req, res) => {
     if (contacts.error) {
         return res.status(400).json({ error: true, message: contacts.error });
     }
-    // Codice fiscale facoltativo: serve solo per la ricevuta fiscale
-    const cleanCf = (donor_cf || '').toString().trim().toUpperCase();
-    if (cleanCf && !/^[A-Z0-9]{16}$/.test(cleanCf)) {
-        return res.status(400).json({ error: true, message: 'Codice fiscale non valido (16 caratteri)' });
+    // Codice fiscale facoltativo: serve solo per la ricevuta per la detrazione
+    const checkedCf = checkCodiceFiscale(donor_cf);
+    if (checkedCf.error) {
+        return res.status(400).json({ error: true, message: checkedCf.error });
     }
+    const cleanCf = checkedCf.cf;
     const design = isNataleDesign(card_design) ? card_design : 'card1';
     const cleanMessage = (message || '').toString().substring(0, 490);
     // Canale di provenienza (?da= del link con cui si è arrivati): solo per le statistiche
@@ -660,7 +901,7 @@ router.post('/natale/checkout', async (req, res) => {
 
     try {
         const paymentId = uuidv4();
-        const cardId = db.createNataleGiftCard({
+        db.createNataleGiftCard({
             payment_id: paymentId,
             amount: NATALE_PRICE_CENTS / 100,
             donor_name: donor_name.toString().substring(0, 100),
@@ -675,34 +916,10 @@ router.post('/natale/checkout', async (req, res) => {
             ...contacts.data
         });
 
-        const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
-        const session = await stripe.checkout.sessions.create({
-            // Carta e Satispay (Satispay compare solo se è attivo nel dashboard Stripe)
-            payment_method_types: ['card', 'satispay'],
-            line_items: [{
-                price_data: {
-                    currency: 'eur',
-                    product_data: {
-                        name: 'Donazione liberale - Calendario Solidale Effatà',
-                        description: 'Donazione liberale a sostegno della Casa Famiglia Effatà in Uganda. In segno di ringraziamento, una gift card di Natale.',
-                    },
-                    unit_amount: NATALE_PRICE_CENTS,
-                },
-                quantity: 1,
-            }],
-            mode: 'payment',
-            success_url: `${baseUrl}/natale-avvento.html?ok=1`,
-            cancel_url: `${baseUrl}/natale-avvento.html`,
-            metadata: {
-                type: 'natale_gift_card',
-                natale_id: String(cardId),
-                payment_id: paymentId,
-                canale: canale || 'diretto',
-            },
-        });
-
-        db.setNataleGiftCardSession(cardId, session.id);
-        res.status(201).json({ stripe_url: session.url });
+        const card = db.getNataleGiftCardForPayment(paymentId);
+        const session = await createNataleStripeSession(card);
+        // payment_id: il mercatino lo usa per vedere quando il pagamento con il QR è arrivato
+        res.status(201).json({ stripe_url: session.url, payment_id: paymentId, id: card.id });
     } catch (error) {
         console.error('Errore checkout gift card di Natale:', error);
         res.status(500).json({ error: true, message: 'Errore nella creazione del pagamento' });
@@ -749,7 +966,7 @@ router.post('/webhook/stripe', async (req, res) => {
 
         // Gift card di Natale: flusso separato, non occupa nessun giorno del calendario
         if (meta.type === 'natale_gift_card') {
-            const card = db.completeNataleGiftCardBySession(session.id);
+            const card = db.completeNataleGiftCardBySession(session.id, meta.natale_id);
             if (card) {
                 console.log(`Gift card di Natale ${card.id} pagata`);
                 sendNataleDonorConfirmation(card)

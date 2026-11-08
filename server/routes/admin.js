@@ -189,6 +189,60 @@ router.get('/natale/canali', authMiddleware, (req, res) => {
 });
 
 /**
+ * GET /api/admin/natale/in-attesa
+ * Promesse del mercatino non ancora pagate (link "paga dopo" e bonifico), per controllo e solleciti
+ */
+router.get('/natale/in-attesa', authMiddleware, (req, res) => {
+    try {
+        const cards = db.getPendingNataleGiftCards().map(c => ({
+            id: c.id,
+            codice: `NATALE-${String(c.id).padStart(4, '0')}`,
+            metodo: c.payment_method,
+            creata: c.created_at,
+            donor_name: c.donor_name,
+            donor_email: c.donor_email,
+            recipient_name: c.recipient_name,
+            amount: c.amount
+        }));
+        res.json({ count: cards.length, cards });
+    } catch (error) {
+        console.error('Errore admin natale in attesa:', error);
+        res.status(500).json({ error: true, message: 'Errore nel caricamento' });
+    }
+});
+
+/**
+ * POST /api/admin/natale/:id/pagato
+ * Bonifico ricevuto (o link pagato a parte): la gift card si attiva e parte all'orario di consegna
+ */
+router.post('/natale/:id/pagato', authMiddleware, (req, res) => {
+    const card = db.markNataleGiftCardPaid(Number(req.params.id));
+    if (!card) {
+        return res.status(404).json({ error: true, message: 'Promessa non trovata o già pagata' });
+    }
+    console.log(`[Admin] Gift card di Natale ${card.id} segnata come pagata (${card.payment_method})`);
+    const { sendNataleDonorConfirmation } = require('../utils/mailer');
+    const { deliverNataleCardIfDue } = require('../jobs/natale');
+    if (card.donor_email) {
+        sendNataleDonorConfirmation(card).catch(err => console.error('Errore conferma gift card di Natale (admin):', err));
+    }
+    deliverNataleCardIfDue(card).catch(err => console.error('Errore invio gift card di Natale (admin):', err));
+    res.json({ success: true });
+});
+
+/**
+ * POST /api/admin/natale/:id/annulla
+ * Promessa non pagata entro la scadenza: la gift card non verrà consegnata
+ */
+router.post('/natale/:id/annulla', authMiddleware, (req, res) => {
+    if (!db.cancelNataleGiftCard(Number(req.params.id))) {
+        return res.status(404).json({ error: true, message: 'Promessa non trovata o già pagata' });
+    }
+    console.log(`[Admin] Gift card di Natale ${req.params.id} annullata`);
+    res.json({ success: true });
+});
+
+/**
  * GET /api/admin/natale/export
  * CSV delle gift card di Natale pagate, con il canale di provenienza
  */

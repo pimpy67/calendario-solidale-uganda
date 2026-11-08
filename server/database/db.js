@@ -565,19 +565,20 @@ function close() {
  */
 function createNataleGiftCard(data) {
     const stmt = db.prepare(`
-        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at, canale)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at, canale, payment_method)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const info = stmt.run(
         data.payment_id, data.amount, data.donor_name, data.donor_email, data.donor_cf || null,
         data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at, data.email_at,
-        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at, data.canale || null
+        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at, data.canale || null,
+        data.payment_method || 'stripe'
     );
     return info.lastInsertRowid;
 }
 
 // Canale mostrato nei conteggi: i contanti vengono dal mercatino, chi non ha un canale è arrivato "diretto"
-const CANALE_SQL = "COALESCE(canale, CASE WHEN payment_method = 'cash' THEN 'mercatino' ELSE 'diretto' END)";
+const CANALE_SQL = "COALESCE(canale, CASE WHEN payment_method IN ('cash', 'pos') THEN 'mercatino' ELSE 'diretto' END)";
 
 /**
  * Gift card di Natale pagate, raggruppate per canale di provenienza
@@ -614,16 +615,59 @@ function setNataleGiftCardSession(id, sessionId) {
 
 /**
  * Segna come pagata la gift card di Natale della sessione Stripe.
+ * La stessa card può avere più sessioni (QR al banchetto, poi link "paga dopo"): se la sessione
+ * pagata non è l'ultima salvata, la card si trova con il suo id nei metadati.
  * Ritorna la riga aggiornata, oppure null se già pagata o inesistente (webhook duplicato).
  */
-function completeNataleGiftCardBySession(sessionId) {
+function completeNataleGiftCardBySession(sessionId, nataleId) {
     const info = db.prepare(`
         UPDATE natale_gift_cards
-        SET payment_status = 'completed', paid_at = CURRENT_TIMESTAMP
-        WHERE stripe_session_id = ? AND payment_status = 'pending'
-    `).run(sessionId);
+        SET payment_status = 'completed', paid_at = CURRENT_TIMESTAMP, stripe_session_id = ?
+        WHERE (stripe_session_id = ? OR id = ?) AND payment_status = 'pending'
+    `).run(sessionId, sessionId, Number(nataleId) || -1);
     if (info.changes === 0) return null;
     return db.prepare('SELECT * FROM natale_gift_cards WHERE stripe_session_id = ?').get(sessionId);
+}
+
+/**
+ * Gift card di Natale con il suo identificativo pubblico, in qualunque stato (per il link "paga dopo")
+ */
+function getNataleGiftCardForPayment(paymentId) {
+    return db.prepare('SELECT * FROM natale_gift_cards WHERE payment_id = ?').get(paymentId);
+}
+
+/**
+ * Gift card di Natale in attesa di pagamento con link o bonifico (le promesse del mercatino)
+ */
+function getPendingNataleGiftCards() {
+    return db.prepare(`
+        SELECT * FROM natale_gift_cards
+        WHERE payment_status = 'pending' AND payment_method IN ('link', 'bonifico')
+        ORDER BY id
+    `).all();
+}
+
+/**
+ * Segna come pagata a mano una promessa (bonifico arrivato, o link pagato fuori da Stripe).
+ * Ritorna la riga aggiornata, oppure null se non è una promessa in attesa.
+ */
+function markNataleGiftCardPaid(id) {
+    const info = db.prepare(`
+        UPDATE natale_gift_cards SET payment_status = 'completed', paid_at = CURRENT_TIMESTAMP
+        WHERE id = ? AND payment_status = 'pending' AND payment_method IN ('link', 'bonifico')
+    `).run(id);
+    if (info.changes === 0) return null;
+    return db.prepare('SELECT * FROM natale_gift_cards WHERE id = ?').get(id);
+}
+
+/**
+ * Annulla una promessa non pagata: la card non verrà mai consegnata
+ */
+function cancelNataleGiftCard(id) {
+    return db.prepare(`
+        UPDATE natale_gift_cards SET payment_status = 'cancelled'
+        WHERE id = ? AND payment_status = 'pending' AND payment_method IN ('link', 'bonifico')
+    `).run(id).changes;
 }
 
 /**
@@ -693,36 +737,42 @@ function getNataleGiftCardByPaymentId(paymentId) {
 }
 
 /**
- * Gift card di Natale venduta al mercatino, già pagata in contanti.
+ * Gift card di Natale venduta al mercatino, già pagata in contanti o con il POS del banchetto.
  * La consegna segue la stessa regola delle altre: parte all'orario di consegna dal job natale.
  */
 function createCashNataleGiftCard(data) {
     const info = db.prepare(`
-        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at, payment_status, payment_method, paid_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', 'cash', ?)
+        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at, payment_status, payment_method, paid_at, canale)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', ?, ?, 'mercatino')
     `).run(
-        data.payment_id, data.amount, data.donor_name, data.donor_email,
+        data.payment_id, data.amount, data.donor_name, data.donor_email, data.donor_cf || null,
         data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at, data.email_at,
-        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at, data.paid_at
+        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at,
+        data.payment_method === 'pos' ? 'pos' : 'cash', data.paid_at
     );
     return db.prepare('SELECT * FROM natale_gift_cards WHERE id = ?').get(info.lastInsertRowid);
 }
 
 /**
- * Gift card di Natale vendute in contanti al mercatino, di oggi (fuso di Roma), dalla più recente
+ * Gift card di Natale del mercatino di oggi (fuso di Roma), dalla più recente:
+ * pagate in contanti o POS, pagate con il QR, e promesse (link o bonifico) ancora in attesa o già pagate.
  */
-function getCashNataleGiftCardsToday() {
+function getMercatinoNataleGiftCardsToday() {
     const today = getRomeDate();
     const rows = db.prepare(`
         SELECT * FROM natale_gift_cards
-        WHERE payment_method = 'cash' AND payment_status = 'completed'
+        WHERE (payment_method IN ('cash', 'pos') OR canale = 'mercatino')
+            AND (payment_status = 'completed' OR payment_method IN ('link', 'bonifico'))
+            AND payment_status != 'cancelled'
         ORDER BY id DESC
         LIMIT 500
     `).all();
     const dayKey = (d) => `${d.year}-${d.month}-${d.day}`;
     return rows.filter(row => {
+        // Le promesse non pagate contano dal giorno in cui sono state fatte
+        const when = row.paid_at || row.created_at;
         // Date nuove in ISO (con T e Z), date vecchie di SQLite (con spazio, in UTC)
-        const paid = new Date(row.paid_at.includes('T') ? row.paid_at : row.paid_at.replace(' ', 'T') + 'Z');
+        const paid = new Date(when.includes('T') ? when : when.replace(' ', 'T') + 'Z');
         const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Rome', year: 'numeric', month: 'numeric', day: 'numeric' }).formatToParts(paid);
         const get = (type) => Number(parts.find(p => p.type === type).value);
         return dayKey({ year: get('year'), month: get('month'), day: get('day') }) === dayKey(today);
@@ -731,7 +781,11 @@ function getCashNataleGiftCardsToday() {
 
 module.exports = {
     createCashNataleGiftCard,
-    getCashNataleGiftCardsToday,
+    getMercatinoNataleGiftCardsToday,
+    getNataleGiftCardForPayment,
+    getPendingNataleGiftCards,
+    markNataleGiftCardPaid,
+    cancelNataleGiftCard,
     getDueNataleGiftCards,
     getNataleWhatsappList,
     markNataleWhatsappSent,
