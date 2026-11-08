@@ -1004,7 +1004,7 @@ async function sendNatalePaymentRequest(card, info) {
     const provider = getProvider();
     const esc = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
     const intro = `<h2 style="color: #b22222;">Grazie, ${esc(card.donor_name)}!</h2>
-<p>Hai scelto al nostro banchetto una gift card di Natale da <strong>20 €</strong> per <strong>${esc(card.recipient_name)}</strong>.</p>`;
+<p>Hai scelto una gift card di Natale da <strong>20 €</strong> per <strong>${esc(card.recipient_name)}</strong>.</p>`;
     const augurio = card.message
         ? `<p style="font-style: italic;">"${esc(card.message)}"</p>`
         : '';
