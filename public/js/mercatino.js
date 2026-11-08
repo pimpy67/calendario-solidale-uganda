@@ -96,7 +96,7 @@
         const input = document.getElementById(id);
         const box = document.getElementById(`err-${id}`);
         if (input && input.tagName !== 'FIELDSET') input.setAttribute('aria-invalid', message ? 'true' : 'false');
-        if (box) { box.textContent = message || ''; box.hidden = !message; }
+        if (box) { box.textContent = message ? `⚠️ ${message}` : ''; box.hidden = !message; }
     }
     function clearFieldErrors() {
         document.querySelectorAll('.merc-field-error').forEach(el => { el.textContent = ''; el.hidden = true; });
@@ -386,16 +386,16 @@
             pin = '';
             app.hidden = true;
             gate.hidden = false;
-            showError('gate-error', error.status === 401 ? 'PIN non valido' : error.message);
+            showAlert('gate-error', error.status === 401 ? 'PIN non valido' : error.message);
         }
     }
 
     document.getElementById('gate-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         pin = document.getElementById('pin-input').value.trim();
-        if (!pin) return showError('gate-error', 'Inserisci il PIN');
+        if (!pin) return showAlert('gate-error', 'Inserisci il PIN');
         savePin(pin);
-        showError('gate-error', '');
+        showAlert('gate-error', '');
         await unlock();
     });
 

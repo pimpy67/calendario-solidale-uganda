@@ -165,7 +165,14 @@
 @media (prefers-reduced-motion: reduce) { .merc-alert { animation: none; } }
 
 /* Errore sotto il campo e bordo rosso sul campo sbagliato */
-.merc-field-error { margin: 4px 0 0; color: #fff; background: rgba(198, 40, 40, 0.9); border-radius: 6px; padding: 4px 8px; font-size: 0.95rem; font-weight: 600; }
+/* Errore sotto il campo: stesso riquadro rosso grande degli altri avvisi */
+.merc-field-error {
+    margin: 8px 0 0; padding: 12px 14px; border-radius: 10px;
+    background: #c62828; color: #fff; border: 3px solid #ffcdd2;
+    font-size: 1.05rem; font-weight: 700; line-height: 1.35;
+    box-shadow: 0 4px 14px rgba(198, 40, 40, 0.4);
+    animation: merc-scuoti 0.4s ease-in-out;
+}
 .merc-form input[aria-invalid="true"], .merc-form textarea[aria-invalid="true"] { border: 3px solid #ef5350; background: #fff5f5; }
 .merc-hint { color: var(--muted); font-size: 0.82em; font-weight: 400; }
 
