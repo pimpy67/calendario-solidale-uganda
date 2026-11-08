@@ -148,3 +148,110 @@
 /* Link dell'informativa privacy nel consenso: il blu predefinito non si legge sullo sfondo scuro */
 .merc-consent a { color: var(--gold); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 .merc-consent a:hover, .merc-consent a:focus-visible { color: var(--white); }
+
+/* ===== 8/11/2026: avvisi grandi, chi regala / chi riceve, pagamenti, vetrina ===== */
+
+/* Avviso grande: riquadro rosso pieno, testo bianco e grande. C'è spazio: deve vedersi da lontano. */
+.merc-alert {
+    margin: 0 0 14px; padding: 16px 18px; border-radius: 12px;
+    background: #c62828; color: #fff; border: 3px solid #ffcdd2;
+    font-size: 1.15rem; font-weight: 700; line-height: 1.4;
+    box-shadow: 0 6px 20px rgba(198, 40, 40, 0.45);
+    animation: merc-scuoti 0.4s ease-in-out;
+}
+.merc-alert:focus { outline: 3px solid var(--gold); outline-offset: 2px; }
+@keyframes merc-scuoti { 0%, 100% { transform: none; } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .merc-alert { animation: none; } }
+
+/* Errore sotto il campo e bordo rosso sul campo sbagliato */
+.merc-field-error { margin: 4px 0 0; color: #fff; background: rgba(198, 40, 40, 0.9); border-radius: 6px; padding: 4px 8px; font-size: 0.95rem; font-weight: 600; }
+.merc-form input[aria-invalid="true"], .merc-form textarea[aria-invalid="true"] { border: 3px solid #ef5350; background: #fff5f5; }
+.merc-hint { color: var(--muted); font-size: 0.82em; font-weight: 400; }
+
+/* Due riquadri: chi regala a sinistra, chi riceve a destra (uno sotto l'altro sul telefono) */
+.merc-people { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 720px) { .merc-people { grid-template-columns: 1fr 1fr; } }
+.merc-box {
+    margin: 0; padding: 12px 14px 14px; min-width: 0;
+    border: 2px solid rgba(245, 210, 122, 0.45); border-radius: 12px; background: rgba(255, 255, 255, 0.04);
+    display: flex; flex-direction: column; gap: 4px;
+}
+.merc-box > legend { padding: 0 8px; color: var(--gold); font-size: 1.15rem; font-weight: 700; }
+.merc-check { display: flex; align-items: center; gap: 10px; margin-top: 8px; cursor: pointer; }
+.merc-check input { width: 24px; height: 24px; min-height: 0; flex: none; accent-color: var(--gold); }
+.merc-per-me { margin: 0 0 4px; color: var(--muted); }
+.merc-channels { border: 0; padding: 0; margin: 8px 0 0; }
+.merc-channels legend { padding: 0; font-size: 0.95rem; }
+.merc-channels .merc-check { display: inline-flex; margin-right: 18px; }
+
+/* Schermo largo: i campi dentro i riquadri restano in colonna, più compatti */
+@media (min-width: 900px) and (min-height: 560px) {
+    .merc-data .merc-form { display: flex; flex-direction: column; gap: 8px; }
+    .merc-box .merc-field-wide { grid-column: auto; }
+    .merc-actions { grid-column: auto; }
+    .merc-check input { width: 22px; height: 22px; }
+}
+
+/* Popup: scelta del pagamento con pulsanti grandi, uno per riga */
+.merc-pay-title { margin: 4px 0 0; text-align: center; color: var(--white); font-size: 1.1rem; }
+.merc-preview-actions { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 720px) { .merc-preview-actions { grid-template-columns: 1fr 1fr; } }
+.merc-pay {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 64px; font-size: 1.1rem; border-radius: 14px; text-align: center;
+}
+.merc-pay span { font-size: 1.4rem; line-height: 1; }
+.merc-pay small { font-weight: 400; font-size: 0.85rem; opacity: 0.85; }
+.merc-btn-ghost { background: transparent; color: var(--gold); border: 2px solid var(--gold); }
+.merc-preview-box .merc-btn-ghost { align-self: center; }
+
+/* QR, promessa e schermata finale */
+.merc-qr-wait { margin: 0; color: var(--gold); font-weight: 700; font-size: 1.1rem; text-align: center; }
+.merc-qr-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.merc-qr-actions .merc-btn { margin-top: 0; text-align: center; text-decoration: none; }
+.merc-promessa-box { width: min(94vw, 560px); max-height: 96dvh; overflow-y: auto; }
+.merc-codice { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: 0.06em; color: var(--white); }
+.merc-iban { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; width: 100%; font-size: 1.05rem; background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 10px; }
+.merc-iban dt { color: var(--muted); }
+.merc-iban dd { margin: 0; font-weight: 700; word-break: break-all; }
+.merc-fatto-box { width: min(94vw, 520px); align-items: center; text-align: center; gap: 10px; padding: 28px 22px; background: rgba(20, 70, 40, 0.97); border: 3px solid #81c784; border-radius: 18px; }
+.merc-fatto-icon { font-size: 4rem; margin: 0; line-height: 1; }
+.merc-fatto-box h2 { margin: 0; font-size: 2rem; color: #fff; }
+.merc-fatto-text { margin: 0; font-size: 1.15rem; color: #e8f5e9; }
+.merc-attesa { color: var(--gold) !important; }
+
+/* Vetrina: disegni a tutto schermo che si alternano, testo in basso, un tocco per uscire */
+.merc-vetrina-btn { margin: 0 auto; display: block; }
+.merc-vetrina { position: fixed; inset: 0; z-index: 2000; background: #0d0c1f; cursor: pointer; overflow: hidden; }
+.merc-vetrina img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+    opacity: 0; transition: opacity 1.2s ease-in-out;
+}
+.merc-vetrina img.on { opacity: 1; }
+.merc-vetrina-text {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 16px 28px; text-align: center;
+    background: linear-gradient(transparent, rgba(13, 12, 31, 0.92) 40%);
+}
+.merc-vetrina-title { margin: 0; font-family: "Patrick Hand", cursive; font-size: clamp(2rem, 5vw, 3.4rem); color: var(--gold); }
+.merc-vetrina-sub { margin: 4px 0 0; font-size: clamp(1rem, 2.4vw, 1.5rem); color: #fff; }
+.merc-vetrina-tap { margin: 12px 0 0; font-size: clamp(1rem, 2.2vw, 1.3rem); color: #fff; animation: merc-pulsa 2s ease-in-out infinite; }
+@keyframes merc-pulsa { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .merc-vetrina img { transition: none; } .merc-vetrina-tap { animation: none; } }
+
+/* Primo passo: "Come vuole pagare?" con pulsanti grandi (3 per riga sul tablet, 2 sul telefono) */
+.merc-paychoice { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+@media (min-width: 720px) { .merc-paychoice { grid-template-columns: repeat(3, 1fr); } }
+.merc-paybtn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 84px; padding: 10px; border-radius: 14px; cursor: pointer;
+    background: rgba(255, 255, 255, 0.06); color: var(--white); border: 2px solid rgba(245, 210, 122, 0.45);
+    font: inherit; font-size: 1.15rem; font-weight: 700;
+}
+.merc-paybtn span { font-size: 1.7rem; line-height: 1; }
+.merc-paybtn small { font-weight: 400; font-size: 0.82rem; color: var(--muted); }
+.merc-paybtn[aria-checked="true"] { background: var(--gold); color: #1f1f38; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245, 210, 122, 0.4); }
+.merc-paybtn[aria-checked="true"] small { color: #3a3a5a; }
+.merc-paybtn:focus-visible { outline: 3px solid var(--white); outline-offset: 2px; }
+.merc-paynote { margin: 10px 0 0; color: var(--muted); text-align: center; }
+.merc-step { margin: 18px 0 6px !important; }
+.merc-preview-actions { grid-template-columns: 1fr !important; }
