@@ -1084,7 +1084,7 @@ router.post('/admin/clear-database', (req, res) => {
  * @param {Object} donation - Dati donazione
  * @returns {String} URL per il checkout Stripe
  */
-async function createStripeCheckout(donation, paymentMethodTypes = ['card']) {
+async function createStripeCheckout(donation, paymentMethodTypes = ['card', 'link']) {
     const session = await stripe.checkout.sessions.create({
         payment_method_types: paymentMethodTypes,
         line_items: [{
@@ -1100,7 +1100,7 @@ async function createStripeCheckout(donation, paymentMethodTypes = ['card']) {
         }],
         mode: 'payment',
         success_url: `${process.env.BASE_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.BASE_URL}/`,
+        cancel_url: `${process.env.BASE_URL}/?annullato=1`,
         metadata: {
             payment_id: donation.payment_id || '',
             day: donation.day.toString(),
