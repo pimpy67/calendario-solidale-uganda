@@ -756,3 +756,6 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
     box-shadow: 0 6px 20px rgba(198, 40, 40, 0.35);
 }
 .natale-esito.ok { background: #2e7d32; border-color: #c8e6c9; box-shadow: 0 6px 20px rgba(46, 125, 50, 0.35); }
+
+/* Etichette del modulo gift card: il testo del sito è chiaro, ma il modulo ha sfondo bianco */
+.gift-form label { color: #1f1f38; font-weight: 600; }
