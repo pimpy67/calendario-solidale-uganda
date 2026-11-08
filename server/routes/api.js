@@ -670,7 +670,8 @@ async function createNataleStripeSession(card, { successUrl, cancelUrl, solo } =
     const session = await stripe.checkout.sessions.create({
         // Carta e Satispay (Satispay compare solo se è attivo nel dashboard Stripe).
         // Dal mercatino si può chiedere un solo metodo: la pagina va dritta a carta o a Satispay.
-        payment_method_types: solo === 'card' ? ['card'] : solo === 'satispay' ? ['satispay'] : ['card', 'satispay'],
+        // Senza "solo": metodi attivi nel dashboard Stripe (carta, Apple Pay, Google Pay, Link, Satispay)
+        ...(solo === 'card' ? { payment_method_types: ['card'] } : solo === 'satispay' ? { payment_method_types: ['satispay'] } : {}),
         ...(card.donor_email ? { customer_email: card.donor_email } : {}),
         locale: 'it',
         line_items: [{
@@ -686,7 +687,7 @@ async function createNataleStripeSession(card, { successUrl, cancelUrl, solo } =
         }],
         mode: 'payment',
         success_url: successUrl || `${baseUrl}/natale-avvento.html?ok=1`,
-        cancel_url: cancelUrl || `${baseUrl}/natale-avvento.html`,
+        cancel_url: cancelUrl || `${baseUrl}/natale-avvento.html?annullato=1`,
         metadata: {
             type: 'natale_gift_card',
             natale_id: String(card.id),
