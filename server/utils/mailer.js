@@ -860,6 +860,19 @@ async function sendAssociationReport(subject, html) {
  * Non usa il flusso delle adozioni: il testo non parla di giorni adottati.
  * @param {Object} card - Riga della tabella natale_gift_cards
  */
+// Retro della gift card di Natale: stesso testo del retro del sito, con il nome di chi riceve
+function nataleRetroHtml(recipientName) {
+    const name = String(recipientName || '').replace(/</g, '&lt;');
+    return `<!-- Retro della card: stesso testo e stile del retro del calendario, con il nome di chi riceve -->
+<div style="background: #fefef3; border-radius: 12px; padding: 24px 26px; margin-top: 16px; font-family: Georgia, 'Times New Roman', serif; color: #111;">
+<img src="${process.env.BASE_URL || 'https://calendario.effataitalia.it'}/images/gift_card/logo-effata.png" alt="Effatà Italia Charity Organisation ODV" style="float: right; width: 120px; height: auto; margin: 0 0 8px 16px;">
+<p style="font-size: 18px; line-height: 1.5; margin: 0 0 18px 0;">Caro/a ${name}, con questo regalo aiuti i bambini di Effatà a ricevere cibo, scuola e protezione.</p>
+<p style="font-size: 16px; line-height: 1.4; margin: 0 0 8px 0; clear: both;">Un Grazie e un augurio di Buon Natale dai bambini di Effatà Children's Home</p>
+<p style="font-size: 14px; margin: 0;"><a href="https://www.effataitalia.it" style="color: #c2185b; text-decoration: none;">www.effataitalia.it</a></p>
+</div>
+`;
+}
+
 async function sendNataleGiftCard(card) {
     const provider = getProvider();
     if (!card.recipient_email) {
@@ -884,13 +897,7 @@ async function sendNataleGiftCard(card) {
 <p><strong>${donorName.replace(/</g, '&lt;')}</strong> ti ha regalato una gift card di Natale del Calendario Solidale Effatà.</p>
 ${messageHtml}
 ${imageTag}
-<!-- Retro della card: stesso testo e stile del retro del calendario, con il nome di chi riceve -->
-<div style="background: #fefef3; border-radius: 12px; padding: 24px 26px; margin-top: 16px; font-family: Georgia, 'Times New Roman', serif; color: #111;">
-<img src="${process.env.BASE_URL || 'https://calendario.effataitalia.it'}/images/gift_card/logo-effata.png" alt="Effatà Italia Charity Organisation ODV" style="float: right; width: 120px; height: auto; margin: 0 0 8px 16px;">
-<p style="font-size: 18px; line-height: 1.5; margin: 0 0 18px 0;">Caro/a ${card.recipient_name.replace(/</g, '&lt;')}, con questo regalo aiuti i bambini di Effatà a ricevere cibo, scuola e protezione.</p>
-<p style="font-size: 16px; line-height: 1.4; margin: 0 0 8px 0; clear: both;">Un Grazie e un augurio di Buon Natale dai bambini di Effatà Children's Home</p>
-<p style="font-size: 14px; margin: 0;"><a href="https://www.effataitalia.it" style="color: #c2185b; text-decoration: none;">www.effataitalia.it</a></p>
-</div>
+${nataleRetroHtml(card.recipient_name)}
 <p style="text-align: center; margin: 24px 0;"><a href="${giftCardUrl}" style="background: #c0392b; color: #fff; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">🎁 Apri il tuo regalo</a></p>
 <p>Questa gift card sostiene i bambini della Casa Famiglia Effatà in Uganda: cibo, istruzione e cure.</p>
 <p style="color: #777; font-size: 12px;">Grazie di cuore da parte dei nostri bambini.</p>
@@ -975,6 +982,19 @@ async function sendNatalePaymentRequest(card, info) {
     const esc = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
     const intro = `<h2 style="color: #b22222;">Grazie, ${esc(card.donor_name)}!</h2>
 <p>Hai scelto al nostro banchetto una gift card di Natale da <strong>20 €</strong> per <strong>${esc(card.recipient_name)}</strong>.</p>`;
+    const augurio = card.message
+        ? `<p style="font-style: italic;">"${esc(card.message)}"</p>`
+        : '';
+    const { imagePath, imageBase64, imageMime } = loadCardImage({ gift_card_design: card.card_design }, provider);
+    let fronteTag = '';
+    if (imagePath && imageBase64) {
+        fronteTag = `<img src="data:${imageMime};base64,${imageBase64}" alt="Gift Card di Natale" style="width: 100%; height: auto; border-radius: 12px; display: block;">`;
+    } else if (imagePath) {
+        fronteTag = `<img src="cid:giftcard" alt="Gift Card di Natale" style="width: 100%; height: auto; border-radius: 12px; display: block;">`;
+    }
+    const anteprima = `${augurio}
+${fronteTag}
+${nataleRetroHtml(card.recipient_name)}`;
     const corpo = info.metodo === 'bonifico'
         ? `<p>Per completare il regalo fai un bonifico entro il <strong>${esc(info.scadenza)}</strong>:</p>
 <table style="border-collapse: collapse; margin: 12px 0;">
@@ -989,6 +1009,7 @@ async function sendNatalePaymentRequest(card, info) {
 <p style="font-size: 12px; color: #777;">Link diretto: ${info.payUrl}</p>`;
     const html = `<div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
 ${intro}
+${anteprima}
 ${corpo}
 <p style="font-size: 13px; color: #777;">Se il pagamento non arriva entro la scadenza, la gift card non viene consegnata. Codice del tuo regalo: <strong>${esc(info.causale)}</strong>.</p>
 </div>`;
@@ -999,7 +1020,7 @@ ${corpo}
             ? `🎄 Dati per il bonifico della gift card per ${card.recipient_name}`
             : `🎄 Link per pagare la gift card per ${card.recipient_name}`,
         html
-    }, null);
+    }, imagePath);
     console.log(`Promessa di pagamento ${info.metodo} della gift card di Natale ${card.id} inviata a ${card.donor_email}`);
     return result;
 }
