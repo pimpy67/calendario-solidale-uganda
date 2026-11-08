@@ -663,7 +663,6 @@ router.post('/mercatino/invii/:id/inviato', (req, res) => {
 
 /**
  * Sessione Stripe per pagare una gift card di Natale già salvata (QR del sito, QR del banchetto, link "paga dopo").
- * Se chi regala ha lasciato l'email, Stripe la trova già compilata.
  */
 async function createNataleStripeSession(card, { successUrl, cancelUrl, solo } = {}) {
     const baseUrl = process.env.NATALE_BASE_URL || process.env.BASE_URL || 'https://calendario.effataitalia.it';
@@ -672,7 +671,7 @@ async function createNataleStripeSession(card, { successUrl, cancelUrl, solo } =
         // Dal mercatino si può chiedere un solo metodo: la pagina va dritta a carta o a Satispay.
         // Senza "solo": metodi attivi nel dashboard Stripe (carta, Apple Pay, Google Pay, Link, Satispay)
         ...(solo === 'card' ? { payment_method_types: ['card'] } : solo === 'satispay' ? { payment_method_types: ['satispay'] } : {}),
-        ...(card.donor_email ? { customer_email: card.donor_email } : {}),
+        // L'email non viene precompilata: con Link Stripe la chiede direttamente a chi paga
         locale: 'it',
         line_items: [{
             price_data: {
