@@ -296,6 +296,13 @@
         open.target = '_blank';
         open.rel = 'noopener';
         open.textContent = 'Apri WhatsApp';
+        // Prima del 24 dicembre chiede conferma: il regalo non si può ancora aprire
+        open.addEventListener('click', (e) => {
+            if (new Date() < new Date('2026-12-23T23:00:00Z')
+                && !window.confirm('Il regalo si apre dal 24 dicembre: se lo mandi ora, chi lo riceve vede solo «si apre il 24». Mandarlo lo stesso?')) {
+                e.preventDefault();
+            }
+        });
         li.appendChild(open);
 
         const done = document.createElement('button');
