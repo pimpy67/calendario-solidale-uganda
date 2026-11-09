@@ -22,6 +22,7 @@
     </header>
 
     <main class="wrap">
+        <div id="natale-esito" class="natale-esito" role="status" hidden></div>
         <section aria-labelledby="advent-title">
             <h2 id="advent-title">Calendario dell'Avvento</h2>
             <div class="doors" id="doors" role="list"></div>
@@ -112,6 +113,7 @@
             <p><strong>Titolare del trattamento:</strong> Effatà Italia Charity Organisation ODV, contatto effataitalia@gmail.com.</p>
             <p><strong>Dati trattati:</strong> nome di chi regala, email di chi regala (facoltativa), nome di chi riceve, email e/o telefono di chi riceve, messaggio di auguri, data del consenso e canali scelti per l'invio.</p>
             <p><strong>Finalità:</strong> consegnare la gift card a chi riceve, per email o per WhatsApp, secondo i canali scelti da chi regala, e gestire il pagamento.</p>
+            <p><strong>Canale di provenienza:</strong> se arrivi da un nostro link (ad esempio un post Facebook o un'email), registriamo da quale canale, solo per contare in forma complessiva quali comunicazioni funzionano meglio. L'indicazione resta nel browser solo per la visita e viene salvata solo insieme a un acquisto. Non usiamo cookie né strumenti di tracciamento di terze parti.</p>
             <p><strong>Base giuridica:</strong> esecuzione del regalo richiesto e consenso di chi regala, che dichiara di avere il consenso di chi riceve a fornire i suoi contatti.</p>
             <p><strong>Chi riceve i dati:</strong> i fornitori tecnici necessari al servizio (il sistema di pagamento Stripe e il servizio di posta elettronica). Il messaggio WhatsApp è inviato dall'associazione dal proprio numero. I dati non sono venduti né usati per pubblicità.</p>
             <p><strong>Conservazione:</strong> i dati sono conservati per il tempo necessario alla consegna e agli obblighi contabili, poi cancellati.</p>
@@ -163,6 +165,18 @@
         <p><a href="mailto:effataitalia@gmail.com">effataitalia@gmail.com</a> · Tel <a href="tel:+393701421570">370 1421570</a></p>
         <p class="site-footer-links"><a href="https://effataitalia.it/">effataitalia.it</a> · <a href="/">Calendario solidale</a></p>
     </footer>
-    <script src="/js/natale-avvento.js?v=2026-10-21"></script>
+    <script>
+    // Esito del pagamento: Stripe torna qui con ?ok=1 (pagato) oppure ?annullato=1 (non riuscito o annullato)
+    (function () {
+        var p = new URLSearchParams(location.search);
+        var box = document.getElementById('natale-esito');
+        if (!box) return;
+        var msg = '';
+        if (p.get('ok') === '1') { msg = '✅ Pagamento ricevuto, grazie! La gift card è confermata.'; box.classList.add('ok'); }
+        else if (p.get('annullato') === '1') { msg = '⚠️ Il pagamento non è andato a buon fine o è stato annullato. Puoi riprovare con un’altra carta, con Satispay o con il bonifico.'; }
+        if (msg) { box.textContent = msg; box.hidden = false; box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    })();
+    </script>
+    <script src="/js/natale-avvento.js?v=2026-11-08"></script>
 </body>
 </html>

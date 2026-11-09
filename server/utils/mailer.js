@@ -11,6 +11,7 @@
 const nodemailer = require('nodemailer');
 const path = require('path');
 const fs = require('fs');
+const { renderRetroPng } = require('./retroCard');
 const dns = require('dns');
 const { promisify } = require('util');
 const resolve4 = promisify(dns.resolve4);
@@ -378,12 +379,13 @@ async function sendViaBrevo(mailOptions, imagePath) {
  * Invia con un transporter SMTP, allegando l'immagine con cid: "giftcard"
  */
 async function sendWithTransporter(transporter, mailOptions, imagePath) {
-    if (imagePath) {
-        mailOptions.attachments = [{
-            filename: path.basename(imagePath),
-            path: imagePath,
-            cid: 'giftcard'
-        }];
+    const extra = mailOptions.extraAttachments || [];
+    delete mailOptions.extraAttachments;
+    if (imagePath || extra.length) {
+        mailOptions.attachments = [
+            ...(imagePath ? [{ filename: path.basename(imagePath), path: imagePath, cid: 'giftcard' }] : []),
+            ...extra
+        ];
     }
 
     return await transporter.sendMail(mailOptions);
@@ -860,6 +862,38 @@ async function sendAssociationReport(subject, html) {
  * Non usa il flusso delle adozioni: il testo non parla di giorni adottati.
  * @param {Object} card - Riga della tabella natale_gift_cards
  */
+// Retro della gift card di Natale come immagine PNG (nome e augurio dentro). Se la grafica fallisce, testo HTML.
+async function nataleRetroBlock(card, provider) {
+    try {
+        const png = await renderRetroPng({ recipientName: card.recipient_name, message: card.message });
+        const imgStyle = 'width: 100%; height: auto; border-radius: 12px; display: block; margin-top: 16px;';
+        if (provider === 'brevo') {
+            return { isImage: true, html: `<img src="data:image/png;base64,${png.toString('base64')}" alt="Retro della gift card" style="${imgStyle}">`, attachments: [] };
+        }
+        return {
+            isImage: true,
+            html: `<img src="cid:retrocard" alt="Retro della gift card" style="${imgStyle}">`,
+            attachments: [{ filename: 'retro-gift-card.png', content: png, cid: 'retrocard' }]
+        };
+    } catch (error) {
+        console.error('[Natale] Retro come immagine non riuscito, uso il testo:', error.message);
+        return { isImage: false, html: nataleRetroHtml(card.recipient_name), attachments: [] };
+    }
+}
+
+// Retro della gift card di Natale: stesso testo del retro del sito, con il nome di chi riceve
+function nataleRetroHtml(recipientName) {
+    const name = String(recipientName || '').replace(/</g, '&lt;');
+    return `<!-- Retro della card: stesso testo e stile del retro del calendario, con il nome di chi riceve -->
+<div style="background: #fefef3; border-radius: 12px; padding: 24px 26px; margin-top: 16px; font-family: Georgia, 'Times New Roman', serif; color: #111;">
+<img src="${process.env.BASE_URL || 'https://calendario.effataitalia.it'}/images/gift_card/logo-effata.png" alt="Effatà Italia Charity Organisation ODV" style="float: right; width: 120px; height: auto; margin: 0 0 8px 16px;">
+<p style="font-size: 18px; line-height: 1.5; margin: 0 0 18px 0;">Caro/a ${name}, con questo regalo aiuti i bambini di Effatà a ricevere cibo, scuola e protezione.</p>
+<p style="font-size: 16px; line-height: 1.4; margin: 0 0 8px 0; clear: both;">Un Grazie e un augurio di Buon Natale dai bambini di Effatà Children's Home</p>
+<p style="font-size: 14px; margin: 0;"><a href="https://www.effataitalia.it" style="color: #c2185b; text-decoration: none;">www.effataitalia.it</a></p>
+</div>
+`;
+}
+
 async function sendNataleGiftCard(card) {
     const provider = getProvider();
     if (!card.recipient_email) {
@@ -869,7 +903,8 @@ async function sendNataleGiftCard(card) {
     const { imagePath, imageBase64, imageMime } = loadCardImage({ gift_card_design: card.card_design }, provider);
     const donorName = card.donor_name || 'Un amico generoso';
     const giftCardUrl = nataleCardUrl(card);
-    const messageHtml = card.message
+    const retro = await nataleRetroBlock(card, provider);
+    const messageHtml = !retro.isImage && card.message
         ? `<p style="font-style: italic;">"${card.message.replace(/</g, '&lt;')}"</p>`
         : '';
     let imageTag = '';
@@ -884,13 +919,7 @@ async function sendNataleGiftCard(card) {
 <p><strong>${donorName.replace(/</g, '&lt;')}</strong> ti ha regalato una gift card di Natale del Calendario Solidale Effatà.</p>
 ${messageHtml}
 ${imageTag}
-<!-- Retro della card: stesso testo e stile del retro del calendario, con il nome di chi riceve -->
-<div style="background: #fefef3; border-radius: 12px; padding: 24px 26px; margin-top: 16px; font-family: Georgia, 'Times New Roman', serif; color: #111;">
-<img src="${process.env.BASE_URL || 'https://calendario.effataitalia.it'}/images/gift_card/logo-effata.png" alt="Effatà Italia Charity Organisation ODV" style="float: right; width: 120px; height: auto; margin: 0 0 8px 16px;">
-<p style="font-size: 18px; line-height: 1.5; margin: 0 0 18px 0;">Caro/a ${card.recipient_name.replace(/</g, '&lt;')}, con questo regalo aiuti i bambini di Effatà a ricevere cibo, scuola e protezione.</p>
-<p style="font-size: 16px; line-height: 1.4; margin: 0 0 8px 0; clear: both;">Un Grazie e un augurio di Buon Natale dai bambini di Effatà Children's Home</p>
-<p style="font-size: 14px; margin: 0;"><a href="https://www.effataitalia.it" style="color: #c2185b; text-decoration: none;">www.effataitalia.it</a></p>
-</div>
+${retro.html}
 <p style="text-align: center; margin: 24px 0;"><a href="${giftCardUrl}" style="background: #c0392b; color: #fff; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">🎁 Apri il tuo regalo</a></p>
 <p>Questa gift card sostiene i bambini della Casa Famiglia Effatà in Uganda: cibo, istruzione e cure.</p>
 <p style="color: #777; font-size: 12px;">Grazie di cuore da parte dei nostri bambini.</p>
@@ -903,6 +932,7 @@ ${imageTag}
         html
     };
 
+    mailOptions.extraAttachments = retro.attachments;
     const result = await sendEmail(provider, mailOptions, imagePath);
     console.log(`Gift card di Natale ${card.id} inviata via ${provider} a ${card.recipient_email}`);
     return result;
@@ -945,10 +975,24 @@ async function sendNataleDonorConfirmation(card) {
 
     const link = nataleCardUrl(card);
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(nataleWhatsappText(card))}`;
+    const { imagePath, imageBase64, imageMime } = loadCardImage({ gift_card_design: card.card_design }, provider);
+    let fronteTag = '';
+    if (imagePath && imageBase64) {
+        fronteTag = `<img src="data:${imageMime};base64,${imageBase64}" alt="Gift Card di Natale" style="width: 100%; height: auto; border-radius: 12px; display: block;">`;
+    } else if (imagePath) {
+        fronteTag = `<img src="cid:giftcard" alt="Gift Card di Natale" style="width: 100%; height: auto; border-radius: 12px; display: block;">`;
+    }
+    const retro = await nataleRetroBlock(card, provider);
+    const augurioHtml = !retro.isImage && card.message
+        ? `<p style="font-style: italic;">"${card.message.replace(/</g, '&lt;')}"</p>`
+        : '';
     const html = `<div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
 <h2 style="color: #b22222;">Grazie, ${(card.donor_name || '').replace(/</g, '&lt;')}!</h2>
 <p>La tua gift card di Natale per <strong>${card.recipient_name.replace(/</g, '&lt;')}</strong> è stata pagata.</p>
 <p>${card.send_email ? 'Arriverà per email al destinatario il <strong>25 dicembre alle 00:00</strong>. ' : ''}Il destinatario potrà aprire la gift card dal <strong>24 dicembre alle 00:00</strong>. Se vuoi, puoi anche inoltrargli subito il link di apertura:</p>
+${fronteTag}
+${augurioHtml}
+${retro.html}
 <p style="text-align: center; margin: 24px 0;"><a href="${whatsappUrl}" style="background: #25D366; color: #fff; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">Condividi su WhatsApp</a></p>
 <p style="font-size: 12px; color: #777;">Link diretto: ${link}</p>
 </div>`;
@@ -957,13 +1001,72 @@ async function sendNataleDonorConfirmation(card) {
         from: getFromAddress(provider),
         to: card.donor_email,
         subject: `🎄 Gift card di Natale pagata per ${card.recipient_name}`,
-        html
-    }, null);
+        html,
+        extraAttachments: retro.attachments
+    }, imagePath);
     console.log(`Conferma gift card di Natale ${card.id} inviata via ${provider} a ${card.donor_email}`);
     return result;
 }
 
+/**
+ * Promessa di pagamento dal mercatino: a chi regala arriva il link per pagare con carta o Satispay,
+ * oppure IBAN e causale del bonifico. La gift card parte solo quando il pagamento arriva.
+ * @param {Object} card - Riga della tabella natale_gift_cards
+ * @param {Object} info - { metodo: 'link'|'bonifico', payUrl, iban, intestatario, causale, scadenza }
+ */
+async function sendNatalePaymentRequest(card, info) {
+    if (!card.donor_email) return null;
+    const provider = getProvider();
+    const esc = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const intro = `<h2 style="color: #b22222;">Grazie, ${esc(card.donor_name)}!</h2>
+<p>Hai scelto una gift card di Natale da <strong>20 €</strong> per <strong>${esc(card.recipient_name)}</strong>.</p>`;
+    const augurio = card.message
+        ? `<p style="font-style: italic;">"${esc(card.message)}"</p>`
+        : '';
+    const { imagePath, imageBase64, imageMime } = loadCardImage({ gift_card_design: card.card_design }, provider);
+    let fronteTag = '';
+    if (imagePath && imageBase64) {
+        fronteTag = `<img src="data:${imageMime};base64,${imageBase64}" alt="Gift Card di Natale" style="width: 100%; height: auto; border-radius: 12px; display: block;">`;
+    } else if (imagePath) {
+        fronteTag = `<img src="cid:giftcard" alt="Gift Card di Natale" style="width: 100%; height: auto; border-radius: 12px; display: block;">`;
+    }
+    const retro = await nataleRetroBlock(card, provider);
+    const anteprima = `${retro.isImage ? '' : augurio}
+${fronteTag}
+${retro.html}`;
+    const corpo = info.metodo === 'bonifico'
+        ? `<p>Per completare il regalo fai un bonifico entro il <strong>${esc(info.scadenza)}</strong>:</p>
+<table style="border-collapse: collapse; margin: 12px 0;">
+<tr><td style="padding: 4px 12px 4px 0; color: #777;">Intestato a</td><td><strong>${esc(info.intestatario)}</strong></td></tr>
+<tr><td style="padding: 4px 12px 4px 0; color: #777;">IBAN</td><td><strong>${esc(info.iban)}</strong></td></tr>
+<tr><td style="padding: 4px 12px 4px 0; color: #777;">Importo</td><td><strong>20,00 €</strong></td></tr>
+<tr><td style="padding: 4px 12px 4px 0; color: #777;">Causale</td><td><strong>${esc(info.causale)}</strong></td></tr>
+</table>
+<p>Quando riceviamo il bonifico la gift card viene attivata e arriva a ${esc(card.recipient_name)} a Natale.</p>`
+        : `<p>Per completare il regalo paga con carta o Satispay entro il <strong>${esc(info.scadenza)}</strong>:</p>
+<p style="text-align: center; margin: 24px 0;"><a href="${info.payUrl}" style="background: #b22222; color: #fff; padding: 14px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">Paga 20 € e attiva il regalo</a></p>
+<p style="font-size: 12px; color: #777;">Link diretto: ${info.payUrl}</p>`;
+    const html = `<div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
+${intro}
+${anteprima}
+${corpo}
+<p style="font-size: 13px; color: #777;">Se il pagamento non arriva entro la scadenza, la gift card non viene consegnata. Codice del tuo regalo: <strong>${esc(info.causale)}</strong>.</p>
+</div>`;
+    const result = await sendEmail(provider, {
+        from: getFromAddress(provider),
+        to: card.donor_email,
+        subject: info.metodo === 'bonifico'
+            ? `🎄 Dati per il bonifico della gift card per ${card.recipient_name}`
+            : `🎄 Link per pagare la gift card per ${card.recipient_name}`,
+        html,
+        extraAttachments: retro.attachments
+    }, imagePath);
+    console.log(`Promessa di pagamento ${info.metodo} della gift card di Natale ${card.id} inviata a ${card.donor_email}`);
+    return result;
+}
+
 module.exports = {
+    sendNatalePaymentRequest,
     sendNataleDonorConfirmation,
     sendNataleGiftCard,
     nataleWhatsappText,

@@ -85,7 +85,7 @@ function designImageFile(design) {
  * Canale da cui arriva chi compra una gift card di Natale (parametro ?da= dei link).
  * Lista chiusa: un valore sconosciuto diventa "altro", nessun valore diventa null ("diretto").
  */
-const NATALE_CANALI = ['fb', 'fb-storia', 'ig', 'ig-storia', 'ig-bio', 'email', 'whatsapp', 'blog', 'ads', 'altro'];
+const NATALE_CANALI = ['fb', 'fb-storia', 'ig', 'ig-storia', 'ig-bio', 'email', 'whatsapp', 'blog', 'ads', 'mercatino', 'altro'];
 
 function normalizeCanale(value) {
     const v = (value || '').toString().trim().toLowerCase();

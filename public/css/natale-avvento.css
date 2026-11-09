@@ -749,3 +749,19 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 @media (max-width: 639px) {
     .hero { padding-top: 104px; }
 }
+
+/* Link dell'informativa privacy nel consenso: il blu predefinito non si legge sullo sfondo scuro */
+.gift-consent a { color: var(--gold); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.gift-consent a:hover, .gift-consent a:focus-visible { color: var(--white); }
+
+/* Esito del pagamento della gift card: avviso grande, rosso se non riuscito, verde se pagato */
+.natale-esito {
+    margin: 16px auto; max-width: 720px; padding: 14px 18px; border-radius: 12px;
+    background: #c62828; color: #fff; border: 3px solid #ffcdd2;
+    font-size: 1.1rem; font-weight: 700; line-height: 1.4; text-align: center;
+    box-shadow: 0 6px 20px rgba(198, 40, 40, 0.35);
+}
+.natale-esito.ok { background: #2e7d32; border-color: #c8e6c9; box-shadow: 0 6px 20px rgba(46, 125, 50, 0.35); }
+
+/* Etichette del modulo gift card: il testo del sito è chiaro, ma il modulo ha sfondo bianco */
+.gift-form label { color: #1f1f38; font-weight: 600; }

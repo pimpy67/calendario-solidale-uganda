@@ -42,6 +42,18 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+    <!-- Esito del pagamento: Stripe torna qui con ?annullato=1 se il pagamento non va o viene annullato -->
+    <div id="esito-pagamento" role="status" hidden style="position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 9999; width: min(92vw, 640px); padding: 14px 18px; border-radius: 12px; background: #c62828; color: #fff; border: 3px solid #ffcdd2; font-size: 1.05rem; font-weight: 700; line-height: 1.4; text-align: center; box-shadow: 0 6px 20px rgba(198, 40, 40, 0.35);"></div>
+    <script>
+    (function () {
+        var box = document.getElementById('esito-pagamento');
+        if (new URLSearchParams(location.search).get('annullato') === '1') {
+            box.textContent = '⚠️ Il pagamento non è andato a buon fine o è stato annullato. Puoi riprovare con un’altra carta, con Satispay o con il bonifico.';
+            box.hidden = false;
+            box.addEventListener('click', function () { box.hidden = true; });
+        }
+    })();
+    </script>
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-content">
