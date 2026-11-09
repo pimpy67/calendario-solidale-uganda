@@ -670,7 +670,8 @@ async function createNataleStripeSession(card, { successUrl, cancelUrl, solo } =
         // Carta e Satispay (Satispay compare solo se è attivo nel dashboard Stripe).
         // Dal mercatino si può chiedere un solo metodo: la pagina va dritta a carta o a Satispay.
         // Senza "solo": metodi attivi nel dashboard Stripe (carta, Apple Pay, Google Pay, Link, Satispay)
-        ...(solo === 'card' ? { payment_method_types: ['card'] } : solo === 'satispay' ? { payment_method_types: ['satispay'] } : {}),
+        // "card" include anche Link, così la pagina propone «Paga senza Link» come sul calendario
+        ...(solo === 'card' ? { payment_method_types: ['card', 'link'] } : solo === 'satispay' ? { payment_method_types: ['satispay'] } : {}),
         // L'email non viene precompilata: con Link Stripe la chiede direttamente a chi paga
         locale: 'it',
         line_items: [{
