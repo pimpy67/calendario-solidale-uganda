@@ -678,8 +678,6 @@
         closePreview();
         document.getElementById('paychoice').scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
-    // Il cliente non riesce a pagare col QR: stessa card, ma gli si manda il link (la vecchia pagina scade da sola)
-    document.getElementById('pay-qr-link').addEventListener('click', () => { payMethod = 'link'; registerPromise('link'); });
     document.getElementById('preview-back').addEventListener('click', closePreview);
     document.getElementById('preview-close').addEventListener('click', closePreview);
     document.getElementById('preview').addEventListener('click', (e) => {
