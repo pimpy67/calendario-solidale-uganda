@@ -450,7 +450,8 @@
         }
         if (d.donor_email && !EMAIL_RE.test(d.donor_email)) add('donor-email', 'Email non valida: controlla @ e il punto (es. mario@gmail.com)');
         if (!cfOk(d.donor_cf)) add('donor-cf', 'Codice fiscale non valido: controlla lettere e numeri (16 caratteri)');
-        if (payMethod !== 'link' && payMethod !== 'bonifico') document.getElementById('donor-phone').value = '';
+        // Il cellulare serve anche se il QR non funziona e si manda il link: si svuota solo per i contanti
+        if (payMethod === 'cash') document.getElementById('donor-phone').value = '';
         if (!phoneOk(val('donor-phone'))) add('donor-phone', 'Numero non valido: solo cifre, es. 333 1234567');
         if (!d.recipient_name) add('recipient-name', 'Scrivi il nome di chi riceve');
         if (d.recipient_email && !EMAIL_RE.test(d.recipient_email)) add('recipient-email', 'Email non valida: controlla @ e il punto (es. anna@gmail.com)');
