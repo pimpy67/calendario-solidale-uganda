@@ -6,7 +6,7 @@
     <meta name="description" content="Il calendario dell'Avvento di Effatà: ogni giorno dal 1 al 25 dicembre una finestra con un disegno dei bambini della Casa Famiglia in Uganda. Scegli un disegno per regalare un Natale solidale.">
     <title>Natale con Effatà · Calendario dell'Avvento</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
-    <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-11-09a">
+    <link rel="stylesheet" href="/css/natale-avvento.css?v=2026-11-09b">
 </head>
 <body>
     <div class="snow" id="snow" aria-hidden="true"></div>
@@ -71,6 +71,9 @@
             </div>
             <form id="gift-form" class="gift-form" novalidate>
 
+                <div class="gift-people">
+                <fieldset class="gift-box gift-box-donor">
+                <legend>🎁 Chi regala</legend>
                 <label for="gift-donor-name">Il tuo nome</label>
                 <input type="text" id="gift-donor-name" maxlength="100" required placeholder="es. Mario Rossi">
 
@@ -80,6 +83,10 @@
                 <label for="gift-donor-cf">Il tuo codice fiscale (facoltativo, per la ricevuta fiscale)</label>
                 <input type="text" id="gift-donor-cf" maxlength="16" autocomplete="off" placeholder="es. RSSMRA80A01H501U">
 
+                </fieldset>
+
+                <fieldset class="gift-box gift-box-recipient">
+                <legend>🎄 Chi riceve</legend>
                 <label for="gift-recipient-name">Nome di chi riceve</label>
                 <input type="text" id="gift-recipient-name" maxlength="100" required placeholder="es. Anna Bianchi">
 
@@ -89,6 +96,8 @@
                 <label for="gift-recipient-phone">Telefono di chi riceve (facoltativo)</label>
                 <input type="tel" id="gift-recipient-phone" maxlength="30" placeholder="es. 333 1234567">
                 <p class="gift-hint">Inserisci almeno un contatto, email o telefono.</p>
+                </fieldset>
+                </div>
 
                 <fieldset class="gift-channels">
                     <legend>Come far arrivare il regalo</legend>

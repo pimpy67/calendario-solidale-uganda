@@ -763,5 +763,30 @@ h2 { text-align: center; font-size: 1.4rem; margin: 32px 0 16px; }
 }
 .natale-esito.ok { background: #2e7d32; border-color: #c8e6c9; box-shadow: 0 6px 20px rgba(46, 125, 50, 0.35); }
 
-/* Etichette del modulo gift card: il testo del sito è chiaro, ma il modulo ha sfondo bianco */
-.gift-form label { color: #1f1f38; font-weight: 600; }
+/* Etichette del modulo gift card: sfondo scuro, quindi testo chiaro e ben leggibile (i campi restano bianchi) */
+.gift-form label { color: var(--white); font-weight: 600; }
+.gift-form label a { color: var(--gold); }
+
+/* Modulo gift card: due riquadri, chi regala (oro) e chi riceve (verde), come nel mercatino */
+.gift-people { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 720px) { .gift-people { grid-template-columns: 1fr 1fr; } }
+.gift-form .gift-box {
+    margin: 0; padding: 12px 14px 14px; min-width: 0;
+    border: 2px solid rgba(245,210,122,0.45); border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    display: flex; flex-direction: column; gap: 4px;
+}
+.gift-form .gift-box-recipient { border-color: rgba(111,211,166,0.6); }
+.gift-form .gift-box > legend { padding: 0 8px; font-size: 1.15rem; font-weight: 700; color: var(--gold); }
+.gift-form .gift-box-recipient > legend { color: #6fd3a6; }
+.gift-form .gift-box label { margin-top: 10px; font-size: 1rem; }
+.gift-hint { margin: 8px 0 0; color: var(--muted); font-size: 0.9rem; line-height: 1.4; }
+.gift-form .gift-channels { border: 0; padding: 0; margin: 14px 0 0; }
+.gift-form .gift-channels legend { padding: 0; font-size: 1rem; font-weight: 700; color: var(--gold); margin-bottom: 6px; }
+.gift-form .gift-channels label { display: inline-flex; align-items: center; gap: 10px; margin: 0 18px 0 0; font-size: 1rem; cursor: pointer; }
+.gift-form .gift-channels input[type="checkbox"] { width: 24px; height: 24px; min-height: 0; flex: none; accent-color: var(--gold); }
+.gift-form .gift-consent { display: block; margin-top: 16px; font-weight: 400; font-size: 0.95rem; line-height: 1.5; cursor: pointer; }
+.gift-form .gift-consent input[type="checkbox"] { float: left; width: 24px; height: 24px; min-height: 0; margin: 2px 12px 0 0; accent-color: var(--gold); }
+.gift-form .gift-submit { padding: 16px; font-size: 1.1rem; }
+/* Riquadri su schermo largo: spazio più ampio, senza scorrere troppo */
+@media (min-width: 900px) { .gift-form .gift-box { padding: 16px 18px 18px; } }
