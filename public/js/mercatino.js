@@ -305,11 +305,36 @@
         return formatTime(sqlTime.replace(' ', 'T') + 'Z');
     }
 
+    function cell(text, className) {
+        const td = document.createElement('td');
+        if (className) td.className = className;
+        td.textContent = text;
+        return td;
+    }
+
+    // Una riga della tabella: dati di chi regala e di chi riceve, poi i pulsanti di invio a destra
     function makeInvioRow(card) {
-        const li = document.createElement('li');
-        const label = document.createElement('span');
-        label.textContent = `#${card.id} · ${card.recipient_name} · +${card.recipient_phone}`;
-        li.appendChild(label);
+        const tr = document.createElement('tr');
+        tr.appendChild(cell(card.codice || '#' + card.id, 'merc-table-code'));
+        tr.appendChild(cell(card.created_at ? formatSentAt(card.created_at) : '', 'merc-table-date'));
+
+        const donor = cell(card.donor_name || '', '');
+        if (card.donor_email) {
+            const mail = document.createElement('small');
+            mail.textContent = card.donor_email;
+            donor.appendChild(document.createElement('br'));
+            donor.appendChild(mail);
+        }
+        tr.appendChild(donor);
+
+        tr.appendChild(cell(card.recipient_name || '', 'merc-table-strong'));
+        tr.appendChild(cell(`+${card.recipient_phone}`, ''));
+        tr.appendChild(cell(designLabel(card.card_design), ''));
+        const pagamento = METODI[card.metodo] || card.metodo;
+        tr.appendChild(cell(`${pagamento} · ${euro(card.amount)}`, ''));
+
+        const actions = document.createElement('td');
+        actions.className = 'merc-table-actions';
 
         const open = document.createElement('a');
         open.className = 'merc-btn merc-btn-small';
@@ -324,7 +349,7 @@
                 e.preventDefault();
             }
         });
-        li.appendChild(open);
+        actions.appendChild(open);
 
         const done = document.createElement('button');
         done.type = 'button';
@@ -346,8 +371,9 @@
                 document.getElementById('invii-total').textContent = error.message;
             }
         });
-        li.appendChild(done);
-        return li;
+        actions.appendChild(done);
+        tr.appendChild(actions);
+        return tr;
     }
 
     async function loadInvii() {

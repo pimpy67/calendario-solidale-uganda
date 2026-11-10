@@ -129,7 +129,23 @@
                 <p class="merc-whatsapp-quando">📅 Da inviare il 24 dicembre</p>
                 <p class="merc-note">Il regalo si apre dal 24 dicembre alle 00:00: se lo mandi prima, chi lo riceve vede solo «si apre il 24». Il 24, dal telefono con il WhatsApp di Effatà: ogni riga apre WhatsApp con numero e messaggio già pronti, premi invio su WhatsApp, poi segna «Inviato» qui.</p>
                 <p class="merc-total" id="invii-total">Caricamento…</p>
-                <ul class="merc-list merc-invii-list" id="invii-list"></ul>
+                <div class="merc-table-wrap">
+                    <table class="merc-table" aria-describedby="invii-total">
+                        <thead>
+                            <tr>
+                                <th scope="col">Codice</th>
+                                <th scope="col">Data</th>
+                                <th scope="col">Chi regala</th>
+                                <th scope="col">Chi riceve</th>
+                                <th scope="col">Cellulare</th>
+                                <th scope="col">Finestra</th>
+                                <th scope="col">Pagamento</th>
+                                <th scope="col" class="merc-table-actions">Invio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invii-list"></tbody>
+                    </table>
+                </div>
                 <button type="button" class="merc-btn merc-btn-small" id="invii-refresh">Aggiorna</button>
             </section>
             </div>

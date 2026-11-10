@@ -271,3 +271,16 @@
 
 /* Link al riepilogo pagamenti nel pannello admin: sta accanto ad Aggiorna */
 .merc-admin-link { margin-left: 8px; text-decoration: none; display: inline-block; }
+
+/* Lista di invio WhatsApp come tabella: intestazioni, una riga per gift card, pulsanti a destra */
+.merc-table-wrap { overflow-x: auto; margin: 0 0 12px; border-radius: 10px; border: 1px solid rgba(245,210,122,0.15); }
+.merc-table { width: 100%; min-width: 860px; border-collapse: collapse; font-size: 0.9rem; color: var(--muted); }
+.merc-table th, .merc-table td { padding: 8px 10px; text-align: left; vertical-align: middle; border-bottom: 1px solid rgba(245,210,122,0.15); }
+.merc-table thead th { position: sticky; top: 0; background: rgba(20,20,43,0.96); color: var(--gold); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.4px; }
+.merc-table tbody tr:hover { background: rgba(245,210,122,0.05); }
+.merc-table small { color: rgba(255,255,255,0.6); font-size: 0.78rem; }
+.merc-table-code { font-weight: 700; color: var(--gold); white-space: nowrap; }
+.merc-table-date { white-space: nowrap; }
+.merc-table-strong { color: var(--white); font-weight: 600; }
+.merc-table-actions { text-align: right; white-space: nowrap; }
+.merc-table-actions .merc-btn { margin: 0 0 0 6px; }
