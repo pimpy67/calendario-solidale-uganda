@@ -638,9 +638,15 @@ router.get('/mercatino/invii', (req, res) => {
     }
     const cards = db.getNataleWhatsappList().map(card => ({
         id: card.id,
+        codice: codiceRegalo(card.id),
+        created_at: card.created_at,
+        donor_name: card.donor_name,
+        donor_email: card.donor_email,
         recipient_name: card.recipient_name,
         recipient_phone: card.recipient_phone,
-        donor_name: card.donor_name,
+        card_design: card.card_design,
+        amount: card.amount,
+        metodo: card.payment_method,
         sent_at: card.whatsapp_sent_at,
         whatsapp_url: `https://wa.me/${card.recipient_phone}?text=${encodeURIComponent(nataleWhatsappText(card))}`
     }));
