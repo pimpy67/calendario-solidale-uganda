@@ -1628,15 +1628,6 @@ body {
         max-height: 160px;
     }
 
-    .btn-accedi {
-        display: block;
-        padding: 0.75rem 1rem;
-        margin-top: 0.5rem;
-        font-size: 0.85rem;
-        font-weight: 700;
-        flex-shrink: 0;
-    }
-
     .social-btn {
         width: 34px;
         height: 34px;
@@ -1875,7 +1866,15 @@ body {
     }
 
     .sidebar-nav-text { order: 2; }
-    .btn-accedi { order: 3; }
+    .btn-accedi {
+        display: block;
+        padding: 0.75rem 1rem;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        flex-shrink: 0;
+        order: 3;
+    }
     .sidebar-preview h4 { order: 4; }
     .preview-image {
         order: 5;
