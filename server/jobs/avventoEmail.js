@@ -141,14 +141,58 @@ async function inviaProva(data, indirizzo) {
     return `prova del ${data} mandata a ${indirizzo}`;
 }
 
-module.exports = { startAvventoEmail, inviaEmailDelGiorno, inviaProva, adessoRoma, emailDelGiorno };
+/** Prova completa: manda tutte le 25 email (una alla volta) a un solo indirizzo, come email transazionali */
+async function inviaProvaTutte(indirizzo) {
+    const indice = JSON.parse(fs.readFileSync(path.join(CARTELLA, 'indice.json'), 'utf8'));
+    const esiti = [];
+    for (const voce of indice) {
+        try {
+            esiti.push(await inviaProva(voce.data, indirizzo));
+        } catch (error) {
+            esiti.push(`ERRORE ${voce.data}: ${error.message}`);
+        }
+        await new Promise(r => setTimeout(r, 1500)); // pausa tra un invio e l'altro
+    }
+    return esiti;
+}
+
+/**
+ * Iscrive alla lista dell'Avvento (newsletter + calendario) chi ha spuntato il consenso facoltativo
+ * sulla gift card di Natale. Chiamata quando la gift card risulta pagata. Non blocca mai la vendita:
+ * in caso di problemi lo registra nel log e basta.
+ */
+async function iscriviAllaNewsletter(card) {
+    if (!card || !card.newsletter_consent_at || !card.donor_email) return 'nessun consenso';
+    if (!chiave() || !process.env.BREVO_AVVENTO_LIST_ID) {
+        console.warn('[Newsletter] Consenso ricevuto ma Brevo Avvento non configurato: contatto non iscritto (gift card ' + card.id + ')');
+        return 'non configurato';
+    }
+    try {
+        await brevo('POST', '/contacts', {
+            email: card.donor_email,
+            listIds: [Number(process.env.BREVO_AVVENTO_LIST_ID)],
+            updateEnabled: true
+        });
+        console.log(`[Newsletter] Iscritto alla lista Avvento dalla gift card ${card.id}`);
+        return 'iscritto';
+    } catch (error) {
+        console.error(`[Newsletter] Iscrizione non riuscita per la gift card ${card.id}:`, error.message);
+        return 'errore';
+    }
+}
+
+module.exports = { startAvventoEmail, inviaEmailDelGiorno, inviaProva, inviaProvaTutte, iscriviAllaNewsletter, adessoRoma, emailDelGiorno };
 
 if (require.main === module) {
     require('dotenv').config();
     const [, , comando, data, indirizzo] = process.argv;
     if (comando === 'prova' && data && indirizzo) {
         inviaProva(data, indirizzo).then(console.log, e => { console.error(e.message); process.exit(1); });
+    } else if (comando === 'prova-tutte' && data) {
+        inviaProvaTutte(data).then(esiti => console.log(esiti.join('\n')), e => { console.error(e.message); process.exit(1); });
     } else {
-        console.log('Uso: node server/jobs/avventoEmail.js prova AAAA-MM-GG indirizzo@email');
+        console.log('Uso:');
+        console.log('  node server/jobs/avventoEmail.js prova AAAA-MM-GG indirizzo@email');
+        console.log('  node server/jobs/avventoEmail.js prova-tutte indirizzo@email   (tutte le 25 email, una alla volta)');
     }
 }
