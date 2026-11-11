@@ -467,6 +467,7 @@
                 send_email: document.getElementById('gift-send-email').checked,
                 send_whatsapp: document.getElementById('gift-send-whatsapp').checked,
                 privacy_consent: document.getElementById('gift-privacy').checked,
+                newsletter_consent: document.getElementById('gift-newsletter').checked,
                 message: document.getElementById('gift-message').value.trim(),
                 canale: canale || undefined
             };
@@ -476,6 +477,9 @@
             }
             if (!body.privacy_consent) {
                 return showGiftError("Accetta l'informativa sulla privacy per continuare.");
+            }
+            if (body.newsletter_consent && !body.donor_email) {
+                return showGiftError("Per la newsletter serve la tua email.");
             }
 
             submitBtn.disabled = true;

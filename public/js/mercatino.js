@@ -118,6 +118,7 @@
             send_email: checked('send-email'),
             send_whatsapp: checked('send-whatsapp'),
             privacy_consent: checked('privacy-consent'),
+            newsletter_consent: checked('newsletter-consent'),
             message: val('message') || null
         };
     }
@@ -461,6 +462,7 @@
         if (d.send_email && !d.recipient_email) add('recipient-email', "Per l'invio via email serve l'email di chi riceve");
         if (d.send_whatsapp && !d.recipient_phone) add('recipient-phone', "Per l'invio via WhatsApp serve il cellulare di chi riceve");
         if (!d.privacy_consent) add('privacy-consent', "Serve il consenso all'informativa privacy");
+        if (d.newsletter_consent && !d.donor_email) add('donor-email', "Per la newsletter serve l'email di chi regala");
 
         if (errors.length) {
             const list = errors.map(x => x.message.charAt(0).toLowerCase() + x.message.slice(1));
