@@ -221,6 +221,7 @@ router.post('/natale/:id/pagato', authMiddleware, (req, res) => {
         return res.status(404).json({ error: true, message: 'Promessa non trovata o già pagata' });
     }
     console.log(`[Admin] Gift card di Natale ${card.id} segnata come pagata (${card.payment_method})`);
+    require('../jobs/avventoEmail').iscriviAllaNewsletter(card);
     const { sendNataleDonorConfirmation } = require('../utils/mailer');
     const { deliverNataleCardIfDue } = require('../jobs/natale');
     if (card.donor_email) {

@@ -120,6 +120,8 @@ function init() {
         send_email: 'INTEGER DEFAULT 1',
         send_whatsapp: 'INTEGER DEFAULT 0',
         privacy_consent_at: 'DATETIME',
+        // Iscrizione facoltativa a newsletter e Calendario dell'Avvento (data del consenso, null = non iscritto)
+        newsletter_consent_at: 'DATETIME',
         whatsapp_sent_at: 'DATETIME',
         email_at: 'VARCHAR(30)'
     };
@@ -565,14 +567,14 @@ function close() {
  */
 function createNataleGiftCard(data) {
     const stmt = db.prepare(`
-        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at, canale, payment_method)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at, newsletter_consent_at, canale, payment_method)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const info = stmt.run(
         data.payment_id, data.amount, data.donor_name, data.donor_email, data.donor_cf || null,
         data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at, data.email_at,
-        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at, data.canale || null,
-        data.payment_method || 'stripe'
+        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at, data.newsletter_consent_at || null,
+        data.canale || null, data.payment_method || 'stripe'
     );
     return info.lastInsertRowid;
 }
@@ -742,12 +744,12 @@ function getNataleGiftCardByPaymentId(paymentId) {
  */
 function createCashNataleGiftCard(data) {
     const info = db.prepare(`
-        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at, payment_status, payment_method, paid_at, canale)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', ?, ?, 'mercatino')
+        INSERT INTO natale_gift_cards (payment_id, amount, donor_name, donor_email, donor_cf, recipient_name, recipient_email, message, card_design, delivery_at, email_at, recipient_phone, send_email, send_whatsapp, privacy_consent_at, newsletter_consent_at, payment_status, payment_method, paid_at, canale)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', ?, ?, 'mercatino')
     `).run(
         data.payment_id, data.amount, data.donor_name, data.donor_email, data.donor_cf || null,
         data.recipient_name, data.recipient_email, data.message, data.card_design, data.delivery_at, data.email_at,
-        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at,
+        data.recipient_phone, data.send_email, data.send_whatsapp, data.privacy_consent_at, data.newsletter_consent_at || null,
         data.payment_method === 'pos' ? 'pos' : 'cash', data.paid_at
     );
     return db.prepare('SELECT * FROM natale_gift_cards WHERE id = ?').get(info.lastInsertRowid);

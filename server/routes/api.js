@@ -82,11 +82,23 @@ function checkNataleContacts(body) {
             recipient_phone: phone,
             send_email: sendEmail ? 1 : 0,
             send_whatsapp: sendWhatsapp ? 1 : 0,
-            privacy_consent_at: new Date().toISOString()
+            privacy_consent_at: new Date().toISOString(),
+            newsletter_consent_at: newsletterConsentAt(body)
         }
     };
 }
+
+/**
+ * Consenso facoltativo a newsletter e Calendario dell'Avvento: vale solo con l'email di chi regala.
+ * Ritorna la data del consenso, oppure null se non c'è (casella non spuntata o email mancante).
+ */
+function newsletterConsentAt(body) {
+    const donorEmail = (body.donor_email || '').toString().trim();
+    if (body.newsletter_consent !== true || !EMAIL_RE.test(donorEmail)) return null;
+    return new Date().toISOString();
+}
 const { isNataleDesign, designImageUrl, normalizeCanale } = require('../utils/avvento');
+const { iscriviAllaNewsletter } = require('../jobs/avventoEmail');
 
 // Configurazione Satispay
 const SATISPAY_ENABLED = process.env.SATISPAY_API_KEY ? true : false;
@@ -582,6 +594,7 @@ router.post('/mercatino/cash', (req, res) => {
             ...contacts.data
         });
         console.log(`[Mercatino] Gift card di Natale ${card.id} registrata (${card.payment_method}, consegna ${card.delivery_at})`);
+        iscriviAllaNewsletter(card); // pagata subito: iscrizione se ha spuntato il consenso (non blocca la vendita)
         // Conferma a chi paga in contanti, se ha lasciato l'email (stesso messaggio dei pagamenti online)
         if (card.donor_email) {
             sendNataleDonorConfirmation(card)
@@ -971,6 +984,7 @@ router.post('/webhook/stripe', async (req, res) => {
             const card = db.completeNataleGiftCardBySession(session.id, meta.natale_id);
             if (card) {
                 console.log(`Gift card di Natale ${card.id} pagata`);
+                iscriviAllaNewsletter(card);
                 sendNataleDonorConfirmation(card)
                     .catch(err => console.error('Errore conferma gift card di Natale:', err));
                 // Se l'orario di consegna è già passato la card parte subito, altrimenti la invia il job
