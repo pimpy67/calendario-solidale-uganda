@@ -20,6 +20,7 @@ async function findMissingPayments() {
     for await (const session of stripe.checkout.sessions.list({ limit: 100, created: { gte: since } })) {
         if (session.payment_status !== 'paid') continue;
         if (db.getDonationBySessionId(session.id)) continue;
+        if (db.getPaidNataleGiftCardBySessionId(session.id)) continue; // gift card: non è una donazione
         missing.push(session);
     }
     return missing;

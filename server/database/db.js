@@ -523,6 +523,14 @@ function createCompletedDonation(data) {
 }
 
 /**
+ * Gift card di Natale già pagata con questa sessione Stripe (la sessione che l'ha completata).
+ * Serve al controllo notturno: un pagamento di gift card non è una donazione.
+ */
+function getPaidNataleGiftCardBySessionId(sessionId) {
+    return db.prepare("SELECT id FROM natale_gift_cards WHERE payment_status = 'completed' AND stripe_session_id = ?").get(sessionId) || null;
+}
+
+/**
  * Trova una donazione tramite stripe_session_id
  */
 function getDonationBySessionId(sessionId) {
@@ -827,5 +835,6 @@ module.exports = {
     cancelStalePendingDonations,
     createCompletedDonation,
     getDonationBySessionId,
+    getPaidNataleGiftCardBySessionId,
     close
 };
