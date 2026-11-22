@@ -115,7 +115,7 @@ if (STRIPE_ENABLED) {
 
 /**
  * GET /api/stats
- * Healthcheck endpoint for Railway
+ * Healthcheck endpoint (usato dal deploy sul VPS)
  */
 router.get('/stats', (req, res) => {
     res.json({
