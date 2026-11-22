@@ -2,7 +2,7 @@
 
 ## Prerequisiti
 - Node.js 18+ installato
-- Account Railway (gratuito)
+- Accesso al VPS di produzione (Hostinger), per il deploy: vedi `DEPLOY.md`
 - Account Satispay Business (per i pagamenti)
 
 ## Setup Locale
@@ -37,33 +37,19 @@ npm start
 
 ---
 
-## Deploy su Railway
+## Deploy in produzione
 
-### 1. Crea account Railway
-Vai su https://railway.app e registrati (puoi usare GitHub)
+Il sito gira su un VPS Hostinger (nginx → Express sulla porta 3000, con Docker Compose).
+Il deploy è descritto in `DEPLOY.md`: ogni unione su `main` aggiorna il VPS tramite GitHub Actions.
 
-### 2. Nuovo progetto
-1. Click "New Project"
-2. Seleziona "Deploy from GitHub repo" o "Empty Project"
-3. Se hai il codice su GitHub, collegalo
-4. Altrimenti usa Railway CLI:
-
-```bash
-npm install -g @railway/cli
-railway login
-railway init
-railway up
-```
-
-### 3. Configura variabili ambiente
-Nel pannello Railway, vai in "Variables" e aggiungi:
+Le variabili ambiente vanno nel file `.env` sul VPS (modello in `.env.example`), in particolare:
 - `ADMIN_PASSWORD`: la tua password admin sicura
-- `BASE_URL`: l'URL che Railway ti assegna (es. https://tuo-progetto.up.railway.app)
+- `BASE_URL`: l'indirizzo pubblico del sito (es. https://calendario.effataitalia.it)
 - `SATISPAY_API_KEY`: (quando avrai le credenziali Satispay)
 - `SATISPAY_SANDBOX`: true (per test) o false (produzione)
 
-### 4. Verifica
-Dopo il deploy, visita l'URL assegnato da Railway.
+### Verifica
+Dopo il deploy, `https://<tuo-dominio>/api/stats` deve rispondere con `status: ok`.
 
 ---
 
@@ -81,7 +67,7 @@ Nel pannello Satispay Business:
 ### 3. Configura Webhook
 Imposta l'URL webhook nel pannello Satispay:
 ```
-https://tuo-progetto.up.railway.app/api/webhook/satispay
+https://<tuo-dominio>/api/webhook/satispay
 ```
 
 ### 4. Test
@@ -126,7 +112,7 @@ CALENDARIO SOLIDALE/
 │   └── database/        # SQLite
 ├── admin/               # Pannello admin
 ├── package.json         # Dipendenze
-├── railway.json         # Config Railway
+├── Dockerfile           # Immagine Docker (deploy VPS)
 └── .env.example         # Template variabili
 ```
 
@@ -148,6 +134,6 @@ Per migliorare la preview sui social, modifica i meta tag in `public/index.html`
 ## Supporto
 
 Per problemi o domande:
-1. Verifica i log di Railway
+1. Verifica i log del container sul VPS (`docker compose logs`)
 2. Controlla la console del browser per errori JavaScript
 3. Verifica le variabili ambiente siano impostate correttamente
